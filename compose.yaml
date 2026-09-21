@@ -61,6 +61,11 @@ services:
       PGPASSWORD: ${VINLOG_DB_PASSWORD:-vinolog}
       DATASET_ROOT: /dataset/current
       INDEX_PATH: /indexes/sift-v2.npz
+      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-2}
+      OCR_PSM: ${OCR_PSM:-6}
+      OCR_PREPROCESS: ${OCR_PREPROCESS:-true}
+      OCR_RETRY: ${OCR_RETRY:-false}
+      VISUAL_SHORTLIST_LIMIT: ${VISUAL_SHORTLIST_LIMIT:-50}
     volumes:
       - dataset:/dataset:ro
       - retrieval-index:/indexes

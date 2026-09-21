@@ -95,8 +95,8 @@ export default defineEventHandler(async (event): Promise<ScanResponse> => {
     status,
     wine: status === 'matched' ? demoWine : null,
     candidates: [
-      { slug: demoWine.slug, score: 0.827 },
-      { slug: demoAlternative.slug, score: 0.781 },
+      { slug: demoWine.slug, score: 0.827, wine: demoWine },
+      { slug: demoAlternative.slug, score: 0.781, wine: demoAlternative },
     ],
     confidence: {
       kind: 'similarity',

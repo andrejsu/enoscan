@@ -21,6 +21,7 @@ export interface WineCard {
 export interface ScanCandidate {
   slug: string
   score: number
+  wine?: WineCard
 }
 
 export interface ScanConfidence {

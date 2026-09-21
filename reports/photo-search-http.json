@@ -1,0 +1,33 @@
+{
+  "kind": "unlabelled-http-smoke",
+  "predictions": [
+    {
+      "photo": "queries/019c68d0.jpg",
+      "status": "uncertain",
+      "slug": "cabernet-franc-2024-one-barrel-by-dmitry-maslov-kaberne-fran-2024-uan-barrel-dmitrij-maslov",
+      "product_and_eval_agree": true,
+      "two_requests_ms": 7074
+    },
+    {
+      "photo": "queries/02eef911.webp",
+      "status": "matched",
+      "slug": "massandra-muskat-belyy-yuzhnoberezhnyy-beloe-sladkoe-16",
+      "product_and_eval_agree": true,
+      "two_requests_ms": 4738
+    },
+    {
+      "photo": "queries/096ca74e.jpg",
+      "status": "uncertain",
+      "slug": "kuban-vino-aristov-anima-pino-nero-sandzhoveze-pino-nuar-krasnoe-suhoe-125",
+      "product_and_eval_agree": true,
+      "two_requests_ms": 6586
+    }
+  ],
+  "invalid_upload_statuses": [
+    422,
+    415,
+    400
+  ],
+  "accuracy": null,
+  "note": "No ground-truth slugs; only contracts and successful processing checked."
+}

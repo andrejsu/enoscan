@@ -2128,6 +2128,8 @@ h2 {
 
   .site-header__inner {
     min-height: 66px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .brand__mark {

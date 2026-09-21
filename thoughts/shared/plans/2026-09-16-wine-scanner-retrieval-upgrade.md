@@ -1,5 +1,7 @@
 # Wine Scanner Retrieval Upgrade: DINOv3 + OCR Hard Filter + Noise Robustness
 
+> **Planning update (2026-09-21):** Follow [the Tesseract photo-retrieval plan](2026-09-21-photo-retrieval-tesseract.md) for subsequent work. It supersedes the hard year-filter recommendation and mandatory DINOv3 migration below. Historical completion records are retained; they do not establish current real-photo accuracy.
+
 > **Date:** 2026-09-16
 > **Repo:** Vinolog / `services/retrieval`
 > **Competition target:** Recall@1 ≥ 0.95 on organizer eval

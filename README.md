@@ -129,7 +129,46 @@ npm run check      # все проверки подряд
 
 ## Текущее ограничение
 
-Compose закрывает реальный путь от фото до карточки и официальный маршрут оценки, но SIFT/RANSAC с Tesseract OCR остаётся baseline без измеренной итоговой точности. Для цифрового сомелье реализованы три провайдерских адаптера, но live-качество, стоимость и русский red-team набор ещё не прогнаны с реальными ключами каждого провайдера; mock-тесты не доказывают поведение внешних моделей. Визуальные embeddings, улучшение OCR, калибровка порогов и live-eval сомелье остаются отдельными измерительными задачами.
+Compose закрывает путь от фото до карточки и официальный маршрут оценки. SIFT/RANSAC объединяется с текстовым поиском по полному каталогу; Tesseract остаётся OCR по умолчанию. Реализованы структурированное извлечение, мягкая проверка года, timeout/fallback и ручной выбор кандидата. Пороги остаются эвристическими, точность на размеченных полевых фотографиях не измерена. Для цифрового сомелье реализованы три провайдерских адаптера, но live-качество, стоимость и русский red-team набор ещё не прогнаны с реальными ключами каждого провайдера; mock-тесты не доказывают поведение внешних моделей.
+
+### Оценка полного поиска с OCR
+
+`scripts/eval.py` проверяет только визуальный индекс. `scripts/eval_search.py` проверяет SearchService и сохраняет прогноз каждого запроса, ошибки, версии, Accuracy@1, Recall@5, охват/точность автоматических ответов и задержки. Для текущего локального Docker-образа:
+
+```bash
+docker compose run --rm --no-deps --user "$(id -u):$(id -g)" \
+  -v "$PWD:/workspace" -w /workspace retrieval \
+  python scripts/eval_search.py --index /indexes/sift-v2.npz \
+  --dataset /dataset/current --synthetic 8 --profile hard \
+  --label synthetic-default --output reports/photo-search-local.json
+```
+
+Этот режим использует только каталог индекса и искажённые эталоны. Для полного каталога добавьте `--full-catalog` при работающей БД. Для доступных трёх неразмеченных фото вместо `--synthetic 8 --profile hard` укажите `--manifest configs/photo-search-pilot.jsonl --split pilot`. У них намеренно отсутствует `expected_slug`: точность для них не рассчитывается.
+
+Собственный manifest — JSONL, пути относительно manifest либо абсолютные:
+
+```json
+{"path":"photos/one.jpg","expected_slug":"actual-catalog-slug","group":"capture-session-1","split":"tuning","expected_year":2019,"expected_abv":12.5}
+{"path":"photos/unknown.jpg","expected_slug":null,"group":"capture-session-2","split":"holdout"}
+```
+
+`expected_slug: null` означает проверенное неизвестное вино; отсутствие ключа — отсутствие разметки. Одна съёмка не может попадать в разные split. Не угадывайте правильные ответы по прогнозу модели. Поля `expected_year`/`expected_abv` необязательны; `null` означает, что извлечение должно воздержаться. Параметры эксперимента: `--psm 11`, `--raw`, `--retry`, `--ocr-timeout 2`. В сервисе соответствуют `OCR_PSM`, `OCR_PREPROCESS`, `OCR_RETRY`, `OCR_TIMEOUT_SECONDS`; передавайте их через окружение контейнера. По умолчанию альтернативные проходы отключены.
+
+HTTP-проверка доступных фото и ошибочных загрузок:
+
+```bash
+python3 scripts/smoke_search.py --base http://127.0.0.1:8080 \
+  --output reports/photo-search-http-local.json
+```
+
+Она проверяет одинаковый top-1 продуктового/оценочного маршрутов, формат и HTTP-ошибки, но не правильность найденного вина. Python-тесты сервиса и оценочного скрипта:
+
+```bash
+docker compose run --rm --no-deps --user "$(id -u):$(id -g)" \
+  -v "$PWD:/workspace" -w /workspace \
+  -e PYTHONPATH=/workspace/services/retrieval retrieval \
+  python -m pytest services/retrieval/tests scripts/tests -q -p no:cacheprovider
+```
 
 ## Диагностика TypeScript в редакторе
 

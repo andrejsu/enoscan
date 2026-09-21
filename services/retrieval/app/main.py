@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 
 from .config import load_settings
 from .catalog_browser import CatalogBrowser
+from .catalog import load_catalog
 from .image_features import decode_image
 from .index import SiftIndex
 from .service import SearchService
@@ -30,7 +31,10 @@ async def lifespan(_: FastAPI):
     if not Path(settings.index_path).is_file():
         raise RuntimeError(f"Retrieval index is missing: {settings.index_path}")
     index = SiftIndex.load(settings.index_path)
-    service = SearchService(index)
+    service = SearchService(index, catalog=load_catalog(settings.database_url)[0],
+                            ocr_timeout=settings.ocr_timeout, ocr_psm=settings.ocr_psm,
+                            ocr_preprocess=settings.ocr_preprocess, ocr_retry=settings.ocr_retry,
+                            visual_limit=settings.visual_limit)
     catalog_browser = CatalogBrowser(settings.database_url, index)
     yield
     service = None

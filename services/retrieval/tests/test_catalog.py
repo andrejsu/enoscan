@@ -5,7 +5,7 @@ from app.catalog_browser import catalog_record
 from app.index import IndexedReference
 from app.index import Candidate
 from app.ocr import extract_year, text_score
-from app.service import filter_by_year
+from app.service import year_adjustment
 
 
 def wine(**overrides: str) -> Wine:
@@ -103,23 +103,15 @@ class OcrYearTest(unittest.TestCase):
         self.assertIsNone(extract_year("основано в 1861"))
 
 
-class YearFilterTest(unittest.TestCase):
-    def test_year_filter_drops_other_vintages(self) -> None:
-        candidates = [candidate("rebus-2020", "Ребус 2020"), candidate("rebus-2019", "Ребус 2019")]
+class YearEvidenceTest(unittest.TestCase):
+    def test_year_is_soft_evidence(self):
+        self.assertGreater(year_adjustment(wine(name="Ребус 2019"), 2019), 0)
+        self.assertLess(year_adjustment(wine(name="Ребус 2020"), 2019), 0)
 
-        filtered = filter_by_year(candidates, 2019)
-
-        self.assertEqual([item.wine.slug for item in filtered], ["rebus-2019"])
-
-    def test_filter_is_skipped_without_year(self) -> None:
-        candidates = [candidate("rebus-2020", "Ребус 2020"), candidate("rebus-2021", "Ребус 2021")]
-
-        self.assertEqual(filter_by_year(candidates, None), candidates)
-
-    def test_filter_fails_open_when_nothing_matches(self) -> None:
-        candidates = [candidate("rebus-2020", "Ребус 2020"), candidate("rebus-2021", "Ребус 2021")]
-
-        self.assertEqual(filter_by_year(candidates, 2019), candidates)
+    def test_missing_or_ambiguous_year_is_neutral(self):
+        self.assertEqual(year_adjustment(wine(name="Ребус"), 2019), 0)
+        self.assertEqual(year_adjustment(wine(name="Ребус 2019"), None), 0)
+        self.assertEqual(year_adjustment(wine(name="Ребус 2019 2020"), 2019), 0)
 
 
 if __name__ == "__main__":

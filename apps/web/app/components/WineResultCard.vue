@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ScanResponse } from '@vinolog/contracts'
+import type { ScanResponse, WineCard } from '@vinolog/contracts'
 import { matchScanWineToZodiac } from '@vinolog/contracts'
 import { ArrowRight, CircleAlert, Grape, Info, MapPin, Palette, RotateCcw, Sparkles, Tags, ThermometerSun, Utensils } from '@lucide/vue'
 import { isFeatureEnabled } from '#shared/utils/feature-flags'
@@ -12,13 +12,17 @@ const emit = defineEmits<{
   resetRequested: []
 }>()
 
+const selectedWine = ref<WineCard | null>(null)
+const displayedWine = computed(() => selectedWine.value ?? props.result.wine)
+watch(() => props.result, () => { selectedWine.value = null })
+
 const config = useRuntimeConfig()
 const isAstroEnabled = computed(() => isFeatureEnabled(config.public.astroEnabled))
 
 const pairingQuery = computed(() => ({
-  slug: props.result.wine?.slug,
-  name: props.result.wine?.name,
-  producer: props.result.wine?.producer,
+  slug: displayedWine.value?.slug,
+  name: displayedWine.value?.name,
+  producer: displayedWine.value?.producer,
 }))
 
 const zodiacMatch = computed(() => matchScanWineToZodiac(props.result))
@@ -30,28 +34,28 @@ const zodiacMatch = computed(() => matchScanWineToZodiac(props.result))
       Демонстрационные данные — настоящее CV-распознавание ещё не подключено
     </div>
 
-    <article v-if="result.status === 'matched' && result.wine" class="wine-card">
+    <article v-if="displayedWine" class="wine-card">
       <figure class="wine-card__visual">
         <img
-          v-if="result.wine.imageUrl"
+          v-if="displayedWine.imageUrl"
           class="wine-card__image"
-          :src="result.wine.imageUrl"
-          :alt="`Эталонная бутылка ${result.wine.name}`"
+          :src="displayedWine.imageUrl"
+          :alt="`Эталонная бутылка ${displayedWine.name}`"
           decoding="async"
         >
         <span v-else class="wine-card__bottle" aria-hidden="true">
           <span>СВ</span>
         </span>
-        <figcaption v-if="result.wine.imageUrl">Фото из каталога</figcaption>
+        <figcaption v-if="displayedWine.imageUrl">Фото из каталога</figcaption>
       </figure>
 
       <div class="wine-card__content">
-        <p class="eyebrow">Совпадение найдено</p>
-        <p class="wine-card__producer">{{ result.wine.producer }}</p>
-        <h2>{{ result.wine.name }}</h2>
-        <p v-if="result.wine.year" class="wine-card__year">{{ result.wine.year }}</p>
-        <p v-if="result.wine.description" class="wine-card__description">
-          {{ result.wine.description }}
+        <p class="eyebrow">{{ selectedWine ? 'Вы выбрали это вино' : 'Совпадение найдено' }}</p>
+        <p class="wine-card__producer">{{ displayedWine.producer }}</p>
+        <h2>{{ displayedWine.name }}</h2>
+        <p v-if="displayedWine.year" class="wine-card__year">{{ displayedWine.year }}</p>
+        <p v-if="displayedWine.description" class="wine-card__description">
+          {{ displayedWine.description }}
         </p>
 
         <details v-if="isAstroEnabled && zodiacMatch" class="zodiac-popover">
@@ -72,25 +76,25 @@ const zodiacMatch = computed(() => matchScanWineToZodiac(props.result))
         </details>
 
         <dl class="wine-facts">
-          <div v-if="result.wine.category">
+          <div v-if="displayedWine.category">
             <dt><Tags :size="17" aria-hidden="true" /> Категория</dt>
-            <dd>{{ result.wine.category }}</dd>
+            <dd>{{ displayedWine.category }}</dd>
           </div>
-          <div v-if="result.wine.color">
+          <div v-if="displayedWine.color">
             <dt><Palette :size="17" aria-hidden="true" /> Цвет</dt>
-            <dd>{{ result.wine.color }}</dd>
+            <dd>{{ displayedWine.color }}</dd>
           </div>
-          <div v-if="result.wine.region">
+          <div v-if="displayedWine.region">
             <dt><MapPin :size="17" aria-hidden="true" /> Регион</dt>
-            <dd>{{ result.wine.region }}</dd>
+            <dd>{{ displayedWine.region }}</dd>
           </div>
-          <div v-if="result.wine.grapeVarieties.length">
+          <div v-if="displayedWine.grapeVarieties.length">
             <dt><Grape :size="17" aria-hidden="true" /> Сорта</dt>
-            <dd>{{ result.wine.grapeVarieties.join(', ') }}</dd>
+            <dd>{{ displayedWine.grapeVarieties.join(', ') }}</dd>
           </div>
-          <div v-if="result.wine.servingTemperature">
+          <div v-if="displayedWine.servingTemperature">
             <dt><ThermometerSun :size="17" aria-hidden="true" /> Подача</dt>
-            <dd>{{ result.wine.servingTemperature }}</dd>
+            <dd>{{ displayedWine.servingTemperature }}</dd>
           </div>
         </dl>
 
@@ -115,9 +119,21 @@ const zodiacMatch = computed(() => matchScanWineToZodiac(props.result))
           {{ result.status === 'uncertain' ? 'Нужно уточнить' : 'В каталоге не найдено' }}
         </p>
         <h2>
-          {{ result.status === 'uncertain' ? 'Этикетка видна не полностью' : 'Мы не можем подтвердить совпадение' }}
+          {{ result.status === 'uncertain' ? 'Проверьте название и год' : 'Мы не можем подтвердить совпадение' }}
         </h2>
         <p>{{ result.guidance || 'Попробуйте снять этикетку ближе и без бликов.' }}</p>
+        <div v-if="result.status === 'uncertain'" class="scanner__actions" aria-label="Кандидаты из каталога">
+          <template v-for="candidate in result.candidates" :key="candidate.slug">
+            <button
+              v-if="candidate.wine"
+              class="button button--secondary"
+              type="button"
+              @click="selectedWine = candidate.wine"
+            >
+              {{ candidate.wine.name }} · {{ candidate.wine.producer }}
+            </button>
+          </template>
+        </div>
         <button class="button button--primary" type="button" @click="emit('resetRequested')">
           <RotateCcw :size="18" aria-hidden="true" />
           Сделать другое фото
