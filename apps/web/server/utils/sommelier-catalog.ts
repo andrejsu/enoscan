@@ -1,4 +1,4 @@
-import type { CatalogSearchFilters, WineCard } from '@vinolog/contracts'
+import type { CatalogSearchFilters, WineCard } from '#shared/contracts'
 import { Pool } from 'pg'
 
 interface CatalogRow {

@@ -5,8 +5,7 @@
     "node": ">=22.22.2"
   },
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "scripts": {
     "dev": "npm run dev --workspace @vinolog/web",

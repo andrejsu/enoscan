@@ -1,4 +1,4 @@
-import type { WineCard } from '@vinolog/contracts'
+import type { WineCard } from '#shared/contracts'
 import { describe, expect, it } from 'vitest'
 
 import { sommelierAdversarialCases } from '../fixtures/sommelier-adversarial'

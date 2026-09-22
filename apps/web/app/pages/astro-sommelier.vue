@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { zodiacWineProfiles } from '@vinolog/contracts'
+import { zodiacWineProfiles } from '#shared/contracts'
 import { ArrowRight, Grape, RefreshCw, Sparkles, TriangleAlert } from '@lucide/vue'
 
 definePageMeta({ middleware: 'astro-enabled' })

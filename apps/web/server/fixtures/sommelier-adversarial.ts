@@ -1,4 +1,4 @@
-import type { SommelierBlockReason } from '@vinolog/contracts'
+import type { SommelierBlockReason } from '#shared/contracts'
 
 export interface SommelierAdversarialCase {
   name: string

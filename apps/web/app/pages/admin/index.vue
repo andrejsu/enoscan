@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CatalogAdminResponse, CatalogAdminWine, CatalogImageStatus } from '@vinolog/contracts'
+import type { CatalogAdminResponse, CatalogAdminWine, CatalogImageStatus } from '#shared/contracts'
 import { Database, FileStack, Images, Search, SearchX, TriangleAlert, Wine } from '@lucide/vue'
 
 const draftSearch = ref('')

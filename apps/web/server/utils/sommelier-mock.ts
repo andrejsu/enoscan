@@ -1,4 +1,4 @@
-import type { SommelierMessageInput, SommelierResponse, WineCard } from '@vinolog/contracts'
+import type { SommelierMessageInput, SommelierResponse, WineCard } from '#shared/contracts'
 
 import { blockedSommelierResponse } from './sommelier-guardrails'
 

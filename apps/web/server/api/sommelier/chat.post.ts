@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 
-import type { SommelierBlockReason, SommelierResponse } from '@vinolog/contracts'
-import { sommelierRequestSchema } from '@vinolog/contracts'
+import type { SommelierBlockReason, SommelierResponse } from '#shared/contracts'
+import { sommelierRequestSchema } from '#shared/contracts'
 
 import { classifySommelierInput, classifySommelierOutput, generateSommelierAnswer } from '../../utils/sommelier-ai'
 import {

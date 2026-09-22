@@ -1,4 +1,4 @@
-import type { SommelierBlockReason, SommelierResponse, WineCard } from '@vinolog/contracts'
+import type { SommelierBlockReason, SommelierResponse, WineCard } from '#shared/contracts'
 import { checkProfanity, normalizeUnicode } from 'glin-profanity'
 
 const russianProfanityPattern = /(?:^|[^\p{L}\p{N}])(?:бл(?:я|е)[дт]\p{L}*|[хx][уy][йея]\p{L}*|п(?:и|е)зд\p{L}*|[её]б\p{L}*|сук(?:а|и|у|ой)\p{L}*)(?=$|[^\p{L}\p{N}])/iu

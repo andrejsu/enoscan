@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CatalogAdminWine } from '@vinolog/contracts'
+import type { CatalogAdminWine } from '#shared/contracts'
 import { X } from '@lucide/vue'
 
 const props = defineProps<{

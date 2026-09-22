@@ -1,5 +1,5 @@
-import type { SommelierMessageInput, WineCard } from '@vinolog/contracts'
-import { catalogSearchFiltersSchema } from '@vinolog/contracts'
+import type { SommelierMessageInput, WineCard } from '#shared/contracts'
+import { catalogSearchFiltersSchema } from '#shared/contracts'
 import { generateText, Output } from 'ai'
 import type { LanguageModel, ModelMessage } from 'ai'
 import { z } from 'zod'

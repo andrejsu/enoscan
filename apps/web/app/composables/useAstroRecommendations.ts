@@ -1,4 +1,4 @@
-import type { AstroRecommendationResponse, ZodiacSignId } from '@vinolog/contracts'
+import type { AstroRecommendationResponse, ZodiacSignId } from '#shared/contracts'
 
 type AstroRecommendationState
   = | { status: 'idle' }

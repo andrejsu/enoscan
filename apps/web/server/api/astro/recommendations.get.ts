@@ -1,5 +1,5 @@
-import type { AstroRecommendationResponse, CatalogAdminResponse, WineCard } from '@vinolog/contracts'
-import { getZodiacWineProfile } from '@vinolog/contracts'
+import type { AstroRecommendationResponse, CatalogAdminResponse, WineCard } from '#shared/contracts'
+import { getZodiacWineProfile } from '#shared/contracts'
 import { isFeatureEnabled } from '#shared/utils/feature-flags'
 import { sampleRandomItems } from '../../utils/sample-random-items'
 

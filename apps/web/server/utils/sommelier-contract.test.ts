@@ -1,4 +1,4 @@
-import { sommelierRequestSchema } from '@vinolog/contracts'
+import { sommelierRequestSchema } from '#shared/contracts'
 import { describe, expect, it } from 'vitest'
 
 describe('sommelierRequestSchema', () => {

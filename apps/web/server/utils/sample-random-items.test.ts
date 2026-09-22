@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { zodiacWineProfiles } from '@vinolog/contracts'
+import { zodiacWineProfiles } from '#shared/contracts'
 import { sampleRandomItems } from './sample-random-items'
 
 describe('sampleRandomItems', () => {

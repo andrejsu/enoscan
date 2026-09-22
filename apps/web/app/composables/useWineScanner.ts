@@ -1,4 +1,4 @@
-import type { ScanResponse } from '@vinolog/contracts'
+import type { ScanResponse } from '#shared/contracts'
 import { validateScanFile } from '~/utils/scan-file'
 
 type ScannerState =

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WineCard } from '@vinolog/contracts'
+import type { WineCard } from '#shared/contracts'
 import { ArrowRight, Grape } from '@lucide/vue'
 
 defineProps<{ wine: WineCard }>()

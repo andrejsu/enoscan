@@ -1,4 +1,4 @@
-import type { SavedPairing } from '@vinolog/contracts'
+import type { SavedPairing } from '#shared/contracts'
 
 const storageKey = 'vinolog:saved-pairings:v1'
 

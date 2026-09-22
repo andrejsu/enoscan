@@ -1,8 +1,8 @@
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
-import { sommelierProviderIds } from '@vinolog/contracts'
-import type { SommelierProviderId } from '@vinolog/contracts'
+import { sommelierProviderIds } from '#shared/contracts'
+import type { SommelierProviderId } from '#shared/contracts'
 import type { LanguageModel } from 'ai'
 
 interface SommelierProviderConfig {

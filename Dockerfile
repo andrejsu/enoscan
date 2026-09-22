@@ -7,7 +7,6 @@ RUN apt-get update \
 WORKDIR /workspace/Vinolog
 COPY package.json package-lock.json ./
 COPY apps/web/package.json apps/web/package.json
-COPY packages/contracts/package.json packages/contracts/package.json
 RUN npm ci
 
 COPY . .

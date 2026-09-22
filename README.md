@@ -118,7 +118,7 @@ npm run check      # все проверки подряд
 ## Структура
 
 - `apps/web` — Nuxt 4: мобильные экраны и server API.
-- `packages/contracts` — общие TypeScript-контракты без зависимости от Nuxt.
+- `apps/web/shared/contracts` — общие для UI и server API TypeScript-контракты без зависимости от Nuxt (`#shared/contracts`).
 - `services/retrieval` — локальный Python/FastAPI-сервис поиска по этикетке.
 - `docs/engineering` — обязательные правила генерации и изменения кода.
 - `ARCHITECTURE.md` — компоненты системы и поток запроса.

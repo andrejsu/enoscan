@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { WineCard } from '@vinolog/contracts'
-import { getZodiacWineProfile, matchScanWineToZodiac, matchWineToZodiac } from '@vinolog/contracts'
+import type { WineCard } from '#shared/contracts'
+import { getZodiacWineProfile, matchScanWineToZodiac, matchWineToZodiac } from '#shared/contracts'
 
 const wine: WineCard = {
   slug: 'peppery-syrah',

@@ -1,4 +1,4 @@
-import type { ScanResponse, WineCard } from '@vinolog/contracts'
+import type { ScanResponse, WineCard } from '#shared/contracts'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 const acceptedTypes = new Set(['application/octet-stream', 'image/jpeg', 'image/png', 'image/webp'])

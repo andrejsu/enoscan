@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ScanResponse, WineCard } from '@vinolog/contracts'
-import { matchScanWineToZodiac } from '@vinolog/contracts'
+import type { ScanResponse, WineCard } from '#shared/contracts'
+import { matchScanWineToZodiac } from '#shared/contracts'
 import { ArrowRight, CircleAlert, Grape, Info, MapPin, Palette, RotateCcw, Sparkles, Tags, ThermometerSun, Utensils } from '@lucide/vue'
 import { isFeatureEnabled } from '#shared/utils/feature-flags'
 

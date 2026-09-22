@@ -1,4 +1,4 @@
-import type { CatalogAdminResponse, CatalogImageStatus } from '@vinolog/contracts'
+import type { CatalogAdminResponse, CatalogImageStatus } from '#shared/contracts'
 
 export default defineEventHandler(async (event): Promise<CatalogAdminResponse> => {
   const query = getQuery(event)

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SavedPairing } from '@vinolog/contracts'
+import type { SavedPairing } from '#shared/contracts'
 import { BookmarkCheck, ChevronLeft } from '@lucide/vue'
 
 const route = useRoute()

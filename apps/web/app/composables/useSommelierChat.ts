@@ -3,7 +3,7 @@ import type {
   SommelierMessageInput,
   SommelierResponse,
   WineCard,
-} from '@vinolog/contracts'
+} from '#shared/contracts'
 
 type SommelierChatState
   = | { status: 'idle' }
