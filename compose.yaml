@@ -92,6 +92,78 @@ services:
       retries: 30
     restart: unless-stopped
 
+  # --- Standalone wine-label retriever ------------------------------------
+  # A separate service from retrieval/retrieval-index above: own image
+  # (Dockerfile.retriever), own index format and file (retriever_index.py,
+  # retriever-index volume), own models volume. Nothing here is read by the
+  # retrieval/retrieval-index services, and changing retriever tuning can
+  # never affect them. See services/retrieval/app/retriever.py.
+  retriever-model:
+    build:
+      context: .
+      dockerfile: services/retrieval/Dockerfile.retriever
+    command: ["sh", "-c", "python -m app.download_model && python -m app.download_sam"]
+    environment:
+      MODEL_PATH: /models/dinov2-small.onnx
+      SAM_MODEL_DIR: /models/sam_vit_b_quant
+    volumes:
+      - retriever-models:/models
+    restart: "no"
+
+  retriever-index:
+    build:
+      context: .
+      dockerfile: services/retrieval/Dockerfile.retriever
+    depends_on:
+      dataset-init:
+        condition: service_completed_successfully
+      db-import:
+        condition: service_completed_successfully
+      retriever-model:
+        condition: service_completed_successfully
+    command: ["python", "-m", "app.build_retriever_index"]
+    environment: &retriever-environment
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: vinolog
+      PGDATABASE: vinolog
+      PGPASSWORD: ${VINLOG_DB_PASSWORD:-vinolog}
+      DATASET_ROOT: /dataset/current
+      RETRIEVER_INDEX_PATH: /indexes/retriever-v1.npz
+      MODEL_PATH: /models/dinov2-small.onnx
+      SAM_MODEL_DIR: /models/sam_vit_b_quant
+      VISUAL_SHORTLIST_LIMIT: ${RETRIEVER_VISUAL_SHORTLIST_LIMIT:-24}
+      EMBEDDING_SHORTLIST_LIMIT: ${RETRIEVER_EMBEDDING_SHORTLIST_LIMIT:-20}
+      QUERY_SAM: ${RETRIEVER_QUERY_SAM:-false}
+    volumes:
+      - dataset:/dataset:ro
+      - retriever-index-data:/indexes
+      - retriever-models:/models:ro
+    restart: "no"
+
+  retriever:
+    build:
+      context: .
+      dockerfile: services/retrieval/Dockerfile.retriever
+    depends_on:
+      db:
+        condition: service_healthy
+      retriever-index:
+        condition: service_completed_successfully
+    environment: *retriever-environment
+    ports:
+      - "8081:8000"
+    volumes:
+      - dataset:/dataset:ro
+      - retriever-index-data:/indexes:ro
+      - retriever-models:/models:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+    restart: unless-stopped
+
   web:
     build: .
     depends_on:
@@ -138,3 +210,5 @@ volumes:
   codex-home:
   dataset:
   retrieval-index:
+  retriever-index-data:
+  retriever-models:
