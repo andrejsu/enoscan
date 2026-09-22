@@ -15,7 +15,7 @@ from app.image_features import decode_image
 
 
 def wine(slug="rebus-2019", name="Ребус 2019", winery="Дивноморское"):
-    return Wine(slug, name, winery, "test.jpg")
+    return Wine(slug, name, winery)
 
 
 def word(text, confidence=90, line=(1, 1, 1)):
@@ -155,3 +155,11 @@ def test_generic_text_does_not_overturn_strong_geometry():
     with patch("app.service.extract_label", return_value=OcrResult((word("Шардоне Агора"),))):
         result = SearchService(IndexStub([first, second]), catalog=[first.wine, second.wine]).search(np.zeros((10, 10, 3), dtype=np.uint8))
     assert result.body["candidates"][0]["slug"] == first.wine.slug
+
+
+def test_catalog_version_comes_from_dataset_version():
+    candidate = Candidate(wine(), "sha", 0.8, 18, 10)
+    with patch("app.service.extract_label", return_value=OcrResult()):
+        result = SearchService(IndexStub([candidate]), catalog=[wine()], dataset_version="abc123").search(
+            np.zeros((10, 10, 3), dtype=np.uint8))
+    assert result.body["version"]["catalog"] == "abc123"

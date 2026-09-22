@@ -1,5 +1,5 @@
 """One-off experiment script — not part of the test suite, not shipped in any
-Docker image. Loads the retriever index once, computes raw SIFT+embedding
+Docker image. Loads the current retriever index build and its pgvector embeddings once, computes raw SIFT+embedding
 evidence per fixture, then sweeps blend weights/shortlist sizes offline
 (cheap) to find better retriever.py defaults without rebuilding the index or
 re-running feature extraction per trial.
@@ -10,9 +10,13 @@ sys.path.insert(0, "/app")
 from pathlib import Path
 import cv2
 
+from app.catalog import current_dataset_version
 from app.retriever_config import load_retriever_settings
-from app.retriever_index import RetrieverIndex
-from app.embedding import Dinov2Encoder
+from app.retriever_index import RETRIEVER_INDEX_KIND, RetrieverIndex
+from app.embedding import EMBEDDING_MODEL, Dinov2Encoder
+from app.embedding_store import EmbeddingStore
+from app.index_store import fetch_index, require_build
+from app.storage import ObjectStore
 from app.label_normalize import Config as LabelConfig, prepare_query
 
 FIXTURES = {
@@ -25,7 +29,10 @@ FIXTURES = {
 }
 
 settings = load_retriever_settings()
-index = RetrieverIndex.load(settings.index_path)
+build = require_build(settings.database_url, RETRIEVER_INDEX_KIND, current_dataset_version(settings.database_url))
+index = RetrieverIndex.load(str(fetch_index(ObjectStore(), build)))
+embeddings = EmbeddingStore(settings.database_url, EMBEDDING_MODEL)
+all_slugs = [reference.wine.slug for reference in index.references]
 encoder = Dinov2Encoder(Path(settings.model_path), threads=8)
 cfg = LabelConfig()
 
@@ -34,7 +41,7 @@ for fname, expected in FIXTURES.items():
     img = cv2.imread(f"/app/tests/fixtures/{fname}")
     prepared = prepare_query(img, segmenter=None, config=cfg, fast=True)
     qvec = encoder.encode_one(prepared.visual)
-    emb_scores = index.embedding_scores(qvec)
+    emb_scores = embeddings.scores(build.id, qvec, all_slugs)
     emb_top = sorted(emb_scores, key=emb_scores.get, reverse=True)[:20]
     result = index.search(prepared.visual, limit=60, visual_limit=24, extra_slugs=tuple(emb_top))
     sift = {c.wine.slug: (c.score, c.inliers, c.good_matches) for c in result.candidates}

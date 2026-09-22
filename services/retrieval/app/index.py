@@ -12,10 +12,13 @@ from .catalog import Wine
 from .image_features import ImageFeatures, extract_features
 
 
+SIFT_INDEX_KIND = "sift-v3"
+
+
 @dataclass(frozen=True)
 class IndexedReference:
     wine: Wine
-    relative_path: str
+    image_sha256: str
     mapping_kind: str
     mapping_score: float
 
@@ -23,7 +26,7 @@ class IndexedReference:
 @dataclass(frozen=True)
 class Candidate:
     wine: Wine
-    relative_path: str
+    image_sha256: str
     score: float
     good_matches: int
     inliers: int
@@ -61,8 +64,8 @@ class SiftIndex:
             raw_references = json.loads(str(data["references_json"].item()))
             references = [
                 IndexedReference(
-                    wine=Wine(**item["wine"]),
-                    relative_path=item["relative_path"],
+                    wine=Wine.from_json(item["wine"]),
+                    image_sha256=item["image_sha256"],
                     mapping_kind=item["mapping_kind"],
                     mapping_score=item["mapping_score"],
                 )
@@ -133,7 +136,7 @@ class SiftIndex:
         score = evidence / (evidence + 60.0)
         return Candidate(
             wine=self.references[owner].wine,
-            relative_path=self.references[owner].relative_path,
+            image_sha256=self.references[owner].image_sha256,
             score=round(score, 4),
             good_matches=len(good),
             inliers=inliers,
@@ -160,8 +163,8 @@ def save_index(
 
     references_json = json.dumps([
         {
-            "wine": reference.wine.__dict__,
-            "relative_path": reference.relative_path,
+            "wine": reference.wine.to_json(),
+            "image_sha256": reference.image_sha256,
             "mapping_kind": reference.mapping_kind,
             "mapping_score": reference.mapping_score,
         }

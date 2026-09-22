@@ -1,5 +1,7 @@
 import type { CatalogSearchFilters, WineCard } from '#shared/contracts'
-import { Pool } from 'pg'
+
+import { getCatalogPool } from './catalog-db'
+import { wineImageUrls } from './wine-images'
 
 interface CatalogRow {
   slug: string
@@ -7,22 +9,13 @@ interface CatalogRow {
   category: string | null
   color: string | null
   region: string | null
-  grape_varieties: string | null
+  grape_varieties: string[]
   description: string | null
   winery: string | null
-  image_filename: string | null
+  has_image: boolean
 }
 
-let catalogPool: Pool | undefined
-
-function getCatalogPool(databaseUrl: string): Pool {
-  catalogPool ??= new Pool({
-    connectionString: databaseUrl || undefined,
-    max: 5,
-    idleTimeoutMillis: 30_000,
-  })
-  return catalogPool
-}
+const GRAPES_TEXT = `array_to_string(w.grape_varieties, ', ')`
 
 function addContainsCondition(
   conditions: string[],
@@ -36,7 +29,7 @@ function addContainsCondition(
   conditions.push(`${column} ILIKE $${values.length}`)
 }
 
-function toWineCard(row: CatalogRow): WineCard {
+export function toWineCard(row: CatalogRow): WineCard {
   const year = row.name?.match(/(?<!\d)(19\d{2}|20\d{2})(?!\d)/)?.[1]
 
   return {
@@ -47,10 +40,10 @@ function toWineCard(row: CatalogRow): WineCard {
     category: row.category?.trim() || null,
     color: row.color?.trim() || null,
     region: row.region?.trim() || null,
-    grapeVarieties: row.grape_varieties?.split(',').map(item => item.trim()).filter(Boolean) || [],
+    grapeVarieties: row.grape_varieties.map(item => item.trim()).filter(Boolean),
     description: row.description?.trim() || null,
     servingTemperature: null,
-    imageUrl: row.image_filename ? `/api/wines/${encodeURIComponent(row.slug)}/image` : null,
+    ...wineImageUrls(row.slug, row.has_image),
   }
 }
 
@@ -73,34 +66,34 @@ async function querySommelierCatalog(
   filters: CatalogSearchFilters,
   databaseUrl: string,
 ): Promise<CatalogRow[]> {
-  const conditions: string[] = []
   const values: unknown[] = []
-
-  addContainsCondition(conditions, values, 'color', filters.color)
-  addContainsCondition(conditions, values, 'region', filters.region)
-  addContainsCondition(conditions, values, 'grape_varieties', filters.grapeVariety)
-  addContainsCondition(conditions, values, 'category', filters.category)
+  const conditions: string[] = ['w.is_active']
+  addContainsCondition(conditions, values, 'w.color', filters.color)
+  addContainsCondition(conditions, values, 'w.region', filters.region)
+  addContainsCondition(conditions, values, GRAPES_TEXT, filters.grapeVariety)
+  addContainsCondition(conditions, values, 'w.category', filters.category)
 
   if (filters.occasionKeywords?.length) {
     const keywordConditions = filters.occasionKeywords.map((keyword) => {
       values.push(keyword)
-      return `to_tsvector('russian', concat_ws(' ', name, category, color, region, grape_varieties, description, winery)) @@ plainto_tsquery('russian', $${values.length})`
+      return `to_tsvector('russian', concat_ws(' ', w.name, w.category, w.color, w.region, ${GRAPES_TEXT}, w.description, w.winery)) @@ plainto_tsquery('russian', $${values.length})`
     })
     conditions.push(`(${keywordConditions.join(' OR ')})`)
   }
 
   values.push(filters.limit)
-  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
   const result = await getCatalogPool(databaseUrl).query<CatalogRow>(
     `
-      SELECT slug, name, category, color, region, grape_varieties, description, winery, image_filename
-      FROM wine_catalog
-      ${whereClause}
+      SELECT w.slug, w.name, w.category, w.color, w.region, w.grape_varieties, w.description, w.winery,
+        wi.slug IS NOT NULL AS has_image
+      FROM wines w
+      LEFT JOIN wine_images wi ON wi.slug = w.slug AND wi.is_primary
+      WHERE ${conditions.join(' AND ')}
       ORDER BY
-        CASE WHEN description IS NULL OR btrim(description) = '' THEN 1 ELSE 0 END,
-        winery,
-        name,
-        slug
+        CASE WHEN w.description IS NULL OR btrim(w.description) = '' THEN 1 ELSE 0 END,
+        w.winery,
+        w.name,
+        w.slug
       LIMIT $${values.length}
     `,
     values,

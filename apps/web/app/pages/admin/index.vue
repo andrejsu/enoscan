@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CatalogAdminResponse, CatalogAdminWine, CatalogImageStatus } from '#shared/contracts'
-import { Database, FileStack, Images, Search, SearchX, TriangleAlert, Wine } from '@lucide/vue'
+import { Database, ImageOff, Images, Search, SearchX, TriangleAlert, Wine } from '@lucide/vue'
 
 const draftSearch = ref('')
 const appliedSearch = ref('')
@@ -24,11 +24,17 @@ const stats = computed(() => {
   }
 
   return [
-    { label: 'Строк CSV', value: summary.rawRecords, icon: FileStack },
     { label: 'Уникальных вин', value: summary.uniqueWines, icon: Wine },
-    { label: 'Медиафайлов', value: summary.mediaFiles, icon: Images },
+    { label: 'С фото', value: summary.winesWithImage, icon: Images },
+    { label: 'Требуют проверки', value: summary.suspiciousMappings, icon: TriangleAlert },
     { label: 'В поисковом индексе', value: summary.indexedWines, icon: Database },
+    { label: 'Файлов без вина', value: summary.orphanImages, icon: ImageOff },
   ]
+})
+
+const importedAt = computed(() => {
+  const value = data.value?.summary.importedAt
+  return value ? new Date(value).toLocaleString('ru-RU') : null
 })
 
 function handleSearch() {
@@ -95,8 +101,10 @@ function handleLightboxClosed() {
           <span>Изображение</span>
           <select v-model="imageStatus" @change="handleImageStatusChange">
             <option value="all">Все карточки</option>
-            <option value="indexed">Есть в индексе</option>
-            <option value="missing">Нет в индексе</option>
+            <option value="with_image">С фото</option>
+            <option value="without_image">Без фото</option>
+            <option value="suspicious">Требуют проверки</option>
+            <option value="not_indexed">Вне индекса поиска</option>
           </select>
         </label>
 
@@ -110,8 +118,15 @@ function handleLightboxClosed() {
         <span v-if="data.summary.duplicateSlugs">
           slug с дублями: <strong>{{ data.summary.duplicateSlugs.toLocaleString('ru-RU') }}</strong>
         </span>
-        <span v-if="data.summary.missingFromIndex">
-          вне индекса: <strong>{{ data.summary.missingFromIndex.toLocaleString('ru-RU') }}</strong>
+        <span>
+          строк CSV: <strong>{{ data.summary.rawRecords.toLocaleString('ru-RU') }}</strong>
+        </span>
+        <span v-if="data.summary.inactiveWines">
+          снято с каталога: <strong>{{ data.summary.inactiveWines.toLocaleString('ru-RU') }}</strong>
+        </span>
+        <span>
+          версия данных: <code :title="data.summary.datasetVersion">{{ data.summary.datasetVersion.slice(0, 12) }}</code>
+          <template v-if="importedAt"> от {{ importedAt }}</template>
         </span>
       </div>
     </section>

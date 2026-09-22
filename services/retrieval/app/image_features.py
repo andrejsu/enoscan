@@ -20,10 +20,10 @@ def decode_image(content: bytes) -> np.ndarray:
     return image
 
 
-def read_image(path: str) -> np.ndarray:
-    image = cv2.imread(path, cv2.IMREAD_COLOR)
+def decode_reference(content: bytes, name: str) -> np.ndarray:
+    image = cv2.imdecode(np.frombuffer(content, dtype=np.uint8), cv2.IMREAD_COLOR)
     if image is None:
-        raise ValueError(f"Cannot decode reference image: {path}")
+        raise ValueError(f"Cannot decode reference image: {name}")
     return image
 
 

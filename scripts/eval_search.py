@@ -81,8 +81,6 @@ def read_manifest(path: Path) -> list[dict]:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--index", required=True)
-    parser.add_argument("--dataset", required=True)
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--manifest", type=Path)
     source.add_argument("--synthetic", type=int, metavar="REFERENCE_COUNT")
@@ -101,15 +99,21 @@ def main():
     source_hash = hashlib.sha256()
     for path in sorted((ROOT / "services/retrieval/app").glob("*.py")):
         source_hash.update(path.name.encode() + path.read_bytes())
-    index = SiftIndex.load(args.index)
+    from app.catalog import current_dataset_version, load_references, load_wines
+    from app.config import load_settings
+    from app.index import SIFT_INDEX_KIND
+    from app.index_store import current_index_path
+    from app.storage import IMAGES_BUCKET, ObjectStore
+
+    database_url = load_settings().database_url
+    store = ObjectStore()
+    index_path = current_index_path(database_url, SIFT_INDEX_KIND, store)
+    index = SiftIndex.load(str(index_path))
+    dataset_version = current_dataset_version(database_url)
     options = dict(ocr_timeout=args.ocr_timeout, ocr_psm=args.psm, ocr_preprocess=not args.raw,
                    ocr_retry=args.retry, visual_limit=args.visual_limit)
-    if args.full_catalog:
-        from app.catalog import load_catalog
-        from app.config import load_settings
-        service = SearchService(index, catalog=load_catalog(load_settings().database_url)[0], **options)
-    else:
-        service = SearchService(index, **options)
+    catalog = load_wines(database_url) if args.full_catalog else None
+    service = SearchService(index, catalog=catalog, dataset_version=dataset_version, **options)
     if args.manifest:
         entries = read_manifest(args.manifest)
         if args.split:
@@ -117,8 +121,9 @@ def main():
     else:
         if args.synthetic < 1:
             parser.error("--synthetic must be positive")
+        object_keys = {reference.image_sha256: reference.object_key for reference in load_references(database_url)}
         refs = random.Random(args.seed).sample(index.references, min(args.synthetic, len(index.references)))
-        entries = [{"path": str(Path(args.dataset) / "uploads" / ref.relative_path),
+        entries = [{"object_key": object_keys[ref.image_sha256],
                     "expected_slug": ref.wine.slug, "group": ref.wine.slug,
                     "split": "synthetic", "augmentation": aug} for ref in refs for aug in PROFILES[args.profile]]
     if not entries:
@@ -128,7 +133,9 @@ def main():
         started = time.perf_counter()
         row = dict(entry)
         try:
-            image = decode_image(Path(entry["path"]).read_bytes())
+            content = (store.get_bytes(IMAGES_BUCKET, entry["object_key"]) if "object_key" in entry
+                       else Path(entry["path"]).read_bytes())
+            image = decode_image(content)
             if "augmentation" in entry:
                 image = PROFILES[args.profile][entry["augmentation"]](image)
             prediction = service.search(image)
@@ -143,7 +150,8 @@ def main():
         rows.append(row)
         print(f"{len(rows)}/{len(entries)}", flush=True)
     report = {"label": args.label, "kind": "synthetic-near-duplicate" if args.synthetic else "manifest",
-              "source_sha256": source_hash.hexdigest(), "index_sha256": hashlib.sha256(Path(args.index).read_bytes()).hexdigest(),
+              "source_sha256": source_hash.hexdigest(), "index_sha256": hashlib.sha256(index_path.read_bytes()).hexdigest(),
+              "dataset_version": dataset_version,
               "tesseract": str(pytesseract.get_tesseract_version()), "languages": pytesseract.get_languages(),
               "platform": platform.platform(), "processor": platform.processor(), "seed": args.seed,
               "cpu_count": os.cpu_count(), "max_rss_kib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,

@@ -9,8 +9,8 @@ defineProps<{ wine: WineCard }>()
   <article class="sommelier-wine">
     <div class="sommelier-wine__media">
       <img
-        v-if="wine.imageUrl"
-        :src="wine.imageUrl"
+        v-if="wine.imagePreviewUrl || wine.imageUrl"
+        :src="wine.imagePreviewUrl || wine.imageUrl || undefined"
         :alt="`Бутылка ${wine.name}`"
         width="94"
         height="94"

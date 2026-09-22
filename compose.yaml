@@ -1,15 +1,12 @@
-services:
-  dataset-init:
-    build:
-      context: .
-      dockerfile: Dockerfile.dataset
-    volumes:
-      - ./data/dataset:/input:ro
-      - dataset:/dataset
-    restart: "no"
+x-storage-environment: &storage-environment
+  S3_ENDPOINT: http://minio:9000
+  S3_ACCESS_KEY: ${VINLOG_S3_ACCESS_KEY:-vinolog}
+  S3_SECRET_KEY: ${VINLOG_S3_SECRET_KEY:-vinolog-secret}
+  S3_REGION: us-east-1
 
+services:
   db:
-    image: postgres:16-bookworm
+    image: pgvector/pgvector:0.8.0-pg16
     environment:
       POSTGRES_USER: vinolog
       POSTGRES_DB: vinolog
@@ -24,51 +21,62 @@ services:
       timeout: 3s
       retries: 20
 
-  db-import:
-    image: postgres:16-bookworm
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-03-12T18-04-18Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${VINLOG_S3_ACCESS_KEY:-vinolog}
+      MINIO_ROOT_PASSWORD: ${VINLOG_S3_SECRET_KEY:-vinolog-secret}
+    ports:
+      - "127.0.0.1:${VINLOG_S3_PORT:-9000}:9000"
+      - "127.0.0.1:${VINLOG_S3_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  importer:
+    build:
+      context: ./services/importer
     depends_on:
-      dataset-init:
-        condition: service_completed_successfully
       db:
         condition: service_healthy
+      minio:
+        condition: service_healthy
     environment:
+      <<: *storage-environment
       PGHOST: db
       PGPORT: "5432"
       PGUSER: vinolog
       PGDATABASE: vinolog
       PGPASSWORD: ${VINLOG_DB_PASSWORD:-vinolog}
     volumes:
-      - ./db:/import:ro
       - ./data/dataset:/input:ro
-      - dataset:/dataset:ro
-    entrypoint: ["sh", "/import/import-dataset.sh"]
+      - ./db:/db:ro
     restart: "no"
 
   retrieval-index:
     build:
       context: ./services/retrieval
     depends_on:
-      dataset-init:
-        condition: service_completed_successfully
-      db-import:
+      importer:
         condition: service_completed_successfully
     command: ["python", "-m", "app.build_index"]
     environment: &retrieval-environment
+      <<: *storage-environment
       PGHOST: db
       PGPORT: "5432"
       PGUSER: vinolog
       PGDATABASE: vinolog
       PGPASSWORD: ${VINLOG_DB_PASSWORD:-vinolog}
-      DATASET_ROOT: /dataset/current
-      INDEX_PATH: /indexes/sift-v2.npz
       OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-2}
       OCR_PSM: ${OCR_PSM:-6}
       OCR_PREPROCESS: ${OCR_PREPROCESS:-true}
       OCR_RETRY: ${OCR_RETRY:-false}
       VISUAL_SHORTLIST_LIMIT: ${VISUAL_SHORTLIST_LIMIT:-50}
-    volumes:
-      - dataset:/dataset:ro
-      - retrieval-index:/indexes
     restart: "no"
 
   retrieval:
@@ -77,14 +85,13 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      minio:
+        condition: service_healthy
       retrieval-index:
         condition: service_completed_successfully
     environment: *retrieval-environment
     ports:
       - "8080:8000"
-    volumes:
-      - dataset:/dataset:ro
-      - retrieval-index:/indexes:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
       interval: 5s
@@ -94,10 +101,10 @@ services:
 
   # --- Standalone wine-label retriever ------------------------------------
   # A separate service from retrieval/retrieval-index above: own image
-  # (Dockerfile.retriever), own index format and file (retriever_index.py,
-  # retriever-index volume), own models volume. Nothing here is read by the
-  # retrieval/retrieval-index services, and changing retriever tuning can
-  # never affect them. See services/retrieval/app/retriever.py.
+  # (Dockerfile.retriever), own index kind (retriever_index.py, stored in
+  # MinIO), DINOv2 embeddings in pgvector, own models volume. Changing
+  # retriever tuning never affects the retrieval/retrieval-index services.
+  # See services/retrieval/app/retriever.py.
   retriever-model:
     build:
       context: .
@@ -115,29 +122,24 @@ services:
       context: .
       dockerfile: services/retrieval/Dockerfile.retriever
     depends_on:
-      dataset-init:
-        condition: service_completed_successfully
-      db-import:
+      importer:
         condition: service_completed_successfully
       retriever-model:
         condition: service_completed_successfully
     command: ["python", "-m", "app.build_retriever_index"]
     environment: &retriever-environment
+      <<: *storage-environment
       PGHOST: db
       PGPORT: "5432"
       PGUSER: vinolog
       PGDATABASE: vinolog
       PGPASSWORD: ${VINLOG_DB_PASSWORD:-vinolog}
-      DATASET_ROOT: /dataset/current
-      RETRIEVER_INDEX_PATH: /indexes/retriever-v1.npz
       MODEL_PATH: /models/dinov2-small.onnx
       SAM_MODEL_DIR: /models/sam_vit_b_quant
       VISUAL_SHORTLIST_LIMIT: ${RETRIEVER_VISUAL_SHORTLIST_LIMIT:-24}
       EMBEDDING_SHORTLIST_LIMIT: ${RETRIEVER_EMBEDDING_SHORTLIST_LIMIT:-20}
       QUERY_SAM: ${RETRIEVER_QUERY_SAM:-false}
     volumes:
-      - dataset:/dataset:ro
-      - retriever-index-data:/indexes
       - retriever-models:/models:ro
     restart: "no"
 
@@ -148,14 +150,14 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      minio:
+        condition: service_healthy
       retriever-index:
         condition: service_completed_successfully
     environment: *retriever-environment
     ports:
       - "8081:8000"
     volumes:
-      - dataset:/dataset:ro
-      - retriever-index-data:/indexes:ro
       - retriever-models:/models:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
@@ -167,10 +169,10 @@ services:
   web:
     build: .
     depends_on:
-      dataset-init:
+      importer:
         condition: service_completed_successfully
-      db-import:
-        condition: service_completed_successfully
+      minio:
+        condition: service_healthy
       retrieval:
         condition: service_healthy
     ports:
@@ -186,6 +188,9 @@ services:
       NUXT_SOMMELIER_MODEL: ${NUXT_SOMMELIER_MODEL:-}
       NUXT_SOMMELIER_MAX_REQUESTS: ${NUXT_SOMMELIER_MAX_REQUESTS:-20}
       NUXT_SOMMELIER_API_KEY: ${NUXT_SOMMELIER_API_KEY:-}
+      NUXT_STORAGE_ENDPOINT: http://minio:9000
+      NUXT_STORAGE_ACCESS_KEY: ${VINLOG_S3_ACCESS_KEY:-vinolog}
+      NUXT_STORAGE_SECRET_KEY: ${VINLOG_S3_SECRET_KEY:-vinolog-secret}
       PGHOST: db
       PGPORT: "5432"
       PGUSER: vinolog
@@ -198,17 +203,14 @@ services:
       - node-modules:/workspace/Vinolog/node_modules
       - nuxt-cache:/workspace/Vinolog/apps/web/.nuxt
       - codex-home:/home/node/.codex
-      - dataset:/workspace/Vinolog/data/installed:ro
     init: true
     tty: true
     stdin_open: true
 
 volumes:
   postgres-data:
+  minio-data:
   node-modules:
   nuxt-cache:
   codex-home:
-  dataset:
-  retrieval-index:
-  retriever-index-data:
   retriever-models:

@@ -1,10 +1,10 @@
-"""SIFT + DINOv2 index for the standalone wine-label retriever.
+"""SIFT index for the standalone wine-label retriever (DINOv2 embeddings live in pgvector, see embedding_store.py).
 
 Deliberately a separate class from index.py's SiftIndex, which belongs to
 the existing OCR-driven service (app/service.py, app/main.py). That service
 must not be affected by anything tuned here — this index carries its own
 FLANN parameters and per-query feature budget, chosen for the retriever's own
-~3s / low-memory targets, on its own .npz file (see build_retriever_index.py).
+~3s / low-memory targets, on its own .npz object (see build_retriever_index.py).
 """
 
 from __future__ import annotations
@@ -25,12 +25,13 @@ from .image_features import ImageFeatures, extract_features
 # search, independent of visual_limit and however large the embedding
 # extra_slugs union is. Reranking is the single biggest non-SAM latency cost.
 RERANK_CAP = 40
+RETRIEVER_INDEX_KIND = "retriever-v2"
 
 
 @dataclass(frozen=True)
 class IndexedReference:
     wine: Wine
-    relative_path: str
+    image_sha256: str
     mapping_kind: str
     mapping_score: float
 
@@ -38,7 +39,7 @@ class IndexedReference:
 @dataclass(frozen=True)
 class Candidate:
     wine: Wine
-    relative_path: str
+    image_sha256: str
     score: float
     good_matches: int
     inliers: int
@@ -60,7 +61,6 @@ class RetrieverIndex:
         descriptors: np.ndarray,
         owners: np.ndarray,
         offsets: np.ndarray,
-        embeddings: np.ndarray | None = None,
     ) -> None:
         self.references = references
         self.keypoints = keypoints
@@ -74,12 +74,6 @@ class RetrieverIndex:
         self.matcher = cv2.FlannBasedMatcher({"algorithm": 1, "trees": 2}, {"checks": 32})
         self.matcher.add([self.descriptors])
         self.matcher.train()
-        self.embeddings: np.ndarray | None = None
-        if embeddings is not None and len(embeddings):
-            if len(embeddings) != len(references):
-                raise ValueError("embeddings must have one row per reference")
-            norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
-            self.embeddings = (embeddings / np.maximum(norms, 1e-8)).astype(np.float32)
 
     @classmethod
     def load(cls, path: str) -> "RetrieverIndex":
@@ -87,8 +81,8 @@ class RetrieverIndex:
             raw_references = json.loads(str(data["references_json"].item()))
             references = [
                 IndexedReference(
-                    wine=Wine(**item["wine"]),
-                    relative_path=item["relative_path"],
+                    wine=Wine.from_json(item["wine"]),
+                    image_sha256=item["image_sha256"],
                     mapping_kind=item["mapping_kind"],
                     mapping_score=item["mapping_score"],
                 )
@@ -100,16 +94,7 @@ class RetrieverIndex:
                 descriptors=data["descriptors"].astype(np.float32),
                 owners=data["owners"].astype(np.int32),
                 offsets=data["offsets"].astype(np.int64),
-                embeddings=data["embeddings"].astype(np.float32) if "embeddings" in data else None,
             )
-
-    def embedding_scores(self, query: np.ndarray) -> dict[str, float]:
-        """Cosine similarity of a normalized DINOv2 query vector to every
-        reference, keyed by slug. Empty if this index has no embeddings."""
-        if self.embeddings is None:
-            return {}
-        similarities = self.embeddings @ query
-        return {self.references[i].wine.slug: float(similarities[i]) for i in range(len(self.references))}
 
     def search(self, image: np.ndarray, *, limit: int = 5, extra_slugs: tuple[str, ...] = (),
                visual_limit: int = 24) -> SearchResult:
@@ -167,7 +152,7 @@ class RetrieverIndex:
         score = evidence / (evidence + 60.0)
         return Candidate(
             wine=self.references[owner].wine,
-            relative_path=self.references[owner].relative_path,
+            image_sha256=self.references[owner].image_sha256,
             score=round(score, 4),
             good_matches=len(good),
             inliers=inliers,
@@ -178,7 +163,6 @@ def save_index(
     path: str,
     references: list[IndexedReference],
     features: list[ImageFeatures],
-    embeddings: np.ndarray | None = None,
 ) -> None:
     output = Path(path)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -195,17 +179,14 @@ def save_index(
 
     references_json = json.dumps([
         {
-            "wine": reference.wine.__dict__,
-            "relative_path": reference.relative_path,
+            "wine": reference.wine.to_json(),
+            "image_sha256": reference.image_sha256,
             "mapping_kind": reference.mapping_kind,
             "mapping_score": reference.mapping_score,
         }
         for reference in references
     ], ensure_ascii=False)
-    if embeddings is not None and len(embeddings) != len(references):
-        raise ValueError("embeddings must have one row per reference")
     temporary_path = output.with_suffix(f"{output.suffix}.tmp.npz")
-    extra = {"embeddings": embeddings.astype(np.float32)} if embeddings is not None else {}
     np.savez_compressed(
         temporary_path,
         references_json=np.array(references_json),
@@ -213,6 +194,5 @@ def save_index(
         keypoints=np.concatenate(keypoint_parts),
         owners=np.concatenate(owner_parts),
         offsets=np.array(offsets, dtype=np.int64),
-        **extra,
     )
     temporary_path.replace(output)

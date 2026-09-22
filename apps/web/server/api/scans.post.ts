@@ -15,6 +15,7 @@ const demoWine: WineCard = {
   description: 'Сухое красное вино с насыщенным вкусом и пряными оттенками.',
   servingTemperature: '16–18 °C',
   imageUrl: null,
+  imagePreviewUrl: null,
 }
 
 const demoAlternative: WineCard = {
@@ -29,6 +30,7 @@ const demoAlternative: WineCard = {
   description: null,
   servingTemperature: '16–18 °C',
   imageUrl: null,
+  imagePreviewUrl: null,
 }
 
 export default defineEventHandler(async (event): Promise<ScanResponse> => {

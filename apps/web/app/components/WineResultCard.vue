@@ -37,9 +37,9 @@ const zodiacMatch = computed(() => matchScanWineToZodiac(props.result))
     <article v-if="displayedWine" class="wine-card">
       <figure class="wine-card__visual">
         <img
-          v-if="displayedWine.imageUrl"
+          v-if="displayedWine.imagePreviewUrl || displayedWine.imageUrl"
           class="wine-card__image"
-          :src="displayedWine.imageUrl"
+          :src="displayedWine.imagePreviewUrl || displayedWine.imageUrl || undefined"
           :alt="`Эталонная бутылка ${displayedWine.name}`"
           decoding="async"
         >

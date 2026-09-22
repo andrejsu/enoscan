@@ -21,6 +21,9 @@
   --color-demo-surface: #fff8e5;
   --color-demo-ink: #6b4c13;
   --color-demo-line: #d3b36e;
+  --color-attention-surface: #fff8e5;
+  --color-attention-ink: #6b4c13;
+  --color-attention-line: rgb(170 133 80 / 45%);
   --color-overlay: rgb(14 16 13 / 94%);
   --color-overlay-control: rgb(255 255 255 / 14%);
   --color-on-overlay: #fffefa;
@@ -1197,7 +1200,7 @@ h2 {
 
 .admin-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   margin-bottom: 16px;
 }
@@ -1430,6 +1433,19 @@ h2 {
   border-color: rgb(158 11 15 / 24%);
   color: var(--color-wine);
   background: var(--color-soft-wine);
+}
+
+.catalog-status--warning {
+  border-color: var(--color-attention-line);
+  color: var(--color-attention-ink);
+  background: var(--color-attention-surface);
+}
+
+.admin-wine-card__statuses {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .admin-wine-card__summary {
@@ -2071,7 +2087,7 @@ h2 {
   }
 
   .admin-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .admin-filters {

@@ -15,6 +15,7 @@ const mockWines = {
     description: 'Сухое красное вино с насыщенным вкусом и пряными оттенками.',
     servingTemperature: '16–18 °C',
     imageUrl: null,
+    imagePreviewUrl: null,
   },
   white: {
     slug: 'demo-riesling-white',
@@ -28,6 +29,7 @@ const mockWines = {
     description: 'Свежее сухое вино с цитрусовыми оттенками и заметной кислотностью.',
     servingTemperature: '8–10 °C',
     imageUrl: null,
+    imagePreviewUrl: null,
   },
   sparkling: {
     slug: 'demo-brut-sparkling',
@@ -41,6 +43,7 @@ const mockWines = {
     description: 'Сухое игристое вино с лёгкими фруктовыми и хлебными оттенками.',
     servingTemperature: '6–8 °C',
     imageUrl: null,
+    imagePreviewUrl: null,
   },
 } as const satisfies Record<string, WineCard>
 
