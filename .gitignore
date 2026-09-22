@@ -17,3 +17,14 @@ apps/web/server/**/*.js
 data/
 models/
 indexes/
+
+# Python bytecode.
+__pycache__/
+*.pyc
+
+# Raw experiment outputs stay local; commit only curated summaries.
+reports/*.json
+!reports/photo-search-final.json
+!reports/photo-search-pilot-labeled.json
+!reports/photo-search-http.json
+!reports/mapping_audit_*.json
