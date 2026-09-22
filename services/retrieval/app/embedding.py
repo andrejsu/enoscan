@@ -15,10 +15,14 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 
+from .download_model import MODEL_SHA256
+
 
 MEAN = np.array([0.485, 0.456, 0.406], dtype=np.float32)
 STD = np.array([0.229, 0.224, 0.225], dtype=np.float32)
 EMBEDDING_DIM = 384
+REFERENCE_VISUAL_SIZE = 512
+EMBEDDING_MODEL = f"dinov2-small@{MODEL_SHA256[:12]}/label-prep-{REFERENCE_VISUAL_SIZE}"
 
 
 def read_embedding_image(path: str) -> np.ndarray | None:

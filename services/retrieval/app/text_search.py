@@ -3,8 +3,9 @@ from __future__ import annotations
 from collections import Counter
 from math import log
 
-from .catalog import Wine, _token_similarity
+from .catalog import Wine
 from .ocr import _tokens
+from .text_normalize import token_similarity as _token_similarity
 
 
 class TextSearch:
@@ -13,7 +14,7 @@ class TextSearch:
     def __init__(self, wines: list[Wine]):
         self.wines = {w.slug: w for w in wines}
         self.documents = {
-            w.slug: {t for t in _tokens(f"{w.name} {w.winery} {w.grape_varieties or ''} {w.category or ''}") if not t.isdigit()}
+            w.slug: {t for t in _tokens(f"{w.name} {w.winery} {' '.join(w.grape_varieties)} {w.category or ''}") if not t.isdigit()}
             for w in self.wines.values()
         }
         counts = Counter(t for tokens in self.documents.values() for t in tokens)

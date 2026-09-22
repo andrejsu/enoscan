@@ -29,13 +29,19 @@ for _root in (_HERE.parent / "services" / "retrieval", _HERE.parent):
         sys.path.insert(0, str(_root))
         break
 
-from app.index import SiftIndex  # noqa: I001
+from app.catalog import load_references  # noqa: I001
+from app.config import load_settings
+from app.index import SIFT_INDEX_KIND, SiftIndex
+from app.index_store import current_index_path
+from app.storage import IMAGES_BUCKET, ObjectStore
 from eval_augmentations import PROFILES
 
 
-def run_eval(index_path: str, dataset_root: str, samples: int, seed: int = 42, profile: str = "easy") -> None:
-    index = SiftIndex.load(index_path)
-    uploads = Path(dataset_root) / "uploads"
+def run_eval(samples: int, seed: int = 42, profile: str = "easy") -> None:
+    database_url = load_settings().database_url
+    store = ObjectStore()
+    index = SiftIndex.load(str(current_index_path(database_url, SIFT_INDEX_KIND, store)))
+    object_keys = {reference.image_sha256: reference.object_key for reference in load_references(database_url)}
     references = index.references
 
     rng = random.Random(seed)
@@ -53,8 +59,8 @@ def run_eval(index_path: str, dataset_root: str, samples: int, seed: int = 42, p
     slowest: list[tuple[float, str, str]] = []
 
     for ref in selected:
-        path = uploads / ref.relative_path
-        img = cv2.imread(str(path), cv2.IMREAD_COLOR)
+        content = np.frombuffer(store.get_bytes(IMAGES_BUCKET, object_keys[ref.image_sha256]), dtype=np.uint8)
+        img = cv2.imdecode(content, cv2.IMREAD_COLOR)
         if img is None:
             total -= n_augs
             continue
@@ -97,14 +103,12 @@ def run_eval(index_path: str, dataset_root: str, samples: int, seed: int = 42, p
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Measure Recall@K for the retrieval index")
-    parser.add_argument("--index", required=True, help="Path to .npz index file")
-    parser.add_argument("--dataset", required=True, help="Path to dataset root (contains uploads/)")
     parser.add_argument("--samples", type=int, default=200, help="Number of references to sample")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--profile", choices=sorted(PROFILES), default="easy",
                         help="easy: mild noise (recorded baseline); hard: shop-photo conditions")
     args = parser.parse_args()
-    run_eval(args.index, args.dataset, args.samples, args.seed, args.profile)
+    run_eval(args.samples, args.seed, args.profile)
 
 
 if __name__ == "__main__":

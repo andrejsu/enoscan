@@ -21,6 +21,7 @@ const catalogWine: WineCard = {
   description: null,
   servingTemperature: null,
   imageUrl: null,
+  imagePreviewUrl: null,
 }
 
 describe('sommelier guardrails', () => {

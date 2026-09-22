@@ -1,6 +1,19 @@
 <script setup lang="ts">
-import type { CatalogAdminWine } from '#shared/contracts'
+import type { CatalogAdminWine, CatalogMappingKind, CatalogReviewStatus } from '#shared/contracts'
 import { ChevronDown, ImageOff, Maximize2 } from '@lucide/vue'
+
+const mappingKindLabels: Record<CatalogMappingKind, string> = {
+  image_filename: 'По имени фото из CSV',
+  slug: 'По slug',
+  fuzzy_filename: 'По похожему имени файла',
+  manual: 'Вручную (overrides)',
+}
+
+const reviewStatusLabels: Record<CatalogReviewStatus, string> = {
+  auto: 'Автоматически',
+  suspicious: 'Требует проверки',
+  confirmed: 'Подтверждено',
+}
 
 const props = defineProps<{
   wine: CatalogAdminWine
@@ -9,6 +22,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   imageRequested: [wine: CatalogAdminWine]
 }>()
+
+const imageStatus = computed(() => {
+  if (!props.wine.imageUrl) return { label: 'Без фото', modifier: 'missing' }
+  if (props.wine.reviewStatus === 'suspicious') return { label: 'Проверить привязку', modifier: 'warning' }
+  return { label: 'Фото привязано', modifier: 'ready' }
+})
 
 function handleImageRequest() {
   emit('imageRequested', props.wine)
@@ -26,7 +45,7 @@ function handleImageRequest() {
         @click="handleImageRequest"
       >
         <img
-          :src="wine.imageUrl"
+          :src="wine.imagePreviewUrl || wine.imageUrl"
           :alt="`Эталонное фото ${wine.name}`"
           loading="lazy"
           decoding="async"
@@ -38,7 +57,7 @@ function handleImageRequest() {
       </button>
       <div v-else class="admin-wine-card__missing">
         <ImageOff :size="28" aria-hidden="true" />
-        <span>Нет в индексе</span>
+        <span>Фото не привязано</span>
       </div>
     </div>
 
@@ -48,12 +67,17 @@ function handleImageRequest() {
           <p class="admin-wine-card__producer">{{ wine.producer }}</p>
           <h2>{{ wine.name }}</h2>
         </div>
-        <span
-          class="catalog-status"
-          :class="wine.isIndexed ? 'catalog-status--ready' : 'catalog-status--missing'"
-        >
-          {{ wine.isIndexed ? 'В индексе' : 'Без изображения' }}
-        </span>
+        <div class="admin-wine-card__statuses">
+          <span class="catalog-status" :class="`catalog-status--${imageStatus.modifier}`">
+            {{ imageStatus.label }}
+          </span>
+          <span
+            class="catalog-status"
+            :class="wine.isIndexed ? 'catalog-status--ready' : 'catalog-status--missing'"
+          >
+            {{ wine.isIndexed ? 'В индексе поиска' : 'Вне индекса поиска' }}
+          </span>
+        </div>
       </div>
 
       <p class="admin-wine-card__summary">
@@ -92,20 +116,24 @@ function handleImageRequest() {
             <dd>{{ wine.rawRecordCount }}</dd>
           </div>
           <div>
-            <dt>Файл из CSV</dt>
-            <dd><code>{{ wine.imageFilename || '—' }}</code></dd>
+            <dt>Имя фото в CSV</dt>
+            <dd><code>{{ wine.sourceImageFilename || '—' }}</code></dd>
           </div>
           <div>
-            <dt>Эталонный файл</dt>
-            <dd><code>{{ wine.referencePath || '—' }}</code></dd>
+            <dt>Файл Strapi</dt>
+            <dd><code>{{ wine.imageStrapiPath || '—' }}</code></dd>
           </div>
           <div>
-            <dt>Способ привязки</dt>
-            <dd>{{ wine.mappingKind || 'Не привязано' }}</dd>
+            <dt>Тип привязки</dt>
+            <dd>{{ wine.mappingKind ? mappingKindLabels[wine.mappingKind] : 'Не привязано' }}</dd>
           </div>
           <div>
             <dt>Оценка привязки</dt>
             <dd>{{ wine.mappingScore ?? '—' }}</dd>
+          </div>
+          <div>
+            <dt>Проверка</dt>
+            <dd>{{ wine.reviewStatus ? reviewStatusLabels[wine.reviewStatus] : '—' }}</dd>
           </div>
         </dl>
 

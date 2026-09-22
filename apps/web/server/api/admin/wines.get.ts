@@ -1,31 +1,26 @@
-import type { CatalogAdminResponse, CatalogImageStatus } from '#shared/contracts'
+import type { CatalogAdminResponse } from '#shared/contracts'
 
 export default defineEventHandler(async (event): Promise<CatalogAdminResponse> => {
-  const query = getQuery(event)
-  const rawPage = typeof query.page === 'string' ? Number.parseInt(query.page, 10) : 1
-  const page = Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1
-  const q = typeof query.q === 'string' ? query.q.trim().slice(0, 120) : ''
-  const requestedStatus = typeof query.imageStatus === 'string' ? query.imageStatus : 'all'
-  const imageStatus: CatalogImageStatus = requestedStatus === 'indexed' || requestedStatus === 'missing'
-    ? requestedStatus
-    : 'all'
+  const query = parseAdminQuery(getQuery(event))
   const config = useRuntimeConfig()
 
+  let response: CatalogAdminResponse | null
   try {
-    return await $fetch<CatalogAdminResponse>(`${config.retrievalBaseUrl}/v1/catalog`, {
-      query: {
-        q,
-        page,
-        per_page: 24,
-        image_status: imageStatus,
-      },
-    })
+    response = await browseCatalog(getCatalogPool(config.databaseUrl), query)
   }
   catch (error) {
     throw createError({
       statusCode: 502,
-      message: 'Не удалось загрузить каталог. Проверьте retrieval-сервис.',
+      message: 'Не удалось загрузить каталог. Проверьте PostgreSQL.',
       cause: error,
     })
   }
+
+  if (!response) {
+    throw createError({
+      statusCode: 503,
+      message: 'Каталог ещё не импортирован. Запустите importer.',
+    })
+  }
+  return response
 })

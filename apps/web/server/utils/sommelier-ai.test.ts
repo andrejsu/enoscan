@@ -15,6 +15,7 @@ const wines: WineCard[] = Array.from({ length: 4 }, (_, index) => ({
   description: null,
   servingTemperature: null,
   imageUrl: null,
+  imagePreviewUrl: null,
 }))
 
 describe('sommelier answer resolution', () => {

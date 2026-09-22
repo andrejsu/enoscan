@@ -13,6 +13,13 @@ export default defineNuxtConfig({
     sommelierModel: process.env.NUXT_SOMMELIER_MODEL || '',
     sommelierMaxRequests: Number.parseInt(process.env.NUXT_SOMMELIER_MAX_REQUESTS || '20', 10),
     sommelierApiKey: process.env.NUXT_SOMMELIER_API_KEY || '',
+    storage: {
+      endpoint: process.env.NUXT_STORAGE_ENDPOINT || 'http://127.0.0.1:9000',
+      region: process.env.NUXT_STORAGE_REGION || 'us-east-1',
+      accessKey: process.env.NUXT_STORAGE_ACCESS_KEY || 'vinolog',
+      secretKey: process.env.NUXT_STORAGE_SECRET_KEY || 'vinolog-secret',
+      imagesBucket: process.env.NUXT_STORAGE_IMAGES_BUCKET || 'vinolog-images',
+    },
     public: {
       scanMode: process.env.NUXT_PUBLIC_SCAN_MODE || 'mock',
       astroEnabled: isFeatureEnabled(process.env.NUXT_PUBLIC_ASTRO_ENABLED),

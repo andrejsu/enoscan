@@ -14,6 +14,7 @@ const wine: WineCard = {
   description: 'Насыщенное и пряное вино с оттенком чёрного перца.',
   servingTemperature: null,
   imageUrl: null,
+  imagePreviewUrl: null,
 }
 
 describe('zodiac wine profiles', () => {

@@ -19,6 +19,7 @@ import time
 import numpy as np
 
 from .embedding import Dinov2Encoder
+from .embedding_store import EmbeddingStore
 from .retriever_index import Candidate, IndexedReference, RetrieverIndex
 from .label_normalize import Config as LabelConfig, Segmenter, prepare_query
 
@@ -49,6 +50,7 @@ class RetrievalResult:
 
 class VisualRetriever:
     def __init__(self, index: RetrieverIndex, *, encoder: Dinov2Encoder | None = None,
+                 embedding_store: EmbeddingStore | None = None, build_id: int | None = None,
                  segmenter: Segmenter | None = None, label_config: LabelConfig | None = None,
                  use_sam: bool = False, visual_limit: int = 24,
                  embedding_limit: int = EMBEDDING_SHORTLIST_LIMIT) -> None:
@@ -58,6 +60,8 @@ class VisualRetriever:
             raise ValueError("embedding_limit must be between 1 and 200")
         self.index = index
         self.encoder = encoder
+        self.embedding_store = embedding_store
+        self.build_id = build_id
         self.segmenter = segmenter
         self.label_config = label_config or LabelConfig()
         self.use_sam = use_sam
@@ -74,10 +78,13 @@ class VisualRetriever:
         embed_started = time.perf_counter()
         embedding_scores: dict[str, float] = {}
         embedding_slugs: list[str] = []
-        if self.encoder is not None and self.index.embeddings is not None:
+        query_vector: np.ndarray | None = None
+        uses_embeddings = self.encoder is not None and self.embedding_store is not None and self.build_id is not None
+        if uses_embeddings:
             query_vector = self.encoder.encode_one(prepared.visual)
-            embedding_scores = self.index.embedding_scores(query_vector)
-            embedding_slugs = sorted(embedding_scores, key=embedding_scores.get, reverse=True)[:self.embedding_limit]
+            nearest = self.embedding_store.nearest(self.build_id, query_vector, self.embedding_limit)
+            embedding_scores = dict(nearest)
+            embedding_slugs = [slug for slug, _ in nearest]
         embedding_ms = round((time.perf_counter() - embed_started) * 1000)
 
         result = self.index.search(prepared.visual, limit=max(limit, self.embedding_limit),
@@ -86,7 +93,13 @@ class VisualRetriever:
         for slug in embedding_slugs:
             reference = self._reference_by_slug.get(slug)
             if reference is not None:
-                by_slug.setdefault(slug, Candidate(reference.wine, reference.relative_path, 0.0, 0, 0))
+                by_slug.setdefault(slug, Candidate(reference.wine, reference.image_sha256, 0.0, 0, 0))
+
+        if uses_embeddings and query_vector is not None:
+            scores_started = time.perf_counter()
+            unscored = [slug for slug in by_slug if slug not in embedding_scores]
+            embedding_scores.update(self.embedding_store.scores(self.build_id, query_vector, unscored))
+            embedding_ms += round((time.perf_counter() - scores_started) * 1000)
 
         candidates = [
             replace(candidate, score=round(min(1.0,

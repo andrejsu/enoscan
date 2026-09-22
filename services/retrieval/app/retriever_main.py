@@ -9,22 +9,23 @@ UI's thumbnails — and imports nothing from app/service.py or app/ocr.py.
 
 from contextlib import asynccontextmanager
 from pathlib import Path
-from urllib.parse import quote
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse
 
 from . import download_model
-from .embedding import Dinov2Encoder
+from .catalog import current_dataset_version
+from .embedding import EMBEDDING_MODEL, Dinov2Encoder
+from .embedding_store import EmbeddingStore
 from .image_features import decode_image
+from .index_store import fetch_index, require_build
 from .label_normalize import Config as LabelConfig, Segmenter
 from .retriever import VisualRetriever
 from .retriever_config import load_retriever_settings
-from .retriever_index import RetrieverIndex
+from .retriever_index import RETRIEVER_INDEX_KIND, RetrieverIndex
+from .storage import ObjectStore
 
 
 ACCEPTED_TYPES = {"application/octet-stream", "image/jpeg", "image/png", "image/webp"}
-IMAGE_MEDIA_TYPES = {".jpeg": "image/jpeg", ".jpg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}
 # "candidates" in the /v1/search response holds all 10: the top pick plus 9
 # ranked alternatives, sorted by score descending — see RETRIEVER.md.
 RESPONSE_LIMIT = 10
@@ -32,25 +33,27 @@ ALTERNATIVES_LIMIT = RESPONSE_LIMIT - 1
 
 settings = load_retriever_settings()
 retriever: VisualRetriever | None = None
+dataset_version = "unversioned"
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    global retriever
-    if not Path(settings.index_path).is_file():
-        raise RuntimeError(f"Retriever index is missing: {settings.index_path}")
-    index = RetrieverIndex.load(settings.index_path)
-    encoder = None
+    global dataset_version, retriever
+    dataset_version = current_dataset_version(settings.database_url)
+    build = require_build(settings.database_url, RETRIEVER_INDEX_KIND, dataset_version)
+    index = RetrieverIndex.load(str(fetch_index(ObjectStore(), build)))
+    download_model.main()
+    encoder = Dinov2Encoder(Path(settings.model_path), threads=4)
+    embedding_store = EmbeddingStore(settings.database_url, EMBEDDING_MODEL)
     segmenter = None
-    if index.embeddings is not None:
-        download_model.main()
-        encoder = Dinov2Encoder(Path(settings.model_path), threads=4)
-        if settings.query_sam:
-            segmenter = Segmenter(LabelConfig(sam_dir=Path(settings.sam_model_dir), grid=4))
-    retriever = VisualRetriever(index, encoder=encoder, segmenter=segmenter, use_sam=settings.query_sam,
+    if settings.query_sam:
+        segmenter = Segmenter(LabelConfig(sam_dir=Path(settings.sam_model_dir), grid=4))
+    retriever = VisualRetriever(index, encoder=encoder, embedding_store=embedding_store, build_id=build.id,
+                                segmenter=segmenter, use_sam=settings.query_sam,
                                 visual_limit=settings.visual_limit, embedding_limit=settings.embedding_limit)
     yield
     retriever = None
+    embedding_store.close()
 
 
 app = FastAPI(title="Vinolog wine label retriever (standalone)", version="0.1.0", lifespan=lifespan)
@@ -61,25 +64,8 @@ def health() -> dict[str, str]:
     return {"status": "ok" if retriever else "loading"}
 
 
-@app.get("/v1/wines/{slug}/image", response_class=FileResponse)
-def wine_image(slug: str) -> FileResponse:
-    if retriever is None:
-        raise HTTPException(status_code=503, detail="Индекс ретривера ещё загружается.")
-    reference = retriever._reference_by_slug.get(slug)
-    if reference is None:
-        raise HTTPException(status_code=404, detail="Изображение вина не найдено.")
-    uploads = (Path(settings.dataset_root) / "uploads").resolve()
-    image_path = (uploads / reference.relative_path).resolve()
-    media_type = IMAGE_MEDIA_TYPES.get(image_path.suffix.casefold())
-    if not image_path.is_relative_to(uploads) or not image_path.is_file() or not media_type:
-        raise HTTPException(status_code=404, detail="Изображение вина не найдено.")
-    return FileResponse(image_path, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
-
-
 def _wine_card_with_image(candidate) -> dict[str, object]:
-    card = candidate.wine.as_card()
-    card["imageUrl"] = f"/v1/wines/{quote(candidate.wine.slug, safe='')}/image" if candidate.relative_path else None
-    return card
+    return candidate.wine.as_card()
 
 
 @app.post("/v1/search")
@@ -105,8 +91,6 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
     margin = max(0.0, top_score - second_score)
     top = candidates[0] if candidates else None
     wine_card = top.wine.as_card() if top else None
-    if wine_card:
-        wine_card["imageUrl"] = f"/v1/wines/{quote(top.wine.slug, safe='')}/image"
     alternatives = [_wine_card_with_image(item) for item in candidates[1:1 + ALTERNATIVES_LIMIT]]
 
     # margin=0.015 (not the original 0.04): at SIFT_WEIGHT=0.45 the 6 real
@@ -138,7 +122,7 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
                       "margin": round(margin, 4)},
         "timing": {"totalMs": sum(result.timing.values()), "stages": result.timing},
         "alternatives": alternatives,
-        "version": {"model": "retriever-sift-dinov2-v1", "catalog": "dataset-v1",
+        "version": {"model": "retriever-sift-dinov2-v2", "catalog": dataset_version,
                     "configuration": f"standalone-retriever-sam{'on' if settings.query_sam else 'off'}"},
         **({"guidance": guidance} if guidance else {}),
         "isMock": False,

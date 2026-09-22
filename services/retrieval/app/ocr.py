@@ -9,7 +9,8 @@ import cv2
 import numpy as np
 import pytesseract
 
-from .catalog import CYRILLIC_TO_LATIN, Wine, _token_similarity
+from .catalog import Wine
+from .text_normalize import CYRILLIC_TO_LATIN, token_similarity as _token_similarity
 
 
 TOKEN_PATTERN = re.compile(r"[a-z0-9]+", re.IGNORECASE)

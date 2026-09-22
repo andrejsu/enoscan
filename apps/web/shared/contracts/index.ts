@@ -16,6 +16,7 @@ export interface WineCard {
   description: string | null
   servingTemperature: string | null
   imageUrl: string | null
+  imagePreviewUrl: string | null
 }
 
 export interface ScanCandidate {
@@ -63,22 +64,34 @@ export interface SavedPairing {
   savedAt: string
 }
 
-export type CatalogImageStatus = 'all' | 'indexed' | 'missing'
+export const catalogImageStatuses = ['all', 'with_image', 'without_image', 'suspicious', 'not_indexed'] as const
+
+export type CatalogImageStatus = (typeof catalogImageStatuses)[number]
+
+export type CatalogMappingKind = 'image_filename' | 'slug' | 'fuzzy_filename' | 'manual'
+
+export type CatalogReviewStatus = 'auto' | 'suspicious' | 'confirmed'
 
 export interface CatalogSummary {
+  datasetVersion: string
+  importedAt: string
   rawRecords: number
   uniqueWines: number
+  inactiveWines: number
   duplicateSlugs: number
-  mediaFiles: number
+  images: number
+  orphanImages: number
+  winesWithImage: number
+  suspiciousMappings: number
   indexedWines: number
-  missingFromIndex: number
 }
 
 export interface CatalogAdminWine extends WineCard {
-  imageFilename: string
-  referencePath: string | null
-  mappingKind: string | null
+  sourceImageFilename: string | null
+  imageStrapiPath: string | null
+  mappingKind: CatalogMappingKind | null
   mappingScore: number | null
+  reviewStatus: CatalogReviewStatus | null
   rawRecordCount: number
   isIndexed: boolean
 }

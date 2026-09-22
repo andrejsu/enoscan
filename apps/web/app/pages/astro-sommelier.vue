@@ -63,7 +63,7 @@ const { errorMessage, isLoading, response, retry, selectedSign, selectSign } = u
       <div v-if="response.wines.length" class="astro-wine-grid">
         <article v-for="wine in response.wines" :key="wine.slug" class="astro-wine-card">
           <div class="astro-wine-card__media">
-            <img v-if="wine.imageUrl" :src="wine.imageUrl" :alt="`Бутылка ${wine.name}`">
+            <img v-if="wine.imagePreviewUrl || wine.imageUrl" :src="wine.imagePreviewUrl || wine.imageUrl || undefined" :alt="`Бутылка ${wine.name}`">
             <Grape v-else :size="36" aria-hidden="true" />
           </div>
           <div class="astro-wine-card__body">

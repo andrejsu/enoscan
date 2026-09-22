@@ -1,7 +1,9 @@
+boto3==1.40.*
 fastapi==0.116.1
 numpy==2.2.6
 onnxruntime==1.20.*
 opencv-python-headless==4.12.0.88
+pgvector==0.4.*
 psycopg[binary]==3.2.10
 pytesseract==0.3.13
 python-multipart==0.0.20

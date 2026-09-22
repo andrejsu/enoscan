@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field, replace
 import time
-from urllib.parse import quote
 
 import numpy as np
 
@@ -23,9 +22,7 @@ class ProductResult:
 
 
 def _wine_card_with_image(candidate: Candidate) -> dict[str, object]:
-    card = candidate.wine.as_card()
-    card["imageUrl"] = f"/api/wines/{quote(candidate.wine.slug, safe='')}/image" if candidate.relative_path else None
-    return card
+    return candidate.wine.as_card()
 
 
 def year_adjustment(wine: Wine, year: int | None) -> float:
@@ -39,8 +36,9 @@ class SearchService:
     def __init__(self, index: SiftIndex, *, catalog: list[Wine] | None = None,
                  ocr_timeout: float = 2.0, ocr_psm: int = 6,
                  ocr_preprocess: bool = True, ocr_retry: bool = False,
-                 visual_limit: int = 24) -> None:
+                 visual_limit: int = 24, dataset_version: str = "unversioned") -> None:
         self.index = index
+        self.dataset_version = dataset_version
         if not 1 <= visual_limit <= 200:
             raise ValueError("visual_limit must be between 1 and 200")
         self.visual_limit = visual_limit
@@ -91,16 +89,13 @@ class SearchService:
                          for c in by_slug.values()],
         })
 
-    @staticmethod
-    def _product_body(result: SearchResult, total_ms: int, ocr_ms: int) -> dict[str, object]:
+    def _product_body(self, result: SearchResult, total_ms: int, ocr_ms: int) -> dict[str, object]:
         candidates = result.candidates
         top_score = candidates[0].score if candidates else 0.0
         second_score = candidates[1].score if len(candidates) > 1 else 0.0
         margin = max(0.0, top_score - second_score)
         top = candidates[0] if candidates else None
         wine_card = top.wine.as_card() if top else None
-        if wine_card:
-            wine_card["imageUrl"] = f"/api/wines/{quote(top.wine.slug, safe='')}/image"
         alternatives = [_wine_card_with_image(item) for item in candidates[1:4]]
 
         if top and top.inliers >= 7 and top.good_matches >= 10 and top_score >= 0.3 and margin >= 0.04:
@@ -136,7 +131,7 @@ class SearchService:
             "alternatives": alternatives,
             "version": {
                 "model": "sift-ransac-text-v2",
-                "catalog": "dataset-v1",
+                "catalog": self.dataset_version,
                 "configuration": "sift-700-flann-ransac-tesseract",
             },
             **({"guidance": guidance} if guidance else {}),

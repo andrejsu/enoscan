@@ -1,50 +1,29 @@
 import unittest
 
-from app.catalog import Media, Wine, media_stem, normalize_key, resolve_references
-from app.catalog_browser import catalog_record
-from app.index import IndexedReference
+from app.catalog import Wine
 from app.index import Candidate
 from app.ocr import extract_year, text_score
 from app.service import year_adjustment
 
 
-def wine(**overrides: str) -> Wine:
-    values = {
+def wine(**overrides: object) -> Wine:
+    values: dict[str, object] = {
         "slug": "pino-nuar-2025",
         "name": "Пино Нуар, 2025",
         "winery": "Табия",
         "category": "Вино",
         "color": "Красное",
         "region": "Крым",
-        "grape_varieties": "Пино Нуар",
+        "grape_varieties": ("Пино Нуар",),
         "description": "Описание",
-        "image_filename": "DSC00836.webp",
     }
     values.update(overrides)
     return Wine(**values)
 
 
 class CatalogTest(unittest.TestCase):
-    def test_media_stem_removes_strapi_hash(self) -> None:
-        self.assertEqual(media_stem("DSC_00836_4070f8fd2f.webp"), "DSC_00836")
-
-    def test_normalize_key_ignores_filename_separators(self) -> None:
-        self.assertEqual(normalize_key("DSC_00836"), normalize_key("dsc00836"))
-
-    def test_resolver_prefers_original_image_filename(self) -> None:
-        media = [
-            Media("thumbnail_DSC_00836_4070f8fd2f.webp", "thumbnail.webp", 10),
-            Media("DSC_00836_4070f8fd2f.webp", "original.webp", 100),
-        ]
-
-        references = resolve_references([wine()], media)
-
-        self.assertEqual(len(references), 1)
-        self.assertEqual(references[0].relative_path, "original.webp")
-        self.assertEqual(references[0].mapping_kind, "image_filename")
-
     def test_wine_card_extracts_year_and_grapes(self) -> None:
-        card = wine(grape_varieties="Пино Нуар, Мерло").as_card()
+        card = wine(grape_varieties=("Пино Нуар", "Мерло")).as_card()
 
         self.assertEqual(card["year"], 2025)
         self.assertEqual(card["category"], "Вино")
@@ -58,28 +37,25 @@ class CatalogTest(unittest.TestCase):
 
         self.assertGreater(text_score(label, pinot), text_score(label, kokur))
 
-    def test_catalog_record_exposes_image_mapping_diagnostics(self) -> None:
-        item = wine()
-        reference = IndexedReference(
-            wine=item,
-            relative_path="pino.webp",
-            mapping_kind="image_filename",
-            mapping_score=1.0,
-        )
+    def test_wine_card_image_urls_follow_mapping(self) -> None:
+        with_image = wine(slug="pino nuar", has_image=True).as_card()
+        without_image = wine().as_card()
 
-        record = catalog_record(item, reference, raw_record_count=2)
+        self.assertEqual(with_image["imageUrl"], "/api/wines/pino%20nuar/image")
+        self.assertEqual(with_image["imagePreviewUrl"], "/api/wines/pino%20nuar/image?size=preview")
+        self.assertIsNone(without_image["imageUrl"])
+        self.assertIsNone(without_image["imagePreviewUrl"])
 
-        self.assertEqual(record["imageUrl"], "/api/wines/pino-nuar-2025/image")
-        self.assertEqual(record["referencePath"], "pino.webp")
-        self.assertEqual(record["rawRecordCount"], 2)
-        self.assertTrue(record["isIndexed"])
+    def test_wine_json_round_trip_keeps_grapes_as_tuple(self) -> None:
+        item = wine(grape_varieties=("Кокур", "Мускат"), has_image=True)
 
+        self.assertEqual(Wine.from_json(item.to_json()), item)
 
 
 def candidate(slug: str, name: str, score: float = 0.5) -> Candidate:
     return Candidate(
         wine=wine(slug=slug, name=name),
-        relative_path=f"{slug}.webp",
+        image_sha256=f"{slug}-sha",
         score=score,
         good_matches=12,
         inliers=8,

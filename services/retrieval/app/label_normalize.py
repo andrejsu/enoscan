@@ -2,7 +2,7 @@
 onto the same canonical "flat label" view before SIFT/embedding comparison.
 
 Two paths, because they see very different input:
-  * ``prepare_reference`` — catalog art. Usually a clean studio photo, often with
+  * ``prepare_reference_image`` — catalog art. Usually a clean studio photo, often with
     a transparent background. No SAM call: an alpha-channel/bottle-crop heuristic
     is enough, and skipping SAM keeps a full-catalog rebuild in the minutes range
     instead of hours (SAM ViT-B costs ~8-12s/image on this hardware, see the
@@ -123,11 +123,15 @@ def reference_label_mask(image: np.ndarray) -> np.ndarray | None:
     return mask
 
 
-def prepare_reference(path: str, *, config: Config | None = None) -> np.ndarray:
-    """Normalize a catalog image, using its alpha channel when available. No SAM."""
-    source = cv2.imread(str(path), cv2.IMREAD_UNCHANGED)
+def decode_reference_unchanged(content: bytes, name: str) -> np.ndarray:
+    source = cv2.imdecode(np.frombuffer(content, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
     if source is None:
-        raise ValueError(f"Cannot read image: {path}")
+        raise ValueError(f"Cannot read image: {name}")
+    return source
+
+
+def prepare_reference_image(source: np.ndarray, *, config: Config | None = None) -> np.ndarray:
+    """Normalize a decoded catalog image, using its alpha channel when available. No SAM."""
     config = config or Config()
     has_alpha = source.ndim == 3 and source.shape[2] == 4
     mask = reference_label_mask(source) if has_alpha else None

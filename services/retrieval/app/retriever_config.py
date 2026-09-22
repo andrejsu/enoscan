@@ -13,8 +13,6 @@ from os import environ
 @dataclass(frozen=True)
 class RetrieverSettings:
     database_url: str
-    dataset_root: str
-    index_path: str
     max_upload_bytes: int
     model_path: str
     sam_model_dir: str
@@ -36,8 +34,6 @@ def load_retriever_settings() -> RetrieverSettings:
 
     return RetrieverSettings(
         database_url=database_url,
-        dataset_root=environ.get("DATASET_ROOT", "/dataset/current"),
-        index_path=environ.get("RETRIEVER_INDEX_PATH", "/indexes/retriever-v1.npz"),
         max_upload_bytes=int(environ.get("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024))),
         model_path=environ.get("MODEL_PATH", "/models/dinov2-small.onnx"),
         sam_model_dir=environ.get("SAM_MODEL_DIR", "/models/sam_vit_b_quant"),

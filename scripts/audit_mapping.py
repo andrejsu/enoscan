@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import os
 import sys
@@ -19,9 +20,13 @@ for _root in (_HERE.parent / "services" / "retrieval", _HERE.parent):
         sys.path.insert(0, str(_root))
         break
 
-from app.catalog import is_original_media, load_catalog
+import psycopg
+
+from app.catalog import load_references
 from app.config import load_settings
-from app.index import SiftIndex
+from app.storage import IMAGES_BUCKET, ObjectStore
+
+OVERRIDES_HEADER = ["slug", "action", "strapi_filename", "note"]
 
 IMAGENET_MEAN = np.float32([0.485, 0.456, 0.406]).reshape(3, 1, 1)
 IMAGENET_STD = np.float32([0.229, 0.224, 0.225]).reshape(3, 1, 1)
@@ -39,14 +44,15 @@ def preprocess(image: np.ndarray) -> np.ndarray:
     return (rgb.transpose(2, 0, 1) - IMAGENET_MEAN) / IMAGENET_STD
 
 
-def embed_paths(
+def embed_objects(
     session: ort.InferenceSession,
-    paths: list[Path],
+    store: ObjectStore,
+    keys: list[str],
     batch_size: int = 16,
     progress_label: str = "",
 ) -> tuple[np.ndarray, np.ndarray]:
-    embeddings = np.zeros((len(paths), 384), dtype=np.float32)
-    usable = np.zeros(len(paths), dtype=bool)
+    embeddings = np.zeros((len(keys), 384), dtype=np.float32)
+    usable = np.zeros(len(keys), dtype=bool)
     pending: list[tuple[int, np.ndarray]] = []
 
     def flush() -> None:
@@ -59,14 +65,15 @@ def embed_paths(
             usable[position] = True
         pending.clear()
 
-    for position, path in enumerate(paths):
-        image = cv2.imread(str(path), cv2.IMREAD_COLOR)
+    for position, key in enumerate(keys):
+        content = np.frombuffer(store.get_bytes(IMAGES_BUCKET, key), dtype=np.uint8)
+        image = cv2.imdecode(content, cv2.IMREAD_COLOR)
         if image is not None:
             pending.append((position, preprocess(image)))
         if len(pending) >= batch_size:
             flush()
         if progress_label and position and position % 500 == 0:
-            print(f"  {progress_label}: embedded {position}/{len(paths)}")
+            print(f"  {progress_label}: embedded {position}/{len(keys)}")
     flush()
     return embeddings, usable
 
@@ -105,22 +112,50 @@ def flag_suspicious(
     return flagged
 
 
+def load_orphans(database_url: str) -> list[dict[str, object]]:
+    with psycopg.connect(database_url) as connection:
+        rows = connection.execute(
+            """
+            SELECT DISTINCT ON (i.sha256) i.sha256, i.object_key, s.strapi_path, s.filename, i.size_bytes
+            FROM images i
+            JOIN image_sources s ON s.image_sha256 = i.sha256
+            WHERE NOT EXISTS (SELECT 1 FROM wine_images wi WHERE wi.image_sha256 = i.sha256)
+            ORDER BY i.sha256, s.strapi_path
+            """
+        ).fetchall()
+    return [
+        {"sha256": sha, "object_key": key, "strapi_path": path, "filename": filename, "size_bytes": size}
+        for sha, key, path, filename, size in rows
+    ]
+
+
+def overrides_rows(proposed_fixes: list[dict[str, object]]) -> list[list[str]]:
+    rows: list[list[str]] = []
+    seen: set[str] = set()
+    for fix in proposed_fixes:
+        slug = str(fix["proposed_slug"])
+        if slug in seen:
+            continue
+        seen.add(slug)
+        rows.append([slug, "set", str(fix["filename"]), f"audit cosine={fix['cosine']}"])
+    return rows
+
+
 def run_audit(
-    npz_path: str,
-    dataset_root: str,
     model_path: str,
     output_dir: str,
     orphan_threshold: float = 0.90,
 ) -> Path:
-    index = SiftIndex.load(npz_path)
-    references = index.references
-    uploads = Path(dataset_root) / "uploads"
+    settings = load_settings()
+    store = ObjectStore()
+    references = load_references(settings.database_url)
     session = load_session(model_path)
-    print(f"Loaded {len(references)} indexed references.")
+    print(f"Loaded {len(references)} mapped references.")
 
-    reference_embeddings, reference_usable = embed_paths(
+    reference_embeddings, reference_usable = embed_objects(
         session,
-        [uploads / reference.relative_path for reference in references],
+        store,
+        [reference.object_key for reference in references],
         progress_label="references",
     )
     unit_references = normalize_rows(reference_embeddings)
@@ -137,28 +172,23 @@ def run_audit(
             "slug": references[position].wine.slug,
             "name": references[position].wine.name,
             "winery": references[position].wine.winery,
-            "relative_path": references[position].relative_path,
+            "image_sha256": references[position].image_sha256,
             "mapping_kind": references[position].mapping_kind,
             "mapping_score": round(references[position].mapping_score, 4),
             "nearest_peer_slug": references[peer].wine.slug,
-            "nearest_peer_path": references[peer].relative_path,
+            "nearest_peer_sha256": references[peer].image_sha256,
             "cosine": round(score, 4),
         }
         for position, peer, score in sorted(flagged, key=lambda item: item[2], reverse=True)
     ]
 
-    settings = load_settings()
-    _, media = load_catalog(settings.database_url)
-    used_paths = {reference.relative_path for reference in references}
-    orphan_media = [
-        item for item in media
-        if is_original_media(item.filename) and item.relative_path not in used_paths
-    ]
-    print(f"Found {len(orphan_media)} orphaned original media files.")
+    orphan_media = load_orphans(settings.database_url)
+    print(f"Found {len(orphan_media)} orphaned original images.")
 
-    orphan_embeddings, orphan_usable = embed_paths(
+    orphan_embeddings, orphan_usable = embed_objects(
         session,
-        [uploads / item.relative_path for item in orphan_media],
+        store,
+        [str(item["object_key"]) for item in orphan_media],
         progress_label="orphans",
     )
     unit_orphans = normalize_rows(orphan_embeddings)
@@ -175,8 +205,8 @@ def run_audit(
                 continue
             reference = references[int(valid_reference_positions[best])]
             proposed_fixes.append({
-                "relative_path": item.relative_path,
-                "filename": item.filename,
+                "strapi_path": item["strapi_path"],
+                "filename": item["filename"],
                 "proposed_slug": reference.wine.slug,
                 "proposed_name": reference.wine.name,
                 "proposed_winery": reference.wine.winery,
@@ -186,16 +216,11 @@ def run_audit(
 
     report = {
         "generated_at": datetime.now(UTC).date().isoformat(),
-        "index": npz_path,
         "reference_count": len(references),
         "embedded_reference_count": int(reference_usable.sum()),
         "suspicious": suspicious,
         "orphaned": [
-            {
-                "relative_path": item.relative_path,
-                "filename": item.filename,
-                "size_bytes": item.size_bytes,
-            }
+            {"strapi_path": item["strapi_path"], "filename": item["filename"], "size_bytes": item["size_bytes"]}
             for item in orphan_media
         ],
         "proposed_fixes": proposed_fixes,
@@ -204,11 +229,17 @@ def run_audit(
     destination = Path(output_dir) / f"mapping_audit_{report['generated_at']}.json"
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    overrides_path = Path(output_dir) / "image-overrides-proposed.csv"
+    with overrides_path.open("w", encoding="utf-8", newline="") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(OVERRIDES_HEADER)
+        writer.writerows(overrides_rows(proposed_fixes))
 
     print(f"\nSuspicious fuzzy mappings: {len(suspicious)}")
     print(f"Orphaned media: {len(report['orphaned'])}")
     print(f"Proposed fixes: {len(proposed_fixes)}")
     print(f"Report written to {destination}")
+    print(f"Proposed overrides written to {overrides_path}; review and copy rows into db/image-overrides.csv")
     return destination
 
 
@@ -248,13 +279,21 @@ def self_check() -> None:
     )
     assert not unusable, unusable
 
+    rows = overrides_rows([
+        {"proposed_slug": "tabiya-pino", "filename": "a.webp", "cosine": 0.97},
+        {"proposed_slug": "tabiya-pino", "filename": "b.webp", "cosine": 0.93},
+        {"proposed_slug": "tabiya-kokur", "filename": "c.webp", "cosine": 0.91},
+    ])
+    assert rows == [
+        ["tabiya-pino", "set", "a.webp", "audit cosine=0.97"],
+        ["tabiya-kokur", "set", "c.webp", "audit cosine=0.91"],
+    ], rows
+
     print("self-check passed")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Audit catalog to image mapping with DINOv3 cosine")
-    parser.add_argument("--npz", help="Path to .npz index file")
-    parser.add_argument("--dataset", help="Path to dataset root (contains uploads/)")
     parser.add_argument("--model", default="/models/dinov3-vits16/model.onnx")
     parser.add_argument("--out", default="reports")
     parser.add_argument("--orphan-threshold", type=float, default=0.90,
@@ -265,9 +304,7 @@ def main() -> None:
     if args.self_check:
         self_check()
         return
-    if not args.npz or not args.dataset:
-        parser.error("--npz and --dataset are required unless --self-check is used")
-    run_audit(args.npz, args.dataset, args.model, args.out, args.orphan_threshold)
+    run_audit(args.model, args.out, args.orphan_threshold)
 
 
 if __name__ == "__main__":

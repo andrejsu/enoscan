@@ -1,44 +1,34 @@
 from contextlib import asynccontextmanager
-from pathlib import Path
 from time import perf_counter
 
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, File, HTTPException, UploadFile
 
+from .catalog import current_dataset_version, load_wines
 from .config import load_settings
-from .catalog_browser import CatalogBrowser
-from .catalog import load_catalog
 from .image_features import decode_image
-from .index import SiftIndex
+from .index import SIFT_INDEX_KIND, SiftIndex
+from .index_store import fetch_index, require_build
 from .service import SearchService
+from .storage import ObjectStore
 
 
 ACCEPTED_TYPES = {"application/octet-stream", "image/jpeg", "image/png", "image/webp"}
-IMAGE_MEDIA_TYPES = {
-    ".jpeg": "image/jpeg",
-    ".jpg": "image/jpeg",
-    ".png": "image/png",
-    ".webp": "image/webp",
-}
 settings = load_settings()
 service: SearchService | None = None
-catalog_browser: CatalogBrowser | None = None
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    global catalog_browser, service
-    if not Path(settings.index_path).is_file():
-        raise RuntimeError(f"Retrieval index is missing: {settings.index_path}")
-    index = SiftIndex.load(settings.index_path)
-    service = SearchService(index, catalog=load_catalog(settings.database_url)[0],
+    global service
+    version = current_dataset_version(settings.database_url)
+    build = require_build(settings.database_url, SIFT_INDEX_KIND, version)
+    index = SiftIndex.load(str(fetch_index(ObjectStore(), build)))
+    service = SearchService(index, catalog=load_wines(settings.database_url), dataset_version=version,
                             ocr_timeout=settings.ocr_timeout, ocr_psm=settings.ocr_psm,
                             ocr_preprocess=settings.ocr_preprocess, ocr_retry=settings.ocr_retry,
                             visual_limit=settings.visual_limit)
-    catalog_browser = CatalogBrowser(settings.database_url, index)
     yield
     service = None
-    catalog_browser = None
 
 
 app = FastAPI(title="Vinolog retrieval", version="0.1.0", lifespan=lifespan)
@@ -47,45 +37,6 @@ app = FastAPI(title="Vinolog retrieval", version="0.1.0", lifespan=lifespan)
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok" if service else "loading"}
-
-
-@app.get("/v1/wines/{slug}/image", response_class=FileResponse)
-def wine_image(slug: str) -> FileResponse:
-    if service is None:
-        raise HTTPException(status_code=503, detail="Индекс поиска ещё загружается.")
-
-    reference = next((item for item in service.index.references if item.wine.slug == slug), None)
-    if reference is None:
-        raise HTTPException(status_code=404, detail="Изображение вина не найдено.")
-
-    uploads = (Path(settings.dataset_root) / "uploads").resolve()
-    image_path = (uploads / reference.relative_path).resolve()
-    media_type = IMAGE_MEDIA_TYPES.get(image_path.suffix.casefold())
-    if not image_path.is_relative_to(uploads) or not image_path.is_file() or not media_type:
-        raise HTTPException(status_code=404, detail="Изображение вина не найдено.")
-
-    return FileResponse(
-        image_path,
-        media_type=media_type,
-        headers={"Cache-Control": "public, max-age=86400"},
-    )
-
-
-@app.get("/v1/catalog")
-def catalog(
-    q: str = Query(default="", max_length=120),
-    page: int = Query(default=1, ge=1),
-    per_page: int = Query(default=24, ge=1, le=60),
-    image_status: str = Query(default="all", pattern="^(all|indexed|missing)$"),
-) -> dict[str, object]:
-    if catalog_browser is None:
-        raise HTTPException(status_code=503, detail="Каталог ещё загружается.")
-    return catalog_browser.browse(
-        query=q,
-        page=page,
-        per_page=per_page,
-        image_status=image_status,
-    )
 
 
 async def read_image_upload(image: UploadFile) -> bytes:
