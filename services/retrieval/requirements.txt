@@ -1,5 +1,6 @@
 boto3==1.40.*
 fastapi==0.116.1
+httpx==0.27.2
 numpy==2.2.6
 onnxruntime==1.20.*
 opencv-python-headless==4.12.0.88

@@ -72,10 +72,6 @@ services:
       PGUSER: vinolog
       PGDATABASE: vinolog
       PGPASSWORD: ${VINLOG_DB_PASSWORD:-vinolog}
-      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-2}
-      OCR_PSM: ${OCR_PSM:-6}
-      OCR_PREPROCESS: ${OCR_PREPROCESS:-true}
-      OCR_RETRY: ${OCR_RETRY:-false}
       VISUAL_SHORTLIST_LIMIT: ${VISUAL_SHORTLIST_LIMIT:-50}
     restart: "no"
 
@@ -166,6 +162,80 @@ services:
       retries: 60
     restart: unless-stopped
 
+  # --- Standalone OCR field retriever --------------------------------------
+  # The existing Tesseract-driven text matcher (app/ocr.py), detached from
+  # retrieval/retrieval-index above and reworked to return per-field
+  # candidates (app/label_fields.py) instead of resolving a wine itself. No
+  # prebuilt index: catalog text search is cheap enough to resolve from the
+  # DB at startup. See app/ocr_retriever.py.
+  ocr-retriever:
+    build:
+      context: .
+      dockerfile: services/retrieval/Dockerfile.retriever
+    command: ["uvicorn", "app.ocr_main:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      importer:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: vinolog
+      PGDATABASE: vinolog
+      PGPASSWORD: ${VINLOG_DB_PASSWORD:-vinolog}
+      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-2}
+      OCR_PSM: ${OCR_PSM:-6}
+      OCR_PREPROCESS: ${OCR_PREPROCESS:-true}
+      OCR_RETRY: ${OCR_RETRY:-false}
+    ports:
+      - "8082:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  # --- Standalone ranking --------------------------------------------------
+  # Combines the OCR field extractor and the visual retriever's evidence
+  # into one resolved slug. See app/ranking.py, app/ranking_main.py.
+  # Calls retriever over HTTP (RETRIEVER_BASE_URL) instead of loading its
+  # own copy of the DINOv2 model + visual index — running both in-process
+  # copies at once was enough to OOM the compose stack. This is the one
+  # service wired behind web's actual scanner (see the `web` service
+  # below); everything else here stays unplugged for standalone testing.
+  ranking:
+    build:
+      context: .
+      dockerfile: services/retrieval/Dockerfile.retriever
+    command: ["uvicorn", "app.ranking_main:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      db:
+        condition: service_healthy
+      retriever:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: vinolog
+      PGDATABASE: vinolog
+      PGPASSWORD: ${VINLOG_DB_PASSWORD:-vinolog}
+      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-2}
+      OCR_PSM: ${OCR_PSM:-6}
+      OCR_PREPROCESS: ${OCR_PREPROCESS:-true}
+      OCR_RETRY: ${OCR_RETRY:-false}
+      RETRIEVER_BASE_URL: http://retriever:8000
+      RANKING_MATCH_THRESHOLD: ${RANKING_MATCH_THRESHOLD:-0.45}
+    ports:
+      - "8083:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 60
+    restart: unless-stopped
+
   web:
     build: .
     depends_on:
@@ -175,6 +245,8 @@ services:
         condition: service_healthy
       retrieval:
         condition: service_healthy
+      ranking:
+        condition: service_healthy
     ports:
       - "3000:3000"
     environment:
@@ -183,7 +255,12 @@ services:
       NUXT_PUBLIC_SCAN_MODE: retrieval
       NUXT_PUBLIC_ASTRO_ENABLED: ${NUXT_PUBLIC_ASTRO_ENABLED:-true}
       NUXT_PUBLIC_SOMMELIER_MODE: ${NUXT_PUBLIC_SOMMELIER_MODE:-mock}
+      # /api/scans (the actual scanner) calls ranking — the combined
+      # OCR + visual result. retrievalBaseUrl stays wired for the image
+      # proxy, /admin and /astro, which read the plain catalog/index and
+      # have no ranking equivalent. See nuxt.config.ts's rankingBaseUrl.
       NUXT_RETRIEVAL_BASE_URL: http://retrieval:8000
+      NUXT_RANKING_BASE_URL: http://ranking:8000
       NUXT_SOMMELIER_PROVIDER: ${NUXT_SOMMELIER_PROVIDER:-openai}
       NUXT_SOMMELIER_MODEL: ${NUXT_SOMMELIER_MODEL:-}
       NUXT_SOMMELIER_MAX_REQUESTS: ${NUXT_SOMMELIER_MAX_REQUESTS:-20}

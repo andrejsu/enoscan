@@ -10,6 +10,7 @@ import numpy as np
 import pytesseract
 
 from .catalog import Wine
+from .label_fields import MAX_CANDIDATES, FieldCandidate
 from .text_normalize import CYRILLIC_TO_LATIN, token_similarity as _token_similarity
 
 
@@ -150,6 +151,55 @@ def extract_year(text: str) -> int | None:
     if len(found) != 1:
         return None
     return found.pop()
+
+
+def _group_lines(words: list[OcrWord]) -> list[list[OcrWord]]:
+    lines: dict[tuple[int, int, int], list[OcrWord]] = {}
+    for word in words:
+        lines.setdefault(word.line, []).append(word)
+    return list(lines.values())
+
+
+def extract_year_candidates(words: list[OcrWord], *, limit: int = MAX_CANDIDATES) -> tuple[FieldCandidate, ...]:
+    """Every distinct vintage year the label mentions, unlike extract_fields()'s
+    single trusted-or-abstain value: a downstream ranking stage can weigh
+    several readings against catalog evidence instead of losing them all to
+    one ambiguous line."""
+    best: dict[int, float] = {}
+    for line in _group_lines(words):
+        text = " ".join(w.text for w in line)
+        confidence = min(w.confidence for w in line)
+        if confidence < 60:
+            continue
+        if not re.search(r"урожа|vintage|harvest", text, re.I) or re.search(r"основан|since|founded|розлив|bottl", text, re.I):
+            continue
+        for value in {int(match) for match in VINTAGE_PATTERN.findall(text)}:
+            best[value] = max(best.get(value, 0.0), confidence / 100)
+    candidates = sorted(
+        (FieldCandidate(str(value), round(score, 4)) for value, score in best.items()),
+        key=lambda candidate: candidate.score, reverse=True,
+    )
+    return tuple(candidates[:limit])
+
+
+def extract_abv_candidates(words: list[OcrWord], *, limit: int = MAX_CANDIDATES) -> tuple[FieldCandidate, ...]:
+    """Every distinct alcohol-by-volume reading the label mentions, same
+    all-candidates rationale as extract_year_candidates()."""
+    best: dict[float, float] = {}
+    for line in _group_lines(words):
+        text = " ".join(w.text for w in line)
+        confidence = min(w.confidence for w in line)
+        if confidence < 60:
+            continue
+        for match in re.finditer(r"(?<![\d.,])(\d{1,2}(?:[.,]\d)?)\s*(?:%|об\.?\b)|\balc\.?\s*(\d{1,2}(?:[.,]\d)?)(?![\d.,])", text, re.I):
+            value = float((match.group(1) or match.group(2)).replace(",", "."))
+            if 1 <= value <= 30:
+                best[value] = max(best.get(value, 0.0), confidence / 100)
+    candidates = sorted(
+        (FieldCandidate(str(value), round(score, 4)) for value, score in best.items()),
+        key=lambda candidate: candidate.score, reverse=True,
+    )
+    return tuple(candidates[:limit])
 
 
 def text_score(text: str, wine: Wine) -> float:

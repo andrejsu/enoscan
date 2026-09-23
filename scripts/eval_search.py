@@ -14,7 +14,6 @@ import time
 from pathlib import Path
 
 import numpy as np
-import pytesseract
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "services/retrieval"))
@@ -32,34 +31,20 @@ def summarize(rows: list[dict]) -> dict:
     def ratio(count: int, total: int):
         return count / total if total else None
     times = [r["elapsed_ms"] for r in rows]
-    union_known = [r for r in known if "union_slugs" in r.get("diagnostics", {})]
+    visual_known = [r for r in known if "visual_slugs" in r.get("diagnostics", {})]
     return {
         "count": len(rows), "known": len(known), "unknown": len(unknown),
         "unlabelled": len(rows) - len(labelled),
         "accuracy_at_1": ratio(sum(r.get("slugs", [None])[:1] == [r["expected_slug"]] for r in known), len(known)),
         "recall_at_5": ratio(sum(r["expected_slug"] in r.get("slugs", [])[:5] for r in known), len(known)),
-        "union_recall": ratio(sum(r["expected_slug"] in r["diagnostics"]["union_slugs"] for r in union_known), len(union_known)),
-        "visual_recall": ratio(sum(r["expected_slug"] in r["diagnostics"].get("visual_slugs", []) for r in union_known), len(union_known)),
+        "visual_recall": ratio(sum(r["expected_slug"] in r["diagnostics"].get("visual_slugs", []) for r in visual_known), len(visual_known)),
         "matched_coverage": ratio(len(matched), len(labelled)),
         "matched_precision": ratio(sum(bool(r.get("expected_slug")) and r.get("slugs", [])[:1] == [r["expected_slug"]] for r in matched), len(matched)),
         "unknown_false_matched": ratio(sum(r.get("status") == "matched" for r in unknown), len(unknown)),
         "errors": sum("error" in r for r in rows),
-        "ocr_fallbacks": sum(bool(r.get("diagnostics", {}).get("ocr", {}).get("error")) for r in rows),
         "p50_ms": float(np.percentile(times, 50)) if times else None,
         "p95_ms": float(np.percentile(times, 95)) if times else None,
-        "fields": {field: field_metrics(rows, field) for field in ("year", "abv")},
     }
-
-
-def field_metrics(rows: list[dict], field: str) -> dict:
-    labelled = [r for r in rows if f"expected_{field}" in r]
-    def value(row):
-        evidence = row.get("diagnostics", {}).get("ocr", {}).get(field)
-        return evidence["value"] if evidence else None
-    extracted = [r for r in labelled if value(r) is not None]
-    return {"labelled": len(labelled), "extracted": len(extracted),
-            "precision": sum(value(r) == r[f"expected_{field}"] for r in extracted) / len(extracted) if extracted else None,
-            "exact_including_abstention": sum(value(r) == r[f"expected_{field}"] for r in labelled) / len(labelled) if labelled else None}
 
 
 def read_manifest(path: Path) -> list[dict]:
@@ -89,17 +74,12 @@ def main():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--label", required=True)
-    parser.add_argument("--psm", type=int, choices=[6, 11], default=6)
-    parser.add_argument("--raw", action="store_true", help="Disable grayscale/CLAHE")
-    parser.add_argument("--retry", action="store_true", help="Retry one doubtful numeric line within OCR timeout")
-    parser.add_argument("--ocr-timeout", type=float, default=2.0)
     parser.add_argument("--visual-limit", type=int, choices=range(1, 201), default=24, metavar="1..200")
-    parser.add_argument("--full-catalog", action="store_true", help="Load catalog using DATABASE_URL or PG* environment")
     args = parser.parse_args()
     source_hash = hashlib.sha256()
     for path in sorted((ROOT / "services/retrieval/app").glob("*.py")):
         source_hash.update(path.name.encode() + path.read_bytes())
-    from app.catalog import current_dataset_version, load_references, load_wines
+    from app.catalog import current_dataset_version, load_references
     from app.config import load_settings
     from app.index import SIFT_INDEX_KIND
     from app.index_store import current_index_path
@@ -110,10 +90,7 @@ def main():
     index_path = current_index_path(database_url, SIFT_INDEX_KIND, store)
     index = SiftIndex.load(str(index_path))
     dataset_version = current_dataset_version(database_url)
-    options = dict(ocr_timeout=args.ocr_timeout, ocr_psm=args.psm, ocr_preprocess=not args.raw,
-                   ocr_retry=args.retry, visual_limit=args.visual_limit)
-    catalog = load_wines(database_url) if args.full_catalog else None
-    service = SearchService(index, catalog=catalog, dataset_version=dataset_version, **options)
+    service = SearchService(index, visual_limit=args.visual_limit, dataset_version=dataset_version)
     if args.manifest:
         entries = read_manifest(args.manifest)
         if args.split:
@@ -152,12 +129,8 @@ def main():
     report = {"label": args.label, "kind": "synthetic-near-duplicate" if args.synthetic else "manifest",
               "source_sha256": source_hash.hexdigest(), "index_sha256": hashlib.sha256(index_path.read_bytes()).hexdigest(),
               "dataset_version": dataset_version,
-              "tesseract": str(pytesseract.get_tesseract_version()), "languages": pytesseract.get_languages(),
               "platform": platform.platform(), "processor": platform.processor(), "seed": args.seed,
               "cpu_count": os.cpu_count(), "max_rss_kib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
-              "ocr_options": options,
-              "catalog_scope": "database" if args.full_catalog else "indexed-only",
-              "catalog_sha256": hashlib.sha256(json.dumps([vars(w) for w in service.text_search.wines.values()], sort_keys=True, ensure_ascii=False).encode()).hexdigest(),
               "first_query_ms": rows[0]["elapsed_ms"], "summary": summarize(rows),
               "by_group": {g: summarize([r for r in rows if r.get("augmentation", r["group"]) == g])
                            for g in sorted({r.get("augmentation", r["group"]) for r in rows})},

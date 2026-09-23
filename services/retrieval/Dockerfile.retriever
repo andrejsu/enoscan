@@ -1,7 +1,11 @@
-# Standalone wine-label retriever image — separate from ./Dockerfile, which
-# builds the existing OCR-driven service and stays untouched by this file.
-# Build context is the repo root (not services/retrieval) because this
-# service needs scripts/label_prep.py.
+# Shared image for the three standalone services that sit next to the main
+# scanner (./Dockerfile, which stays visual-only and untouched by this
+# file): the visual retriever (app.retriever_main), the OCR field extractor
+# (app.ocr_main) and ranking (app.ranking_main), which needs both. One
+# image instead of one-Dockerfile-per-service — each service just points
+# `command:` in compose.yaml at its own uvicorn target. Build context is
+# the repo root (not services/retrieval) because this needs
+# scripts/label_prep.py.
 FROM python:3.12-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -9,6 +13,9 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app:/app/scripts
 
 WORKDIR /app
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-eng tesseract-ocr-rus \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY services/retrieval/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt

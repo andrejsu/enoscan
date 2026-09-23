@@ -6,10 +6,6 @@ from os import environ
 class Settings:
     database_url: str
     max_upload_bytes: int
-    ocr_timeout: float = 2.0
-    ocr_psm: int = 6
-    ocr_preprocess: bool = True
-    ocr_retry: bool = False
     visual_limit: int = 50
 
 
@@ -27,9 +23,5 @@ def load_settings() -> Settings:
     return Settings(
         database_url=database_url,
         max_upload_bytes=int(environ.get("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024))),
-        ocr_timeout=float(environ.get("OCR_TIMEOUT_SECONDS", "2")),
-        ocr_psm=int(environ.get("OCR_PSM", "6")),
-        ocr_preprocess=environ.get("OCR_PREPROCESS", "true").lower() == "true",
-        ocr_retry=environ.get("OCR_RETRY", "false").lower() == "true",
         visual_limit=int(environ.get("VISUAL_SHORTLIST_LIMIT", "50")),
     )

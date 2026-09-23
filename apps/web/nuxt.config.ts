@@ -8,6 +8,11 @@ export default defineNuxtConfig({
   modules: ['@nuxt/eslint'],
   runtimeConfig: {
     retrievalBaseUrl: process.env.NUXT_RETRIEVAL_BASE_URL || 'http://127.0.0.1:8000',
+    // Scanner-only: /api/scans (POST) calls this final resolved result, not
+    // retrievalBaseUrl. Everything else (image proxy, /admin, /astro) reads
+    // the plain catalog and keeps using retrievalBaseUrl — ranking has no
+    // /v1/catalog of its own. See services/retrieval/app/ranking_main.py.
+    rankingBaseUrl: process.env.NUXT_RANKING_BASE_URL || 'http://127.0.0.1:8000',
     databaseUrl: process.env.NUXT_DATABASE_URL || '',
     sommelierProvider: process.env.NUXT_SOMMELIER_PROVIDER || 'openai',
     sommelierModel: process.env.NUXT_SOMMELIER_MODEL || '',

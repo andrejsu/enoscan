@@ -68,7 +68,7 @@ export default defineEventHandler(async (event): Promise<ScanResponse> => {
     )
 
     try {
-      return await $fetch<ScanResponse>(`${config.retrievalBaseUrl}/v1/search`, {
+      return await $fetch<ScanResponse>(`${config.rankingBaseUrl}/v1/search`, {
         method: 'POST',
         body,
         timeout: 10_000,

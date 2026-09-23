@@ -3,7 +3,6 @@ import unittest
 from app.catalog import Wine
 from app.index import Candidate
 from app.ocr import extract_year, text_score
-from app.service import year_adjustment
 
 
 def wine(**overrides: object) -> Wine:
@@ -77,17 +76,6 @@ class OcrYearTest(unittest.TestCase):
 
     def test_year_outside_vintage_range_is_ignored(self) -> None:
         self.assertIsNone(extract_year("основано в 1861"))
-
-
-class YearEvidenceTest(unittest.TestCase):
-    def test_year_is_soft_evidence(self):
-        self.assertGreater(year_adjustment(wine(name="Ребус 2019"), 2019), 0)
-        self.assertLess(year_adjustment(wine(name="Ребус 2020"), 2019), 0)
-
-    def test_missing_or_ambiguous_year_is_neutral(self):
-        self.assertEqual(year_adjustment(wine(name="Ребус"), 2019), 0)
-        self.assertEqual(year_adjustment(wine(name="Ребус 2019"), None), 0)
-        self.assertEqual(year_adjustment(wine(name="Ребус 2019 2020"), 2019), 0)
 
 
 if __name__ == "__main__":

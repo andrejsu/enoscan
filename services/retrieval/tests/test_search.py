@@ -8,7 +8,7 @@ from PIL import Image
 
 from app.catalog import Wine
 from app.index import Candidate, SearchResult
-from app.ocr import LabelField, OcrResult, OcrWord, extract_fields, extract_label
+from app.ocr import OcrWord, extract_fields, extract_label
 from app.service import SearchService
 from app.text_search import TextSearch
 from app.image_features import decode_image
@@ -101,65 +101,27 @@ class IndexStub:
 
     def __init__(self, candidates):
         self.candidates = candidates
-        self.extra_slugs = ()
 
-    def search(self, image, *, limit, extra_slugs, visual_limit):
-        self.extra_slugs = extra_slugs
+    def search(self, image, *, limit, visual_limit, extra_slugs=()):
         return SearchResult(self.candidates, 1, 2)
-
-
-def test_text_adds_wine_without_reference_as_uncertain():
-    target = wine()
-    index = IndexStub([])
-    service = SearchService(index, catalog=[target])
-    with patch("app.service.extract_label", return_value=OcrResult((word("Ребус Дивноморское"),))):
-        result = service.search(np.zeros((10, 10, 3), dtype=np.uint8))
-    assert target.slug in index.extra_slugs
-    assert result.body["status"] == "uncertain"
-    assert result.body["wine"] is None
-    assert result.body["candidates"][0]["wine"]["imageUrl"] is None
-
-
-def test_wrong_year_does_not_remove_visual_candidate():
-    correct = wine()
-    other = wine("rebus-2020", "Ребус 2020")
-    index = IndexStub([Candidate(correct, "a.jpg", 0.8, 18, 10), Candidate(other, "b.jpg", 0.2, 5, 1)])
-    field = LabelField(2020, "Урожай 2020", (0, 0, 20, 10), 90, "vintage_context")
-    with patch("app.service.extract_label", return_value=OcrResult(year=field)):
-        result = SearchService(index, catalog=[correct, other]).search(np.zeros((10, 10, 3), dtype=np.uint8))
-    assert result.body["candidates"][0]["slug"] == correct.slug
-    assert len(result.body["candidates"]) == 2
-    assert result.body["status"] == "uncertain"
-
-
-def test_timeout_preserves_visual_result_and_diagnostic():
-    candidate = Candidate(wine(), "a.jpg", 0.8, 18, 10)
-    with patch("app.service.extract_label", return_value=OcrResult(error="timeout")):
-        result = SearchService(IndexStub([candidate]), catalog=[wine()]).search(np.zeros((10, 10, 3), dtype=np.uint8))
-    assert result.body["status"] == "matched"
-    assert result.diagnostics["ocr"]["error"] == "timeout"
-    assert "diagnostics" not in result.body
 
 
 def test_close_candidates_are_not_automatic_match():
     first = Candidate(wine(), "a.jpg", 0.8, 18, 10)
     second = replace(first, wine=wine("other", "Другое"), score=0.79)
-    with patch("app.service.extract_label", return_value=OcrResult()):
-        result = SearchService(IndexStub([first, second]), catalog=[first.wine, second.wine]).search(np.zeros((10, 10, 3), dtype=np.uint8))
+    result = SearchService(IndexStub([first, second])).search(np.zeros((10, 10, 3), dtype=np.uint8))
     assert result.body["status"] == "uncertain"
 
 
-def test_generic_text_does_not_overturn_strong_geometry():
-    first = Candidate(wine(), "a.jpg", 0.9, 180, 150)
-    second = Candidate(wine("other", "Шардоне", "Агора"), "b.jpg", 0.5, 12, 10)
-    with patch("app.service.extract_label", return_value=OcrResult((word("Шардоне Агора"),))):
-        result = SearchService(IndexStub([first, second]), catalog=[first.wine, second.wine]).search(np.zeros((10, 10, 3), dtype=np.uint8))
-    assert result.body["candidates"][0]["slug"] == first.wine.slug
+def test_strong_geometry_alone_is_matched():
+    candidate = Candidate(wine(), "a.jpg", 0.9, 180, 150)
+    result = SearchService(IndexStub([candidate])).search(np.zeros((10, 10, 3), dtype=np.uint8))
+    assert result.body["status"] == "matched"
+    assert result.body["wine"]["slug"] == candidate.wine.slug
 
 
 def test_catalog_version_comes_from_dataset_version():
     candidate = Candidate(wine(), "sha", 0.8, 18, 10)
-    with patch("app.service.extract_label", return_value=OcrResult()):
-        result = SearchService(IndexStub([candidate]), catalog=[wine()], dataset_version="abc123").search(
-            np.zeros((10, 10, 3), dtype=np.uint8))
+    result = SearchService(IndexStub([candidate]), dataset_version="abc123").search(
+        np.zeros((10, 10, 3), dtype=np.uint8))
     assert result.body["version"]["catalog"] == "abc123"

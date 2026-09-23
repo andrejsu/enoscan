@@ -3,7 +3,7 @@ from time import perf_counter
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
-from .catalog import current_dataset_version, load_wines
+from .catalog import current_dataset_version
 from .config import load_settings
 from .image_features import decode_image
 from .index import SIFT_INDEX_KIND, SiftIndex
@@ -23,10 +23,7 @@ async def lifespan(_: FastAPI):
     version = current_dataset_version(settings.database_url)
     build = require_build(settings.database_url, SIFT_INDEX_KIND, version)
     index = SiftIndex.load(str(fetch_index(ObjectStore(), build)))
-    service = SearchService(index, catalog=load_wines(settings.database_url), dataset_version=version,
-                            ocr_timeout=settings.ocr_timeout, ocr_psm=settings.ocr_psm,
-                            ocr_preprocess=settings.ocr_preprocess, ocr_retry=settings.ocr_retry,
-                            visual_limit=settings.visual_limit)
+    service = SearchService(index, visual_limit=settings.visual_limit, dataset_version=version)
     yield
     service = None
 
