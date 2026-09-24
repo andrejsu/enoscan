@@ -37,6 +37,13 @@ FIELD_WEIGHTS = {
 # labelled set.
 MATCH_THRESHOLD = 0.45
 
+# Fields that can pin down one wine. The rest (winery, grape, category,
+# color, region, year) are shared by many wines: because field_breakdown()
+# drops fields without evidence from the denominator, OCR reading only
+# "Красное" used to score every red wine 1.0 and "match" whichever came
+# first in catalog order. Those fields may still rank, never match alone.
+IDENTIFYING_FIELDS = ("name", "slug")
+
 
 @dataclass(frozen=True)
 class RankingResult:
@@ -77,8 +84,7 @@ def field_breakdown(wine: Wine, ocr_fields: RetrievalFields,
     return tuple(contributions)
 
 
-def _wine_score(wine: Wine, ocr_fields: RetrievalFields, visual_fields: RetrievalFields) -> float:
-    contributions = field_breakdown(wine, ocr_fields, visual_fields)
+def _score(contributions: tuple[FieldContribution, ...]) -> float:
     total_weight = sum(item.weight for item in contributions)
     total_score = sum(item.weight * item.score for item in contributions)
     return total_score / total_weight if total_weight else 0.0
@@ -86,10 +92,13 @@ def _wine_score(wine: Wine, ocr_fields: RetrievalFields, visual_fields: Retrieva
 
 def rank(ocr_fields: RetrievalFields, visual_fields: RetrievalFields, wines: list[Wine],
          *, threshold: float = MATCH_THRESHOLD) -> RankingResult:
-    evidence = {wine.slug: round(_wine_score(wine, ocr_fields, visual_fields), 4) for wine in wines}
+    breakdowns = {wine.slug: field_breakdown(wine, ocr_fields, visual_fields) for wine in wines}
+    evidence = {slug: round(_score(terms), 4) for slug, terms in breakdowns.items()}
     if not evidence:
         return RankingResult("not_found", None, 0.0, evidence)
-    slug, score = max(evidence.items(), key=lambda item: item[1])
-    if score > threshold:
+    (slug, score), *rest = sorted(evidence.items(), key=lambda item: item[1], reverse=True)
+    is_identified = any(term.field in IDENTIFYING_FIELDS and term.score > 0 for term in breakdowns[slug])
+    is_tied = bool(rest) and rest[0][1] == score
+    if score > threshold and is_identified and not is_tied:
         return RankingResult("matched", slug, score, evidence)
     return RankingResult("not_found", None, score, evidence)

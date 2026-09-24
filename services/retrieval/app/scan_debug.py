@@ -1,22 +1,23 @@
 """Scan debug trace for the web result page's debug panel.
 
-Turns the intermediate state app/ranking_main.py already holds — the
-label_prep crop, the OCR pass, the visual retriever's shortlist and the
-per-field ranking terms — into the ``debug`` object of the scan response
-(apps/web's ScanDebug contract). Pure formatting: it never re-runs a stage
-or changes a score.
+Turns what app/ranking_main.py already holds — the OCR service's words and
+fields, the visual retriever's shortlist and the per-field ranking terms —
+into the ``debug`` object of the scan response (apps/web's ScanDebug
+contract). It never changes a score; the only stage it re-runs is
+label_prep's crop, for the preprocessing thumbnails.
 """
 
 from __future__ import annotations
 
 import base64
+import time
 
 import cv2
 import numpy as np
 
 from .catalog import Wine
 from .label_fields import TEXT_FIELDS, RetrievalFields
-from .ocr_retriever import OcrTrace
+from .label_normalize import prepare_query
 from .ranking import FIELD_WEIGHTS, RankingResult, field_breakdown
 
 
@@ -42,19 +43,22 @@ def _optional_number(info: dict, key: str) -> float | None:
     return float(value) if isinstance(value, (int, float)) else None
 
 
-def preprocessing_debug(source: np.ndarray, trace: OcrTrace) -> dict[str, object]:
-    prepared = trace.prepared
+def preprocessing_debug(source: np.ndarray) -> dict[str, object]:
+    """label_prep's view of the photo — what the visual retriever searches.
+    Recomputed here for the panel only; OCR reads the full frame."""
+    started = time.perf_counter()
+    prepared = prepare_query(source, fast=True)
     info = prepared.info
     label_px = info.get("label_px")
     return {
-        "durationMs": trace.prepare_ms,
+        "durationMs": round((time.perf_counter() - started) * 1000),
         "usedSam": prepared.used_sam,
         "warnings": list(prepared.warnings),
         "cropBox": list(prepared.crop_box) if prepared.crop_box else None,
         "images": {
             "source": image_data_url(source),
             "visual": image_data_url(prepared.visual),
-            "ocr": image_data_url(prepared.ocr),
+            "ocr": image_data_url(source),
         },
         "metrics": {
             "labelWidth": label_px[0] if label_px else None,
@@ -67,21 +71,23 @@ def preprocessing_debug(source: np.ndarray, trace: OcrTrace) -> dict[str, object
     }
 
 
-def ocr_debug(trace: OcrTrace) -> dict[str, object]:
-    words = [word for label in trace.labels for word in label.words]
-    errors = [label.error for label in trace.labels if label.error]
+def ocr_debug(payload: dict | None, error: str | None, duration_ms: int,
+              fields: RetrievalFields) -> dict[str, object]:
+    """``payload`` is the OCR service's response, None when the call failed."""
+    words = (payload or {}).get("words", [])
+    confidences = [word["confidence"] for word in words]
     return {
-        "durationMs": trace.ocr_ms,
-        "passes": ["crop", "full"][:len(trace.labels)],
-        "text": " ".join(word.text for word in words if word.confidence >= OCR_TEXT_MIN_CONFIDENCE),
+        "durationMs": duration_ms,
+        "passes": ["full"] if payload else [],
+        "text": " ".join(w["text"] for w in words if w["confidence"] >= OCR_TEXT_MIN_CONFIDENCE),
         "wordCount": len(words),
-        "meanConfidence": round(sum(w.confidence for w in words) / len(words), 1) if words else None,
-        "error": errors[0] if errors else None,
+        "meanConfidence": round(sum(confidences) / len(confidences), 1) if confidences else None,
+        "error": error,
         "fields": [
             {
                 "field": field,
                 "weight": FIELD_WEIGHTS.get(field),
-                "candidates": [{"value": c.value, "score": c.score} for c in getattr(trace.fields, field)],
+                "candidates": [{"value": c.value, "score": c.score} for c in getattr(fields, field)[:DEBUG_LIMIT]],
             }
             for field in TEXT_FIELDS
         ],

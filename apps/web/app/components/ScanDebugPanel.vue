@@ -115,7 +115,7 @@ function barStyle(score: number) {
                 <figcaption>Визуальная</figcaption>
               </figure>
               <figure>
-                <img :src="debug.preprocessing.images.ocr" alt="OCR-ветка: изображение, переданное Tesseract">
+                <img :src="debug.preprocessing.images.ocr" alt="OCR-ветка: кадр, который прочитал OCR">
                 <figcaption>Для OCR</figcaption>
               </figure>
             </div>

@@ -24,6 +24,7 @@ __pycache__/
 
 # Raw experiment outputs stay local; commit only curated summaries.
 reports/*.json
+reports/eval/
 !reports/photo-search-final.json
 !reports/photo-search-pilot-labeled.json
 !reports/photo-search-http.json

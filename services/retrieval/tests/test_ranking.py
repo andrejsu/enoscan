@@ -73,3 +73,26 @@ def test_field_breakdown_explains_the_score_and_skips_fields_without_evidence():
     expected = sum(item.weight * item.score for item in breakdown.values()) / total_weight
     result = rank(ocr_fields, visual_fields, [target])
     assert result.score == pytest.approx(expected, abs=1e-4)
+
+
+def test_shared_field_alone_never_matches_even_at_full_score():
+    # Regression: OCR reading only "Красное" scored every red wine 1.0 and
+    # "matched" whichever came first in catalog order.
+    wines = [wine("a", "Кокур 2020"), wine("b", "Мерло 2021")]
+    result = rank(RetrievalFields(category=(FieldCandidate("Вино", 1.0),),
+                                  color=(FieldCandidate("Красное", 1.0),)), RetrievalFields(), wines)
+    assert result.score == pytest.approx(1.0)
+    assert result.status == "not_found"
+
+
+def test_winery_with_several_wines_does_not_match_without_a_name():
+    wines = [wine("a", "Кокур 2020"), wine("b", "Мерло 2021", region="Кубань")]
+    ocr_fields = RetrievalFields(winery=(FieldCandidate("Дивноморское", 1.0),),
+                                 region=(FieldCandidate("Крым", 1.0),))
+    assert rank(ocr_fields, RetrievalFields(), wines).status == "not_found"
+
+
+def test_tied_top_candidates_do_not_match():
+    wines = [wine("a", "Ребус"), wine("b", "Ребус")]
+    ocr_fields = RetrievalFields(name=(FieldCandidate("Ребус", 1.0),))
+    assert rank(ocr_fields, RetrievalFields(), wines).status == "not_found"

@@ -1,18 +1,13 @@
-"""Standalone OCR field-extraction service — the existing Tesseract-driven
-label reader (app/ocr.py) plus catalog-vocabulary fuzzy matching
-(app/field_vocabulary.py), detached from app/main.py (the now-visual-only
-scanner) the same way app/retriever_main.py detached the visual pipeline.
-Imports nothing from app/service.py, app/main.py or app/index.py.
-"""
-
 from contextlib import asynccontextmanager
 from dataclasses import asdict
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi.concurrency import run_in_threadpool
 
 from .catalog import load_wines
 from .field_vocabulary import FieldVocabulary
 from .image_features import decode_image
+from .ocr import ENGINE_NAME, load_engine
 from .ocr_config import load_ocr_settings
 from .ocr_retriever import OcrRetriever
 
@@ -26,16 +21,13 @@ retriever: OcrRetriever | None = None
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     global retriever
-    wines = load_wines(settings.database_url)
-    retriever = OcrRetriever(FieldVocabulary(wines), ocr_options=dict(
-        timeout=settings.ocr_timeout, psm=settings.ocr_psm,
-        preprocess=settings.ocr_preprocess, retry=settings.ocr_retry,
-    ))
+    load_engine()
+    retriever = OcrRetriever(FieldVocabulary(load_wines(settings.database_url)))
     yield
     retriever = None
 
 
-app = FastAPI(title="Vinolog OCR field retriever (standalone)", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Vinolog OCR field retriever (standalone)", version="0.2.0", lifespan=lifespan)
 
 
 @app.get("/health")
@@ -59,4 +51,10 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
 
-    return asdict(retriever.extract(decoded))
+    trace = await run_in_threadpool(retriever.trace, decoded)
+    return {
+        "fields": asdict(trace.fields),
+        "words": [{"text": w.text, "confidence": w.confidence, "bbox": list(w.bbox)} for w in trace.label.words],
+        "durationMs": trace.ocr_ms,
+        "engine": ENGINE_NAME,
+    }

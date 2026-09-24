@@ -6,7 +6,7 @@ onnxruntime==1.20.*
 opencv-python-headless==4.12.0.88
 pgvector==0.4.*
 psycopg[binary]==3.2.10
-pytesseract==0.3.13
 python-multipart==0.0.20
 uvicorn==0.35.0
+Pillow==12.*  # tests: EXIF fixtures; was pulled in by pytesseract
 pytest==8.3.*

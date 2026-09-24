@@ -1,0 +1,11 @@
+# RapidOCR itself is installed with --no-deps (see Dockerfile.retriever): it
+# pins the GUI opencv-python, which breaks the headless build in
+# requirements.txt (libGL). These are the rest of its dependencies.
+colorlog==6.*
+omegaconf==2.3.*
+pyclipper==1.4.*
+PyYAML==6.*
+requests==2.*
+shapely==2.*
+six==1.*
+tqdm==4.*

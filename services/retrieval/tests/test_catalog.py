@@ -2,7 +2,7 @@ import unittest
 
 from app.catalog import Wine
 from app.index import Candidate
-from app.ocr import extract_year, text_score
+from app.ocr import extract_year
 
 
 def wine(**overrides: object) -> Wine:
@@ -28,13 +28,6 @@ class CatalogTest(unittest.TestCase):
         self.assertEqual(card["category"], "Вино")
         self.assertEqual(card["color"], "Красное")
         self.assertEqual(card["grapeVarieties"], ["Пино Нуар", "Мерло"])
-
-    def test_ocr_text_breaks_duplicate_image_tie(self) -> None:
-        pinot = wine()
-        kokur = wine(slug="method-classic-kokur", name="Method Classic Кокур")
-        label = "ТАБИЯ Пино Нуар полусухое 2025"
-
-        self.assertGreater(text_score(label, pinot), text_score(label, kokur))
 
     def test_wine_card_image_urls_follow_mapping(self) -> None:
         with_image = wine(slug="pino nuar", has_image=True).as_card()

@@ -39,3 +39,12 @@ class RetrievalFields:
     color: tuple[FieldCandidate, ...] = ()
     region: tuple[FieldCandidate, ...] = ()
     slug: tuple[FieldCandidate, ...] = ()  # visual-retriever-only field
+
+
+def fields_from_json(payload: dict) -> RetrievalFields:
+    """Inverse of dataclasses.asdict(RetrievalFields) — how the OCR service
+    (app/ocr_main.py) sends fields to ranking. Unknown keys are ignored."""
+    return RetrievalFields(**{
+        field: tuple(FieldCandidate(str(item["value"]), float(item["score"])) for item in payload[field])
+        for field in RetrievalFields.__dataclass_fields__ if field in payload
+    })

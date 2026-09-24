@@ -163,11 +163,11 @@ services:
     restart: unless-stopped
 
   # --- Standalone OCR field retriever --------------------------------------
-  # The existing Tesseract-driven text matcher (app/ocr.py), detached from
-  # retrieval/retrieval-index above and reworked to return per-field
-  # candidates (app/label_fields.py) instead of resolving a wine itself. No
-  # prebuilt index: catalog text search is cheap enough to resolve from the
-  # DB at startup. See app/ocr_retriever.py.
+  # The only place OCR runs: RapidOCR (PP-OCRv5, Cyrillic, ONNX on CPU,
+  # models baked into the image) reads the full frame, app/ocr_retriever.py
+  # turns it into per-field candidates (app/label_fields.py) — it never
+  # resolves a wine itself. ranking calls it over HTTP. No prebuilt index:
+  # catalog vocabulary is built from the DB at startup.
   ocr-retriever:
     build:
       context: .
@@ -184,10 +184,6 @@ services:
       PGUSER: vinolog
       PGDATABASE: vinolog
       PGPASSWORD: ${VINLOG_DB_PASSWORD:-vinolog}
-      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-2}
-      OCR_PSM: ${OCR_PSM:-6}
-      OCR_PREPROCESS: ${OCR_PREPROCESS:-true}
-      OCR_RETRY: ${OCR_RETRY:-false}
     ports:
       - "8082:8000"
     healthcheck:
@@ -200,9 +196,9 @@ services:
   # --- Standalone ranking --------------------------------------------------
   # Combines the OCR field extractor and the visual retriever's evidence
   # into one resolved slug. See app/ranking.py, app/ranking_main.py.
-  # Calls retriever over HTTP (RETRIEVER_BASE_URL) instead of loading its
-  # own copy of the DINOv2 model + visual index — running both in-process
-  # copies at once was enough to OOM the compose stack. This is the one
+  # Calls ocr-retriever and retriever over HTTP, concurrently, instead of
+  # loading its own OCR models or DINOv2 index — running in-process copies
+  # was enough to OOM the compose stack. This is the one
   # service wired behind web's actual scanner (see the `web` service
   # below); everything else here stays unplugged for standalone testing.
   ranking:
@@ -215,16 +211,16 @@ services:
         condition: service_healthy
       retriever:
         condition: service_healthy
+      ocr-retriever:
+        condition: service_healthy
     environment:
       PGHOST: db
       PGPORT: "5432"
       PGUSER: vinolog
       PGDATABASE: vinolog
       PGPASSWORD: ${VINLOG_DB_PASSWORD:-vinolog}
-      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-2}
-      OCR_PSM: ${OCR_PSM:-6}
-      OCR_PREPROCESS: ${OCR_PREPROCESS:-true}
-      OCR_RETRY: ${OCR_RETRY:-false}
+      OCR_BASE_URL: http://ocr-retriever:8000
+      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-8}
       RETRIEVER_BASE_URL: http://retriever:8000
       RANKING_MATCH_THRESHOLD: ${RANKING_MATCH_THRESHOLD:-0.45}
       # Per-stage trace (crops, OCR fields, retriever shortlist, ranking terms)

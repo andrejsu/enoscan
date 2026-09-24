@@ -8,7 +8,7 @@ from PIL import Image
 
 from app.catalog import Wine
 from app.index import Candidate, SearchResult
-from app.ocr import OcrWord, extract_fields, extract_label
+from app.ocr import OcrWord, extract_abv_candidates, extract_label, extract_year_candidates, fold_homoglyphs
 from app.service import SearchService
 from app.text_search import TextSearch
 from app.image_features import decode_image
@@ -22,41 +22,52 @@ def word(text, confidence=90, line=(1, 1, 1)):
     return OcrWord(text, confidence, (0, 0, 80, 20), line)
 
 
-@pytest.mark.parametrize("text,year,abv", [
-    ("Урожай 2019 12,5 %", 2019, 12.5),
-    ("Основано в 2019", None, None),
-    ("2019", None, None),
-    ("Урожай 2019 или 2020", None, None),
-    ("0,75 л", None, None),
-    ("alc 13.5", None, 13.5),
-    ("2019 розлив урожай", None, None),
-    ("12 % 14 %", None, None),
+@pytest.mark.parametrize("text,years,abvs", [
+    ("Урожай 2019 12,5 %", ["2019"], ["12.5"]),
+    ("Основано в 2019", [], []),
+    ("2019", [], []),
+    ("0,75 л", [], []),
+    ("alc 13.5", [], ["13.5"]),
+    ("2019 розлив урожай", [], []),
 ])
-def test_fields_need_context(text, year, abv):
-    actual_year, actual_abv = extract_fields([word(text)])
-    assert (actual_year.value if actual_year else None) == year
-    assert (actual_abv.value if actual_abv else None) == abv
+def test_fields_need_context(text, years, abvs):
+    assert [c.value for c in extract_year_candidates([word(text)])] == years
+    assert [c.value for c in extract_abv_candidates([word(text)])] == abvs
 
 
 def test_low_confidence_year_abstains():
-    assert extract_fields([word("Урожай 2019", confidence=25)]) == (None, None)
+    assert extract_year_candidates([word("Урожай 2019", confidence=25)]) == ()
 
 
-def test_timeout_falls_back_but_programming_error_propagates():
-    image = np.zeros((40, 40, 3), dtype=np.uint8)
-    with patch("app.ocr.pytesseract.image_to_data", side_effect=RuntimeError("Tesseract process timeout")):
-        assert extract_label(image).error == "timeout"
-    with patch("app.ocr.pytesseract.image_to_data", side_effect=ValueError("bug")):
-        with pytest.raises(ValueError, match="bug"):
-            extract_label(image)
+@pytest.mark.parametrize("text,expected", [
+    ("KPACHOE", "KPACHOE КРАСНОЕ"),       # all look-alikes: keep both readings
+    ("ДЕHИCOB", "ДЕНИСОВ"),               # mixed script: Cyrillic wins
+    ("3АKAT", "ЗАКАТ"),
+    ("3AKAT", "3AKAT ЗАКАТ"),
+    ("KOKUR", "KOKUR"),                   # U, R have no Cyrillic twin: real Latin
+    ("Урожай 2023г", "Урожай 2023г"),     # digits stay digits
+    ("Merlot", "Merlot"),
+])
+def test_homoglyphs_fold_to_cyrillic(text, expected):
+    assert fold_homoglyphs(text) == expected
 
 
-def test_coordinates_return_to_original_image():
-    data = {"text": ["Ребус"], "conf": [90], "left": [10], "top": [20],
-            "width": [30], "height": [40], "block_num": [1], "par_num": [1], "line_num": [1]}
-    with patch("app.ocr.pytesseract.image_to_data", return_value=data):
-        result = extract_label(np.zeros((2800, 100, 3), dtype=np.uint8))
-    assert result.words[0].bbox == (20, 40, 60, 80)
+class EngineResult:
+    boxes = [[[10, 20], [110, 22], [110, 60], [10, 58]]]
+    txts = ("Усадьба Перавских KPACHOE",)
+    scores = (0.93,)
+
+
+def test_engine_lines_become_words_with_bbox_and_percent_confidence():
+    with patch("app.ocr.load_engine", return_value=lambda image: EngineResult()):
+        result = extract_label(np.zeros((100, 200, 3), dtype=np.uint8))
+    assert result.words == (OcrWord("Усадьба Перавских KPACHOE КРАСНОЕ", 93.0, (10, 20, 100, 40), (1, 1, 1)),)
+
+
+def test_no_text_found_is_an_empty_result():
+    empty = type("Empty", (), {"boxes": None, "txts": None, "scores": None})()
+    with patch("app.ocr.load_engine", return_value=lambda image: empty):
+        assert extract_label(np.zeros((10, 10, 3), dtype=np.uint8)).words == ()
 
 
 def test_decode_applies_camera_exif_orientation():
@@ -79,21 +90,6 @@ def test_same_observed_words_do_not_prefer_shorter_title():
                          wine("short", "Декантер Мерло", "Фанагория")])
     scores = search.scores("Фанагория Декантер")
     assert scores["long"] == scores["short"]
-
-
-def test_two_reliable_different_vintages_abstain():
-    words = [word("Урожай 2019"), word("Урожай 2020", line=(1, 1, 2))]
-    assert extract_fields(words)[0] is None
-
-
-def test_retry_is_bounded_and_keeps_first_pass_on_timeout():
-    words = [word("Урожай 2019", confidence=55)]
-    with patch("app.ocr._read_words", side_effect=[(words, None), ([], "timeout")]) as read:
-        label = extract_label(np.zeros((100, 100, 3), dtype=np.uint8), retry=True, timeout=1)
-    assert read.call_count == 2
-    assert 0 < read.call_args.args[1] <= 1
-    assert label.words == tuple(words)
-    assert label.error == "timeout"
 
 
 class IndexStub:

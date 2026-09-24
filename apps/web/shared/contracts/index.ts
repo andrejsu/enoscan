@@ -69,7 +69,7 @@ export interface ScanDebugPreprocessing {
   warnings: readonly string[]
   /** Fast-crop box as [left, top, right, bottom] fractions of the source frame; null after SAM. */
   cropBox: readonly [number, number, number, number] | null
-  /** JPEG data URLs: uploaded frame, color branch for visual search, what Tesseract read. */
+  /** JPEG data URLs: uploaded frame, color branch for visual search, what OCR read (the full frame). */
   images: { source: string, visual: string, ocr: string }
   metrics: {
     labelWidth: number | null

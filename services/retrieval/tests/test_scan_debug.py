@@ -1,10 +1,9 @@
+from dataclasses import asdict
+
 import numpy as np
 
 from app.catalog import Wine
-from app.label_fields import TEXT_FIELDS, FieldCandidate, RetrievalFields
-from app.label_normalize import PreparedQuery
-from app.ocr import OcrResult, OcrWord
-from app.ocr_retriever import OcrTrace
+from app.label_fields import TEXT_FIELDS, FieldCandidate, RetrievalFields, fields_from_json
 from app.ranking import rank
 from app.scan_debug import DEBUG_LIMIT, ocr_debug, preprocessing_debug, ranking_debug, retriever_debug
 
@@ -14,39 +13,40 @@ def wine(slug, name="Ребус 2019", winery="Дивноморское"):
                 region="Крым", grape_varieties=("Пино Нуар",))
 
 
-def trace(labels=(OcrResult((OcrWord("Ребус", 90, (0, 0, 10, 10), (1, 1, 1)),
-                              OcrWord("шум", 12, (0, 0, 10, 10), (1, 1, 1)))),)):
-    prepared = PreparedQuery(visual=np.full((40, 60, 3), 200, dtype=np.uint8),
-                             ocr=np.full((40, 60), 200, dtype=np.uint8), used_sam=False,
-                             warnings=["sam_skipped"], info={"label_px": [60, 40], "sharpness": 12.5,
-                                                            "noise_sigma": 1.2, "glare_frac": 0.01},
-                             crop_box=(0.05, 0.3, 0.95, 0.95))
-    fields = RetrievalFields(name=(FieldCandidate("Ребус 2019", 0.9),))
-    return OcrTrace(fields, prepared, labels, prepare_ms=7, ocr_ms=300)
+FIELDS = RetrievalFields(name=(FieldCandidate("Ребус 2019", 0.9),))
+PAYLOAD = {"fields": asdict(FIELDS), "durationMs": 300, "engine": "test",
+           "words": [{"text": "Ребус", "confidence": 90.0, "bbox": [0, 0, 10, 10]},
+                     {"text": "шум", "confidence": 12.0, "bbox": [0, 0, 10, 10]}]}
 
 
 def test_preprocessing_debug_embeds_thumbnails_and_label_prep_metrics():
-    debug = preprocessing_debug(np.zeros((2000, 1000, 3), dtype=np.uint8), trace())
-    assert debug["durationMs"] == 7
+    debug = preprocessing_debug(np.full((2000, 1000, 3), 200, dtype=np.uint8))
+    assert debug["durationMs"] >= 0
     assert debug["cropBox"] == [0.05, 0.3, 0.95, 0.95]
     assert all(url.startswith("data:image/jpeg;base64,") for url in debug["images"].values())
-    assert debug["metrics"] == {"labelWidth": 60, "labelHeight": 40, "sharpness": 12.5,
-                                "noiseSigma": 1.2, "glareFraction": 0.01, "isDenoised": False}
+    assert set(debug["metrics"]) == {"labelWidth", "labelHeight", "sharpness", "noiseSigma",
+                                     "glareFraction", "isDenoised"}
+
+
+def test_fields_survive_the_json_round_trip_between_services():
+    assert fields_from_json(PAYLOAD["fields"]) == FIELDS
 
 
 def test_ocr_debug_lists_every_field_even_without_candidates():
-    debug = ocr_debug(trace())
+    debug = ocr_debug(PAYLOAD, None, 320, FIELDS)
     assert [item["field"] for item in debug["fields"]] == list(TEXT_FIELDS)
     assert debug["fields"][0]["candidates"] == [{"value": "Ребус 2019", "score": 0.9}]
     assert debug["text"] == "Ребус"  # low-confidence words are not searched, so not shown as searched text
     assert debug["wordCount"] == 2
-    assert debug["passes"] == ["crop"]
+    assert debug["passes"] == ["full"]
+    assert debug["durationMs"] == 320
     assert debug["error"] is None
 
 
-def test_ocr_debug_reports_the_tesseract_error():
-    debug = ocr_debug(trace(labels=(OcrResult(error="timeout", passes=0),)))
-    assert debug["error"] == "timeout"
+def test_ocr_debug_reports_an_unreachable_ocr_service():
+    debug = ocr_debug(None, "ConnectError", 5, RetrievalFields())
+    assert debug["error"] == "ConnectError"
+    assert debug["passes"] == [] and debug["wordCount"] == 0
     assert debug["meanConfidence"] is None
 
 

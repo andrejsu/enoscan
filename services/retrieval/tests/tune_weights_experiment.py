@@ -1,9 +1,3 @@
-"""One-off experiment script — not part of the test suite, not shipped in any
-Docker image. Loads the current retriever index build and its pgvector embeddings once, computes raw SIFT+embedding
-evidence per fixture, then sweeps blend weights/shortlist sizes offline
-(cheap) to find better retriever.py defaults without rebuilding the index or
-re-running feature extraction per trial.
-"""
 import sys
 sys.path.insert(0, "/app")
 
