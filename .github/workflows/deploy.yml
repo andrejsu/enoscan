@@ -1,0 +1,129 @@
+# Checks, builds images into GHCR and rolls them out to the VPS over SSH.
+# Setup (secrets, server layout, first run): docs/engineering/DEPLOY.md.
+name: deploy
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  IMAGE_PREFIX: ghcr.io/${{ github.repository }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+
+  build:
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name: web
+            context: .
+            file: deploy/web.Dockerfile
+          - name: importer
+            context: services/importer
+            file: services/importer/Dockerfile
+          - name: retriever
+            context: .
+            file: services/retrieval/Dockerfile.retriever
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:${{ github.sha }}
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.name }}:latest
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+    env:
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/opt/vinolog' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host vps
+            HostName ${{ secrets.VPS_HOST }}
+            User ${{ secrets.VPS_USER }}
+            Port ${{ vars.VPS_PORT || '22' }}
+            IdentityFile ~/.ssh/id_deploy
+            IdentitiesOnly yes
+            ServerAliveInterval 30
+          EOF
+
+      - name: Upload stack files
+        run: |
+          ssh vps "mkdir -p '$DEPLOY_PATH/db' '$DEPLOY_PATH/data/dataset'"
+          scp deploy/compose.prod.yaml deploy/Caddyfile "vps:$DEPLOY_PATH/"
+          tar -czf - db | ssh vps "rm -rf '$DEPLOY_PATH/db' && tar -xzf - -C '$DEPLOY_PATH'"
+
+      - name: Pull and restart
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ssh vps bash -s <<EOF
+          set -euo pipefail
+          cd '$DEPLOY_PATH'
+          test -f .env || { echo "Missing $DEPLOY_PATH/.env — see docs/engineering/DEPLOY.md" >&2; exit 1; }
+          echo '$GHCR_TOKEN' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+          export IMAGE_TAG='${{ github.sha }}' VINOLOG_IMAGE_PREFIX='$IMAGE_PREFIX'
+          docker compose -f compose.prod.yaml pull --quiet
+          docker logout ghcr.io
+          # Blocks on depends_on: importer and retriever-index must exit 0 and
+          # retriever/ranking must turn healthy before web is (re)created.
+          docker compose -f compose.prod.yaml up -d --remove-orphans
+          web_container="\$(docker compose -f compose.prod.yaml ps -q web)"
+          for attempt in \$(seq 1 60); do
+            status="\$(docker inspect -f '{{.State.Health.Status}}' "\$web_container")"
+            [ "\$status" = healthy ] && break
+            [ "\$attempt" = 60 ] && { docker compose -f compose.prod.yaml logs --tail 100 web; exit 1; }
+            sleep 5
+          done
+          docker compose -f compose.prod.yaml ps
+          docker image prune -f
+          EOF

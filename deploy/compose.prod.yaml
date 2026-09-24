@@ -1,0 +1,205 @@
+# Production stack for the VPS. Images are built by GitHub Actions
+# (.github/workflows/deploy.yml) and pulled from GHCR; nothing is built on
+# the server. Only Caddy publishes ports; PostgreSQL, MinIO and the Python
+# services stay on the internal network. Wine images reach the browser
+# through web's /api/wines/[slug]/image, so MinIO is never public.
+#
+# Server layout (/opt/vinolog by default, see docs/engineering/DEPLOY.md):
+#   compose.prod.yaml, Caddyfile, db/   — copied by CI on every deploy
+#   .env                                — created once by hand
+#   data/dataset/                       — uploaded once by hand (rsync)
+
+x-images: &retriever-image ${VINOLOG_IMAGE_PREFIX:-ghcr.io/andrejsu/enoscan}-retriever:${IMAGE_TAG:-latest}
+
+x-storage-environment: &storage-environment
+  S3_ENDPOINT: http://minio:9000
+  S3_ACCESS_KEY: ${VINLOG_S3_ACCESS_KEY:?set VINLOG_S3_ACCESS_KEY in .env}
+  S3_SECRET_KEY: ${VINLOG_S3_SECRET_KEY:?set VINLOG_S3_SECRET_KEY in .env}
+  S3_REGION: us-east-1
+
+x-db-environment: &db-environment
+  PGHOST: db
+  PGPORT: "5432"
+  PGUSER: vinolog
+  PGDATABASE: vinolog
+  PGPASSWORD: ${VINLOG_DB_PASSWORD:?set VINLOG_DB_PASSWORD in .env}
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+x-python-healthcheck: &python-healthcheck
+  test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+  interval: 5s
+  timeout: 3s
+  retries: 60
+
+services:
+  db:
+    image: pgvector/pgvector:0.8.0-pg16
+    environment:
+      POSTGRES_USER: vinolog
+      POSTGRES_DB: vinolog
+      POSTGRES_PASSWORD: ${VINLOG_DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    logging: *logging
+    restart: unless-stopped
+
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-03-12T18-04-18Z
+    command: ["server", "/data"]
+    environment:
+      MINIO_ROOT_USER: ${VINLOG_S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${VINLOG_S3_SECRET_KEY}
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    logging: *logging
+    restart: unless-stopped
+
+  # One-shot: finishes in seconds when the dataset version is unchanged.
+  importer:
+    image: ${VINOLOG_IMAGE_PREFIX:-ghcr.io/andrejsu/enoscan}-importer:${IMAGE_TAG:-latest}
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      <<: [*storage-environment, *db-environment]
+    volumes:
+      - ./data/dataset:/input:ro
+      - ./db:/db:ro
+    logging: *logging
+    restart: "no"
+
+  # One-shot: verifies checksums and downloads only what is missing.
+  retriever-model:
+    image: *retriever-image
+    command: ["sh", "-c", "python -m app.download_model && python -m app.download_sam"]
+    environment:
+      MODEL_PATH: /models/dinov2-small.onnx
+      SAM_MODEL_DIR: /models/sam_vit_b_quant
+    volumes:
+      - retriever-models:/models
+    logging: *logging
+    restart: "no"
+
+  # One-shot: skips the build when an index for this dataset version exists.
+  retriever-index:
+    image: *retriever-image
+    depends_on:
+      importer:
+        condition: service_completed_successfully
+      retriever-model:
+        condition: service_completed_successfully
+    command: ["python", "-m", "app.build_retriever_index"]
+    environment: &retriever-environment
+      <<: [*storage-environment, *db-environment]
+      MODEL_PATH: /models/dinov2-small.onnx
+      SAM_MODEL_DIR: /models/sam_vit_b_quant
+      VISUAL_SHORTLIST_LIMIT: ${RETRIEVER_VISUAL_SHORTLIST_LIMIT:-24}
+      EMBEDDING_SHORTLIST_LIMIT: ${RETRIEVER_EMBEDDING_SHORTLIST_LIMIT:-20}
+      QUERY_SAM: ${RETRIEVER_QUERY_SAM:-false}
+    volumes:
+      - retriever-models:/models:ro
+    logging: *logging
+    restart: "no"
+
+  retriever:
+    image: *retriever-image
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      retriever-index:
+        condition: service_completed_successfully
+    environment: *retriever-environment
+    volumes:
+      - retriever-models:/models:ro
+    healthcheck: *python-healthcheck
+    logging: *logging
+    restart: unless-stopped
+
+  ranking:
+    image: *retriever-image
+    command: ["uvicorn", "app.ranking_main:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      db:
+        condition: service_healthy
+      retriever:
+        condition: service_healthy
+    environment:
+      <<: *db-environment
+      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-2}
+      OCR_PSM: ${OCR_PSM:-6}
+      OCR_PREPROCESS: ${OCR_PREPROCESS:-true}
+      OCR_RETRY: ${OCR_RETRY:-false}
+      RETRIEVER_BASE_URL: http://retriever:8000
+      RANKING_MATCH_THRESHOLD: ${RANKING_MATCH_THRESHOLD:-0.45}
+      RANKING_DEBUG: ${RANKING_DEBUG:-false}
+    healthcheck: *python-healthcheck
+    logging: *logging
+    restart: unless-stopped
+
+  web:
+    image: ${VINOLOG_IMAGE_PREFIX:-ghcr.io/andrejsu/enoscan}-web:${IMAGE_TAG:-latest}
+    depends_on:
+      importer:
+        condition: service_completed_successfully
+      minio:
+        condition: service_healthy
+      ranking:
+        condition: service_healthy
+    environment:
+      <<: *db-environment
+      NUXT_PUBLIC_SCAN_MODE: retrieval
+      NUXT_PUBLIC_ASTRO_ENABLED: ${NUXT_PUBLIC_ASTRO_ENABLED:-true}
+      NUXT_PUBLIC_SOMMELIER_MODE: ${NUXT_PUBLIC_SOMMELIER_MODE:-mock}
+      NUXT_RANKING_BASE_URL: http://ranking:8000
+      NUXT_SOMMELIER_PROVIDER: ${NUXT_SOMMELIER_PROVIDER:-openai}
+      NUXT_SOMMELIER_MODEL: ${NUXT_SOMMELIER_MODEL:-}
+      NUXT_SOMMELIER_MAX_REQUESTS: ${NUXT_SOMMELIER_MAX_REQUESTS:-20}
+      NUXT_SOMMELIER_API_KEY: ${NUXT_SOMMELIER_API_KEY:-}
+      NUXT_STORAGE_ENDPOINT: http://minio:9000
+      NUXT_STORAGE_ACCESS_KEY: ${VINLOG_S3_ACCESS_KEY}
+      NUXT_STORAGE_SECRET_KEY: ${VINLOG_S3_SECRET_KEY}
+    logging: *logging
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.10-alpine
+    depends_on:
+      - web
+    environment:
+      VINOLOG_DOMAIN: ${VINOLOG_DOMAIN:-:80}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    logging: *logging
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  minio-data:
+  retriever-models:
+  caddy-data:
+  caddy-config:

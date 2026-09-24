@@ -1,0 +1,7 @@
+# VINOLOG_DOMAIN=vinolog.example.ru gets an automatic Let's Encrypt
+# certificate; the default ":80" serves plain HTTP on the server IP until a
+# domain points at the VPS.
+{$VINOLOG_DOMAIN}
+
+encode zstd gzip
+reverse_proxy web:3000

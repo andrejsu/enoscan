@@ -135,6 +135,10 @@ docker compose down
 docker volume rm vinolog_dataset vinolog_retrieval-index vinolog_retriever-index-data
 ```
 
+## Деплой
+
+Push в `master` проверяет проект, собирает образы в GHCR и выкатывает их на VPS через GitHub Actions (`.github/workflows/deploy.yml`). Прод-стек описан в `deploy/`. Настройка сервера, секреты GitHub и откат описаны в [docs/engineering/DEPLOY.md](docs/engineering/DEPLOY.md).
+
 ## Команды
 
 ```bash
