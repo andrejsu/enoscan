@@ -48,6 +48,9 @@ jobs:
           - name: minio
             context: deploy
             file: deploy/minio.Dockerfile
+          - name: models
+            context: .
+            file: deploy/models.Dockerfile
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3

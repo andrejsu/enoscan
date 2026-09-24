@@ -87,13 +87,10 @@ services:
     logging: *logging
     restart: "no"
 
-  # One-shot: verifies checksums and downloads only what is missing.
+  # One-shot: copies weights baked into the image by CI
+  # (deploy/models.Dockerfile); nothing is downloaded on the VPS.
   retriever-model:
-    image: *retriever-image
-    command: ["sh", "-c", "python -m app.download_model && python -m app.download_sam"]
-    environment:
-      MODEL_PATH: /models/dinov2-small.onnx
-      SAM_MODEL_DIR: /models/sam_vit_b_quant
+    image: ${VINOLOG_IMAGE_PREFIX:-ghcr.io/andrejsu/enoscan}-models:${IMAGE_TAG:-latest}
     volumes:
       - retriever-models:/models
     logging: *logging

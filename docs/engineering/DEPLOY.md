@@ -3,14 +3,14 @@
 Каждый push в `master` запускает `.github/workflows/deploy.yml`:
 
 1. `check` — `npm run check`.
-2. `build` — образы `web`, `importer`, `retriever` и `minio` собираются в GitHub Actions и публикуются в GHCR с тегами `<sha>` и `latest`. На сервере ничего не собирается.
+2. `build` — образы `web`, `importer`, `retriever`, `minio` и `models` собираются в GitHub Actions и публикуются в GHCR с тегами `<sha>` и `latest`. На сервере ничего не собирается.
 3. `deploy` — по SSH копирует `deploy/compose.prod.yaml`, `deploy/Caddyfile` и `db/` в `/opt/vinolog`, затем выполняет `docker compose pull` и `up -d` и ждёт, пока `web` станет healthy.
 
 Ручной запуск: Actions → deploy → Run workflow.
 
 Прод-стек: `db`, `minio`, `retriever`, `ranking`, `web`, `caddy` плюс однократные `importer`, `retriever-model`, `retriever-index`. Наружу открыт только Caddy (80/443). Сервисы `retrieval`, `retrieval-index` и `ocr-retriever` из dev-compose в прод не входят.
 
-MinIO собирается из исходников (`deploy/minio.Dockerfile`): официальные образы на quay.io и Docker Hub больше не отдаются анонимно.
+MinIO собирается из исходников (`deploy/minio.Dockerfile`): официальные образы на quay.io и Docker Hub больше не отдаются анонимно. Веса моделей (DINOv2 с huggingface.co, SAM с GitHub) скачиваются в CI и упаковываются в образ `models` (`deploy/models.Dockerfile`): VPS не обязан иметь доступ к Hugging Face.
 
 Ресурсы: 4 vCPU, 8 ГБ RAM, от 40 ГБ диска, архитектура amd64. GPU не нужен.
 
