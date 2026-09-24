@@ -2,7 +2,6 @@ import unittest
 
 from app.catalog import Wine
 from app.index import Candidate
-from app.ocr import extract_year
 
 
 def wine(**overrides: object) -> Wine:
@@ -52,23 +51,6 @@ def candidate(slug: str, name: str, score: float = 0.5) -> Candidate:
         good_matches=12,
         inliers=8,
     )
-
-
-class OcrYearTest(unittest.TestCase):
-    def test_extracts_single_year(self) -> None:
-        self.assertEqual(extract_year("Урожай 2019 года"), 2019)
-
-    def test_repeated_same_year_is_not_ambiguous(self) -> None:
-        self.assertEqual(extract_year("2019 Ребус 2019"), 2019)
-
-    def test_conflicting_years_are_ambiguous(self) -> None:
-        self.assertIsNone(extract_year("2019 или 2020 неизвестно"))
-
-    def test_absent_year_returns_none(self) -> None:
-        self.assertIsNone(extract_year("красное вино"))
-
-    def test_year_outside_vintage_range_is_ignored(self) -> None:
-        self.assertIsNone(extract_year("основано в 1861"))
 
 
 if __name__ == "__main__":

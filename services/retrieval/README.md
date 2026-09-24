@@ -2,7 +2,7 @@
 
 Локальный baseline поиска конкретной карточки по фотографии этикетки. Он строит SIFT-индекс по фото, привязанным к винам в таблице `wine_images` (её заполняет `services/importer`), получает кандидатов через FLANN и перепроверяет их геометрию через RANSAC — чисто визуальный поиск. Сервис не зависит от Nuxt UI и не использует облачные ключи.
 
-OCR (RapidOCR) и объединение его результата с визуальным поиском больше не часть этого сервиса — они вынесены в отдельные сервисы: `ocr-retriever` (`app/ocr_main.py`) отдаёт per-поле кандидатов, `ranking` (`app/ranking_main.py`) комбинирует их с визуальными кандидатами `retriever` и резолвит slug. `ranking` — тот сервис, что реально стоит за продуктовым сканером (`apps/web`'s `/api/scans`, через `NUXT_RANKING_BASE_URL`); `retrieval` (этот сервис) остаётся визуальным baseline и источником для `/v1/eval/predict`. См. `app/label_fields.py` и `app/ranking.py`.
+OCR (RapidOCR) и объединение его результата с визуальным поиском больше не часть этого сервиса — они вынесены в отдельные сервисы: `ocr-retriever` (`app/ocr/main.py`) отдаёт per-поле кандидатов, `ranking` (`app/ranking_main.py`) комбинирует их с визуальными кандидатами `retriever` и резолвит slug. `ranking` — тот сервис, что реально стоит за продуктовым сканером (`apps/web`'s `/api/scans`, через `NUXT_RANKING_BASE_URL`); `retrieval` (этот сервис) остаётся визуальным baseline и источником для `/v1/eval/predict`. См. `app/label_fields.py` и `app/ranking.py`.
 
 ## Запуск
 
@@ -23,4 +23,4 @@ OCR (RapidOCR) и объединение его результата с визу
 
 Изменили данные или `db/image-overrides.csv` — выполните `docker compose up -d`: importer создаст новую версию, индексаторы соберут индексы под неё. Удалять тома не нужно.
 
-SIFT — измеримый baseline, а не заявленная финальная точность. Визуальные embeddings (DINOv2) и OCR-переранжирование уже реализованы, но как отдельные сервисы (`retriever`, `ocr-retriever`, `ranking`) рядом с этим, а не изменения внутри `SearchService` — см. `services/retrieval/app/retriever.py`, `app/ocr_retriever.py`, `app/ranking.py`.
+SIFT — измеримый baseline, а не заявленная финальная точность. Визуальные embeddings (DINOv2) и OCR-переранжирование уже реализованы, но как отдельные сервисы (`retriever`, `ocr-retriever`, `ranking`) рядом с этим, а не изменения внутри `SearchService` — см. `services/retrieval/app/retriever.py`, `app/ocr/retriever.py`, `app/ranking.py`.

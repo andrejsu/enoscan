@@ -1,5 +1,5 @@
 """Standalone ranking service — the one place that combines OCR field
-evidence (app/ocr_main.py) and visual slug evidence (app/retriever_main.py)
+evidence (app/ocr/main.py) and visual slug evidence (app/retriever_main.py)
 into a single resolved wine, via app/ranking.py. Imports nothing from
 app/service.py, app/main.py or app/index.py — the main scanner stays
 untouched and unrelated.
@@ -19,7 +19,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
 from .catalog import Wine, current_dataset_version, load_wines
-from .image_features import decode_image
+from .common.upload import decode_upload, read_image_upload
 from .label_fields import FieldCandidate, RetrievalFields, fields_from_json
 from .ranking import rank
 from .ranking_config import load_ranking_settings
@@ -30,7 +30,6 @@ from .scan_debug import ocr_debug, preprocessing_debug, ranking_debug, retriever
 # (apps/web's #shared/contracts ScanResponse) — this is the one service
 # meant to sit behind the product's scanner, so it must speak the same
 # shape they do, not a leaner one-off.
-ACCEPTED_TYPES = {"application/octet-stream", "image/jpeg", "image/png", "image/webp"}
 RESPONSE_LIMIT = 5
 
 settings = load_ranking_settings()
@@ -56,7 +55,7 @@ app = FastAPI(title="Vinolog ranking (standalone)", version="0.2.0", lifespan=li
 
 @app.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok" if (ocr_retriever and retriever_client) else "loading"}
+    return {"status": "ok" if http_client else "loading"}
 
 
 async def _post_image(base_url: str, timeout: float, content: bytes, content_type: str | None,
@@ -81,17 +80,8 @@ async def _post_image(base_url: str, timeout: float, content: bytes, content_typ
 async def search(image: UploadFile = File(...)) -> dict[str, object]:
     if http_client is None:
         raise HTTPException(status_code=503, detail="Ранжирование ещё загружается.")
-    if image.content_type not in ACCEPTED_TYPES:
-        raise HTTPException(status_code=415, detail="Поддерживаются JPEG, PNG и WebP.")
-    content = await image.read(settings.max_upload_bytes + 1)
-    if not content:
-        raise HTTPException(status_code=400, detail="Добавьте фотографию в поле image.")
-    if len(content) > settings.max_upload_bytes:
-        raise HTTPException(status_code=413, detail="Размер фотографии не должен превышать 10 МБ.")
-    try:
-        decoded = decode_image(content)
-    except ValueError as error:
-        raise HTTPException(status_code=422, detail=str(error)) from error
+    content = await read_image_upload(image, settings.max_upload_bytes)
+    decoded = decode_upload(content)
 
     started = time.perf_counter()
     (ocr, ocr_error, ocr_ms), (visual, visual_error, visual_ms) = await asyncio.gather(

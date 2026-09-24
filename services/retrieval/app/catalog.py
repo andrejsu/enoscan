@@ -43,6 +43,12 @@ class Wine:
             "imagePreviewUrl": f"{image_url}?size=preview" if image_url else None,
         }
 
+    def field_values(self, field: str) -> list[str]:
+        if field == "grape_varieties":
+            return [item.strip() for item in self.grape_varieties if item.strip()]
+        raw = getattr(self, field)
+        return [raw.strip()] if raw else []
+
     def to_json(self) -> dict[str, object]:
         return {**self.__dict__, "grape_varieties": list(self.grape_varieties)}
 

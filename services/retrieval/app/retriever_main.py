@@ -4,7 +4,7 @@ A separate process from app/main.py (the existing OCR-driven scanner): its
 own FastAPI app, its own index (retriever_index.py / build_retriever_index.py),
 its own settings (retriever_config.py). It exposes just enough to test the
 retriever end to end — /health, /v1/search, and an image passthrough for the
-UI's thumbnails — and imports nothing from app/service.py or app/ocr.py.
+UI's thumbnails — and imports nothing from app/service.py or app/ocr/.
 """
 
 from contextlib import asynccontextmanager
@@ -14,9 +14,9 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 
 from . import download_model
 from .catalog import current_dataset_version
+from .common.upload import decode_upload, read_image_upload
 from .embedding import EMBEDDING_MODEL, Dinov2Encoder
 from .embedding_store import EmbeddingStore
-from .image_features import decode_image
 from .index_store import fetch_index, require_build
 from .label_normalize import Config as LabelConfig, Segmenter
 from .retriever import VisualRetriever
@@ -25,7 +25,6 @@ from .retriever_index import RETRIEVER_INDEX_KIND, RetrieverIndex
 from .storage import ObjectStore
 
 
-ACCEPTED_TYPES = {"application/octet-stream", "image/jpeg", "image/png", "image/webp"}
 # "candidates" in the /v1/search response holds all 10: the top pick plus 9
 # ranked alternatives, sorted by score descending — see RETRIEVER.md.
 RESPONSE_LIMIT = 10
@@ -72,17 +71,7 @@ def _wine_card_with_image(candidate) -> dict[str, object]:
 async def search(image: UploadFile = File(...)) -> dict[str, object]:
     if retriever is None:
         raise HTTPException(status_code=503, detail="Индекс ретривера ещё загружается.")
-    if image.content_type not in ACCEPTED_TYPES:
-        raise HTTPException(status_code=415, detail="Поддерживаются JPEG, PNG и WebP.")
-    content = await image.read(settings.max_upload_bytes + 1)
-    if not content:
-        raise HTTPException(status_code=400, detail="Добавьте фотографию в поле image.")
-    if len(content) > settings.max_upload_bytes:
-        raise HTTPException(status_code=413, detail="Размер фотографии не должен превышать 10 МБ.")
-    try:
-        decoded = decode_image(content)
-    except ValueError as error:
-        raise HTTPException(status_code=422, detail=str(error)) from error
+    decoded = decode_upload(await read_image_upload(image, settings.max_upload_bytes))
 
     result = retriever.search(decoded, limit=RESPONSE_LIMIT)
     candidates = result.candidates

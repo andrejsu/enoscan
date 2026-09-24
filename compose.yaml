@@ -164,7 +164,7 @@ services:
 
   # --- Standalone OCR field retriever --------------------------------------
   # The only place OCR runs: RapidOCR (PP-OCRv5, Cyrillic, ONNX on CPU,
-  # models baked into the image) reads the full frame, app/ocr_retriever.py
+  # models baked into the image) reads the full frame, app/ocr/retriever.py
   # turns it into per-field candidates (app/label_fields.py) — it never
   # resolves a wine itself. ranking calls it over HTTP. No prebuilt index:
   # catalog vocabulary is built from the DB at startup.
@@ -172,7 +172,7 @@ services:
     build:
       context: .
       dockerfile: services/retrieval/Dockerfile.retriever
-    command: ["uvicorn", "app.ocr_main:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["uvicorn", "app.ocr.main:app", "--host", "0.0.0.0", "--port", "8000"]
     depends_on:
       importer:
         condition: service_completed_successfully

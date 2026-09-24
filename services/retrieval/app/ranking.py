@@ -1,4 +1,4 @@
-"""Combine OCR's per-field evidence (app/ocr_retriever.py) with the visual
+"""Combine OCR's per-field evidence (app/ocr/retriever.py) with the visual
 retriever's slug evidence (app/retriever.py) into one resolved wine slug.
 Neither producer resolves a wine itself — this is the one place that does,
 and the one place with a pass/fail confidence threshold, per the
@@ -11,9 +11,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .catalog import Wine
-from .field_vocabulary import _field_values
 from .label_fields import RetrievalFields
-from .ocr import extract_year
+from .ocr.fields import extract_year
 
 
 # Placeholder, sums to 1.0 — uncalibrated, same caveat as retriever.py's
@@ -29,7 +28,7 @@ FIELD_WEIGHTS = {
 # Placeholder — the parameter below which ranking honestly returns
 # not_found, and above which it is confident about the resolved slug.
 # Calibrated against the 6 real fixtures in tests/fixtures/ after fixing
-# field_vocabulary.py's coverage bug (2026-09-23): 0.5 rejected a correct
+# ocr/vocabulary.py's coverage bug (2026-09-23): 0.5 rejected a correct
 # match at 0.4976 (balaklava-muskat, OCR only read 3/4 of the name) while
 # the one genuinely ambiguous case (near-duplicate sibling wines, see
 # thoughts/groom/2b_RETRIEVER.md) sits at 0.32 — well clear on either
@@ -59,7 +58,7 @@ def _actual_values(wine: Wine, field: str) -> set[str]:
     if field == "year":
         year = extract_year(wine.name)
         return {str(year)} if year is not None else set()
-    return set(_field_values(wine, field))
+    return set(wine.field_values(field))
 
 
 @dataclass(frozen=True)

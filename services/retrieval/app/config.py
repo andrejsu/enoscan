@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from os import environ
 
+from .common.settings import load_database_url, load_max_upload_bytes
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -10,18 +12,8 @@ class Settings:
 
 
 def load_settings() -> Settings:
-    database_url = environ.get("DATABASE_URL")
-    if not database_url:
-        database_url = (
-            f"postgresql://{environ.get('PGUSER', 'vinolog')}:"
-            f"{environ.get('PGPASSWORD', 'vinolog')}@"
-            f"{environ.get('PGHOST', 'db')}:"
-            f"{environ.get('PGPORT', '5432')}/"
-            f"{environ.get('PGDATABASE', 'vinolog')}"
-        )
-
     return Settings(
-        database_url=database_url,
-        max_upload_bytes=int(environ.get("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024))),
+        database_url=load_database_url(),
+        max_upload_bytes=load_max_upload_bytes(),
         visual_limit=int(environ.get("VISUAL_SHORTLIST_LIMIT", "50")),
     )

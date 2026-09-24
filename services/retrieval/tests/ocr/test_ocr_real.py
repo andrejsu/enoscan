@@ -4,15 +4,15 @@ from pathlib import Path
 import pytest
 
 from app.catalog import Wine
-from app.field_vocabulary import FieldVocabulary
 from app.image_features import decode_image
 from app.label_fields import RetrievalFields
-from app.ocr_retriever import OcrRetriever
+from app.ocr.retriever import OcrRetriever
+from app.ocr.vocabulary import FieldVocabulary
 from app.ranking import rank
 
 
 pytestmark = pytest.mark.skipif(find_spec("rapidocr") is None, reason="rapidocr is not installed")
-FIXTURES = Path(__file__).parent / "fixtures"
+FIXTURES = Path(__file__).parents[1] / "fixtures"
 WINES = [
     Wine("balaklava-muskat-beloe-polusladkoe", "Балаклава Мускат белое полусладкое", "Золотая Балка",
          category="Белое", region="Крым", grape_varieties=("Мускат Белый",)),

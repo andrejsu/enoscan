@@ -18,13 +18,12 @@ import numpy as np
 from .catalog import Wine
 from .label_fields import TEXT_FIELDS, RetrievalFields
 from .label_normalize import prepare_query
+from .ocr.constants import SEARCH_TEXT_MIN_CONFIDENCE
 from .ranking import FIELD_WEIGHTS, RankingResult, field_breakdown
 
 
 DEBUG_LIMIT = 10
 THUMBNAIL_SIDE = 480
-# Same cut ocr_retriever.OcrRetriever._fields applies before vocabulary search.
-OCR_TEXT_MIN_CONFIDENCE = 40
 
 
 def image_data_url(image: np.ndarray, *, max_side: int = THUMBNAIL_SIDE) -> str:
@@ -79,7 +78,7 @@ def ocr_debug(payload: dict | None, error: str | None, duration_ms: int,
     return {
         "durationMs": duration_ms,
         "passes": ["full"] if payload else [],
-        "text": " ".join(w["text"] for w in words if w["confidence"] >= OCR_TEXT_MIN_CONFIDENCE),
+        "text": " ".join(w["text"] for w in words if w["confidence"] >= SEARCH_TEXT_MIN_CONFIDENCE),
         "wordCount": len(words),
         "meanConfidence": round(sum(confidences) / len(confidences), 1) if confidences else None,
         "error": error,
