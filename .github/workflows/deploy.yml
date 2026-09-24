@@ -45,6 +45,9 @@ jobs:
           - name: retriever
             context: .
             file: services/retrieval/Dockerfile.retriever
+          - name: minio
+            context: deploy
+            file: deploy/minio.Dockerfile
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -110,6 +113,9 @@ jobs:
           set -euo pipefail
           cd '$DEPLOY_PATH'
           test -f .env || { echo "Missing $DEPLOY_PATH/.env — see docs/engineering/DEPLOY.md" >&2; exit 1; }
+          docker info >/dev/null || { echo "Docker daemon is not running on the VPS: systemctl enable --now docker" >&2; exit 1; }
+          # The GITHUB_TOKEN login must not outlive this step, even on failure.
+          trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
           echo '$GHCR_TOKEN' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin
           export IMAGE_TAG='${{ github.sha }}' VINOLOG_IMAGE_PREFIX='$IMAGE_PREFIX'
           docker compose -f compose.prod.yaml pull --quiet
