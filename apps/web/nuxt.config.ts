@@ -33,6 +33,7 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { lang: 'ru' },
       title: 'Сканер российских вин',
+      viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
       meta: [
         {
           name: 'description',

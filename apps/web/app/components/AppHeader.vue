@@ -5,6 +5,14 @@ import { isFeatureEnabled } from '#shared/utils/feature-flags'
 const config = useRuntimeConfig()
 const isAstroEnabled = computed(() => isFeatureEnabled(config.public.astroEnabled))
 const isSommelierEnabled = computed(() => config.public.sommelierMode !== 'off')
+
+const navItems = computed(() => [
+  { to: '/', icon: ScanLine, ariaLabel: 'Сканер', label: 'Сканер', shortLabel: 'Сканер', isVisible: true },
+  { to: '/pairings', icon: Bookmark, ariaLabel: 'Мои сочетания', label: 'Мои сочетания', shortLabel: 'Сочетания', isVisible: true },
+  { to: '/sommelier', icon: Wine, ariaLabel: 'Цифровой сомелье', label: 'Сомелье', shortLabel: 'Сомелье', isVisible: isSommelierEnabled.value },
+  { to: '/astro-sommelier', icon: Sparkles, ariaLabel: 'Астро-сомелье', label: 'Астро-сомелье', shortLabel: 'Астро', isVisible: isAstroEnabled.value },
+  { to: '/admin', icon: Database, ariaLabel: 'Каталог', label: 'Каталог', shortLabel: 'Каталог', isVisible: true },
+].filter(item => item.isVisible))
 </script>
 
 <template>
@@ -23,25 +31,16 @@ const isSommelierEnabled = computed(() => config.public.sommelierMode !== 'off')
       </NuxtLink>
 
       <nav class="site-nav" aria-label="Основная навигация">
-        <NuxtLink class="site-nav__link" to="/" aria-label="Сканер">
-          <ScanLine :size="19" aria-hidden="true" />
-          <span>Сканер</span>
-        </NuxtLink>
-        <NuxtLink class="site-nav__link" to="/pairings" aria-label="Мои сочетания">
-          <Bookmark :size="19" aria-hidden="true" />
-          <span>Мои сочетания</span>
-        </NuxtLink>
-        <NuxtLink v-if="isSommelierEnabled" class="site-nav__link" to="/sommelier" aria-label="Цифровой сомелье">
-          <Wine :size="19" aria-hidden="true" />
-          <span>Сомелье</span>
-        </NuxtLink>
-        <NuxtLink v-if="isAstroEnabled" class="site-nav__link" to="/astro-sommelier" aria-label="Астро-сомелье">
-          <Sparkles :size="19" aria-hidden="true" />
-          <span>Астро-сомелье</span>
-        </NuxtLink>
-        <NuxtLink class="site-nav__link" to="/admin" aria-label="Каталог">
-          <Database :size="19" aria-hidden="true" />
-          <span>Каталог</span>
+        <NuxtLink
+          v-for="item in navItems"
+          :key="item.to"
+          class="site-nav__link"
+          :to="item.to"
+          :aria-label="item.ariaLabel"
+        >
+          <component :is="item.icon" class="site-nav__icon" :size="20" aria-hidden="true" />
+          <span class="site-nav__label site-nav__label--short" aria-hidden="true">{{ item.shortLabel }}</span>
+          <span class="site-nav__label site-nav__label--full" aria-hidden="true">{{ item.label }}</span>
         </NuxtLink>
       </nav>
     </div>
