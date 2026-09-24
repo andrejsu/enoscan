@@ -120,6 +120,7 @@ export default defineEventHandler(async (event): Promise<ScanResponse> => {
       : status === 'not_found'
         ? 'Попробуйте другой ракурс. Похожие вина будут показаны отдельно после подключения каталога.'
         : undefined,
+    debug: createMockScanDebug(status, [demoWine, demoAlternative]),
     isMock: true,
   }
 })

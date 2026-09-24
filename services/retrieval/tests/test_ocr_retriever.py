@@ -81,3 +81,19 @@ def test_ocr_retriever_fills_text_fields_but_never_a_slug():
     assert fields.winery[0].value == "Дивноморское"
     assert fields.year[0].value == "2019"
     assert fields.slug == ()  # OCR never resolves a wine/slug itself — that's ranking's job
+
+
+def test_deep_trace_runs_a_second_pass_and_merges_its_words():
+    wines = [wine()] + [wine(f"decoy-{name}", f"Вино {name}", name) for name in _DECOY_WINERIES]
+    retriever = OcrRetriever(FieldVocabulary(wines))
+    prepared = PreparedQuery(visual=np.zeros((10, 10, 3), dtype=np.uint8),
+                             ocr=np.zeros((10, 10, 3), dtype=np.uint8), used_sam=False)
+    crop_label = OcrResult((word("Урожай 2019"),))
+    full_label = OcrResult((word("Дивноморское"),))
+    with patch("app.ocr_retriever.prepare_query", return_value=prepared), \
+         patch("app.ocr_retriever.extract_label", side_effect=[crop_label, full_label]):
+        trace = retriever.trace(np.zeros((10, 10, 3), dtype=np.uint8), deep=True)
+    assert trace.labels == (crop_label, full_label)
+    assert trace.prepared is prepared
+    assert trace.fields.winery[0].value == "Дивноморское"
+    assert trace.fields.year[0].value == "2019"

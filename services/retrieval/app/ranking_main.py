@@ -25,6 +25,7 @@ from .label_fields import FieldCandidate, RetrievalFields
 from .ocr_retriever import OcrRetriever
 from .ranking import rank
 from .ranking_config import load_ranking_settings
+from .scan_debug import ocr_debug, preprocessing_debug, ranking_debug, retriever_debug
 
 
 # Same response contract as app/service.py and app/retriever_main.py
@@ -79,11 +80,13 @@ def health() -> dict[str, str]:
     return {"status": "ok" if (ocr_retriever and retriever_client) else "loading"}
 
 
-async def _visual_fields(content: bytes, content_type: str | None, filename: str | None) -> RetrievalFields:
+async def _visual_fields(content: bytes, content_type: str | None,
+                         filename: str | None) -> tuple[RetrievalFields, list[dict], str | None]:
     """Ask retriever for its top slug candidates. A slow/unreachable
     retriever degrades to OCR-only ranking rather than failing the whole
     request — the same "expected OCR failure leaves visual search" spirit
-    app/service.py used to have, just inverted."""
+    app/service.py used to have, just inverted. Also returns the raw
+    candidates and the failure reason, for the debug trace."""
     try:
         response = await retriever_client.post(
             "/v1/search",
@@ -92,9 +95,10 @@ async def _visual_fields(content: bytes, content_type: str | None, filename: str
         )
         response.raise_for_status()
         candidates = response.json().get("candidates", [])
-    except httpx.HTTPError:
-        return RetrievalFields()
-    return RetrievalFields(slug=tuple(FieldCandidate(c["slug"], c["score"]) for c in candidates))
+    except httpx.HTTPError as error:
+        return RetrievalFields(), [], type(error).__name__
+    fields = RetrievalFields(slug=tuple(FieldCandidate(c["slug"], c["score"]) for c in candidates))
+    return fields, candidates, None
 
 
 @app.post("/v1/search")
@@ -115,21 +119,28 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
 
     started = time.perf_counter()
     ocr_started = time.perf_counter()
-    ocr_fields = ocr_retriever.extract(decoded)
+    ocr_trace = ocr_retriever.trace(decoded)
+    ocr_fields = ocr_trace.fields
     ocr_ms = round((time.perf_counter() - ocr_started) * 1000)
 
     visual_started = time.perf_counter()
-    visual_fields = await _visual_fields(content, image.content_type, image.filename)
+    visual_fields, visual_candidates, visual_error = await _visual_fields(
+        content, image.content_type, image.filename)
     visual_ms = round((time.perf_counter() - visual_started) * 1000)
 
     wines = list(wines_by_slug.values())
+    rank_started = time.perf_counter()
     result = rank(ocr_fields, visual_fields, wines, threshold=settings.match_threshold)
+    rank_ms = round((time.perf_counter() - rank_started) * 1000)
 
     retry_ms = 0
     if result.status == "not_found" and settings.match_threshold - result.score <= BORDERLINE_BAND:
         retry_started = time.perf_counter()
-        ocr_fields = ocr_retriever.extract_deep(decoded)
+        ocr_trace = ocr_retriever.trace(decoded, deep=True)
+        ocr_fields = ocr_trace.fields
+        rank_started = time.perf_counter()
         result = rank(ocr_fields, visual_fields, wines, threshold=settings.match_threshold)
+        rank_ms += round((time.perf_counter() - rank_started) * 1000)
         retry_ms = round((time.perf_counter() - retry_started) * 1000)
 
     total_ms = round((time.perf_counter() - started) * 1000)
@@ -164,5 +175,12 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
             "configuration": f"threshold{settings.match_threshold}",
         },
         **({"guidance": guidance} if guidance else {}),
+        **({"debug": {
+            "preprocessing": preprocessing_debug(decoded, ocr_trace),
+            "ocr": ocr_debug(ocr_trace),
+            "retriever": retriever_debug(visual_candidates, visual_error, visual_ms, wines_by_slug),
+            "ranking": ranking_debug(result, ocr_fields, visual_fields, wines_by_slug,
+                                     settings.match_threshold, rank_ms),
+        }} if settings.debug else {}),
         "isMock": False,
     }

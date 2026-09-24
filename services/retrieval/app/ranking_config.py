@@ -25,6 +25,7 @@ class RankingSettings:
     retriever_base_url: str
     retriever_timeout: float
     match_threshold: float
+    debug: bool  # attach the per-stage debug trace to every /v1/search response
 
 
 def load_ranking_settings() -> RankingSettings:
@@ -48,4 +49,5 @@ def load_ranking_settings() -> RankingSettings:
         retriever_base_url=environ.get("RETRIEVER_BASE_URL", "http://retriever:8000"),
         retriever_timeout=float(environ.get("RETRIEVER_TIMEOUT_SECONDS", "8")),
         match_threshold=float(environ.get("RANKING_MATCH_THRESHOLD", str(MATCH_THRESHOLD))),
+        debug=environ.get("RANKING_DEBUG", "true").lower() == "true",
     )

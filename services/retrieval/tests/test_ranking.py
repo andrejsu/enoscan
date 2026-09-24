@@ -2,7 +2,7 @@ import pytest
 
 from app.catalog import Wine
 from app.label_fields import FieldCandidate, RetrievalFields
-from app.ranking import MATCH_THRESHOLD, rank
+from app.ranking import MATCH_THRESHOLD, field_breakdown, rank
 
 
 def wine(slug="rebus-2019", name="Ребус 2019", winery="Дивноморское", **overrides):
@@ -56,3 +56,20 @@ def test_no_catalog_wines_is_not_found():
     result = rank(RetrievalFields(), RetrievalFields(), [])
     assert result.status == "not_found"
     assert result.slug is None
+
+
+def test_field_breakdown_explains_the_score_and_skips_fields_without_evidence():
+    target = wine()
+    ocr_fields = RetrievalFields(
+        name=(FieldCandidate(target.name, 0.8),),
+        winery=(FieldCandidate("Табия", 1.0),),
+    )
+    visual_fields = RetrievalFields(slug=(FieldCandidate(target.slug, 0.6),))
+    breakdown = {item.field: item for item in field_breakdown(target, ocr_fields, visual_fields)}
+    assert set(breakdown) == {"name", "winery", "slug"}
+    assert breakdown["name"].score == 0.8
+    assert breakdown["winery"].score == 0.0  # evidence exists, but for another winery
+    total_weight = sum(item.weight for item in breakdown.values())
+    expected = sum(item.weight * item.score for item in breakdown.values()) / total_weight
+    result = rank(ocr_fields, visual_fields, [target])
+    assert result.score == pytest.approx(expected, abs=1e-4)

@@ -33,11 +33,17 @@ const response = computed(() => scanner.state.value.status === 'success'
         @reset-requested="scanner.reset"
       />
 
-      <WineResultCard
-        v-else
-        :result="response"
-        @reset-requested="scanner.reset"
-      />
+      <template v-else>
+        <WineResultCard
+          :result="response"
+          @reset-requested="scanner.reset"
+        />
+        <ScanDebugPanel
+          v-if="response.debug"
+          :debug="response.debug"
+          :total-ms="response.timing.totalMs"
+        />
+      </template>
 
       <section class="trust-strip" aria-label="Как работает сервис">
         <article>

@@ -52,7 +52,91 @@ export interface ScanResponse {
   alternatives: readonly WineCard[]
   version: ScanVersion
   guidance?: string
+  /** Per-stage trace from the ranking service; absent when RANKING_DEBUG=false. */
+  debug?: ScanDebug
   isMock: boolean
+}
+
+export const scanDebugFields = [
+  'name', 'winery', 'year', 'grape_varieties', 'abv', 'category', 'color', 'region', 'slug',
+] as const
+
+export type ScanDebugField = (typeof scanDebugFields)[number]
+
+export interface ScanDebugPreprocessing {
+  durationMs: number
+  usedSam: boolean
+  warnings: readonly string[]
+  /** Fast-crop box as [left, top, right, bottom] fractions of the source frame; null after SAM. */
+  cropBox: readonly [number, number, number, number] | null
+  /** JPEG data URLs: uploaded frame, color branch for visual search, what Tesseract read. */
+  images: { source: string, visual: string, ocr: string }
+  metrics: {
+    labelWidth: number | null
+    labelHeight: number | null
+    sharpness: number | null
+    noiseSigma: number | null
+    glareFraction: number | null
+    isDenoised: boolean
+  }
+}
+
+export interface ScanDebugFieldCandidate {
+  value: string
+  score: number
+}
+
+export interface ScanDebugOcr {
+  durationMs: number
+  passes: readonly ('crop' | 'full')[]
+  text: string
+  wordCount: number
+  meanConfidence: number | null
+  error: string | null
+  fields: readonly {
+    field: ScanDebugField
+    /** Ranking weight; null for fields ranking does not use (abv). */
+    weight: number | null
+    candidates: readonly ScanDebugFieldCandidate[]
+  }[]
+}
+
+export interface ScanDebugRetriever {
+  durationMs: number
+  error: string | null
+  candidates: readonly {
+    slug: string
+    score: number
+    goodMatches: number | null
+    inliers: number | null
+    wine: WineCard | null
+  }[]
+}
+
+export interface ScanDebugRankingTerm {
+  field: ScanDebugField
+  weight: number
+  score: number
+}
+
+export interface ScanDebugRanking {
+  durationMs: number
+  status: ScanStatus
+  score: number
+  threshold: number
+  candidates: readonly {
+    slug: string
+    score: number
+    wine: WineCard
+    fields: readonly ScanDebugRankingTerm[]
+  }[]
+}
+
+export interface ScanDebug {
+  preprocessing: ScanDebugPreprocessing
+  ocr: ScanDebugOcr
+  retriever: ScanDebugRetriever
+  ranking: ScanDebugRanking
 }
 
 export interface SavedPairing {

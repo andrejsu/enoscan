@@ -115,6 +115,7 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
         "wine": wine_card if status == "matched" else None,
         "candidates": [
             {"slug": item.wine.slug, "score": item.score, "confidencePercent": round(item.score * 100),
+             "goodMatches": item.good_matches, "inliers": item.inliers,
              "wine": _wine_card_with_image(item)}
             for item in candidates
         ],

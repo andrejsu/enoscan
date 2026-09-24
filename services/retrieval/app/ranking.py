@@ -55,17 +55,32 @@ def _actual_values(wine: Wine, field: str) -> set[str]:
     return set(_field_values(wine, field))
 
 
-def _wine_score(wine: Wine, ocr_fields: RetrievalFields, visual_fields: RetrievalFields) -> float:
-    total_score = 0.0
-    total_weight = 0.0
+@dataclass(frozen=True)
+class FieldContribution:
+    field: str
+    weight: float
+    score: float  # best candidate score matching this wine's value, 0 when none match
+
+
+def field_breakdown(wine: Wine, ocr_fields: RetrievalFields,
+                    visual_fields: RetrievalFields) -> tuple[FieldContribution, ...]:
+    """Per-field terms of the wine's score. Fields with no evidence at all are
+    left out: they neither add to nor dilute the weighted average."""
+    contributions = []
     for field, weight in FIELD_WEIGHTS.items():
         candidates = visual_fields.slug if field == "slug" else getattr(ocr_fields, field)
         if not candidates:
             continue
         actual = _actual_values(wine, field)
         best = max((candidate.score for candidate in candidates if candidate.value in actual), default=0.0)
-        total_score += weight * best
-        total_weight += weight
+        contributions.append(FieldContribution(field, weight, best))
+    return tuple(contributions)
+
+
+def _wine_score(wine: Wine, ocr_fields: RetrievalFields, visual_fields: RetrievalFields) -> float:
+    contributions = field_breakdown(wine, ocr_fields, visual_fields)
+    total_weight = sum(item.weight for item in contributions)
+    total_score = sum(item.weight * item.score for item in contributions)
     return total_score / total_weight if total_weight else 0.0
 
 

@@ -9,12 +9,26 @@ app/ranking.py's job.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+import time
+
 import numpy as np
 
 from .field_vocabulary import CLOSED_VOCABULARY_FIELDS, FieldVocabulary
 from .label_fields import RetrievalFields
-from .label_normalize import Config as LabelConfig, Segmenter, prepare_query
-from .ocr import OcrWord, extract_abv_candidates, extract_label, extract_year_candidates
+from .label_normalize import Config as LabelConfig, PreparedQuery, Segmenter, prepare_query
+from .ocr import OcrResult, OcrWord, extract_abv_candidates, extract_label, extract_year_candidates
+
+
+@dataclass(frozen=True)
+class OcrTrace:
+    """extract()'s result plus the intermediate state behind it, for the
+    scan debug panel (app/scan_debug.py)."""
+    fields: RetrievalFields
+    prepared: PreparedQuery
+    labels: tuple[OcrResult, ...]  # one per Tesseract pass: crop, then full frame (deep only)
+    prepare_ms: int = 0
+    ocr_ms: int = 0
 
 
 class OcrRetriever:
@@ -28,16 +42,14 @@ class OcrRetriever:
         self.use_sam = use_sam
 
     def extract(self, image: np.ndarray) -> RetrievalFields:
-        # Same normalization entrypoint the visual retriever uses (scripts/label_prep.py),
-        # instead of handing ocr.extract_label() the raw upload directly.
-        prepared = prepare_query(image, segmenter=self.segmenter, config=self.label_config,
-                                 fast=not self.use_sam)
-        label = extract_label(prepared.ocr, **self.ocr_options)
-        return self._fields(label.words)
+        return self.trace(image).fields
 
     def extract_deep(self, image: np.ndarray) -> RetrievalFields:
-        """extract() plus a second OCR pass over the raw, uncropped image,
-        merged in. The crop's fixed "lower-middle third" heuristic
+        return self.trace(image, deep=True).fields
+
+    def trace(self, image: np.ndarray, *, deep: bool = False) -> OcrTrace:
+        """``deep=False`` is extract(). ``deep=True`` is extract_deep(): a
+        second OCR pass over the raw, uncropped image, merged in. The crop's fixed "lower-middle third" heuristic
         (label_normalize._fast_crop) sometimes cuts the one word that would
         identify the wine even when it reads everything else around it
         cleanly — e.g. a label crop read "БЕЛОЕ СУХО 2024 №4" fine but
@@ -45,12 +57,24 @@ class OcrRetriever:
         where two near-identical sibling wines differ only by that word.
         Costs one more Tesseract call, so this is reserved for cases worth
         double-checking (see app/ranking_main.py's borderline retry), not
-        run on every request."""
+        run on every request.
+
+        Both modes use the same normalization entrypoint the visual retriever
+        uses (scripts/label_prep.py), instead of handing ocr.extract_label()
+        the raw upload directly."""
+        started = time.perf_counter()
         prepared = prepare_query(image, segmenter=self.segmenter, config=self.label_config,
                                  fast=not self.use_sam)
-        crop_label = extract_label(prepared.ocr, **self.ocr_options)
-        full_label = extract_label(image, **self.ocr_options)
-        return self._fields(crop_label.words + full_label.words)
+        prepared_at = time.perf_counter()
+        labels = [extract_label(prepared.ocr, **self.ocr_options)]
+        if deep:
+            labels.append(extract_label(image, **self.ocr_options))
+        words = tuple(word for label in labels for word in label.words)
+        fields = self._fields(words)
+        finished = time.perf_counter()
+        return OcrTrace(fields, prepared, tuple(labels),
+                        prepare_ms=round((prepared_at - started) * 1000),
+                        ocr_ms=round((finished - prepared_at) * 1000))
 
     def _fields(self, words: tuple[OcrWord, ...]) -> RetrievalFields:
         text = " ".join(word.text for word in words if word.confidence >= 40)

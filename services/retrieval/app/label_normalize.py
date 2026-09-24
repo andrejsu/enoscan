@@ -53,6 +53,10 @@ class PreparedQuery:
     ocr: np.ndarray      # grayscale+CLAHE+deglare (used_sam) or plain BGR crop (fast path)
     used_sam: bool
     warnings: list[str] = field(default_factory=list)
+    # label_prep.normalize()'s measurements (sharpness, noise, glare, ...).
+    info: dict = field(default_factory=dict)
+    # Fast path only: the crop as (left, top, right, bottom) fractions of the frame.
+    crop_box: tuple[float, float, float, float] | None = None
 
 
 def prepare_query(image: np.ndarray, *, segmenter: "Segmenter | None" = None,
@@ -63,15 +67,20 @@ def prepare_query(image: np.ndarray, *, segmenter: "Segmenter | None" = None,
     config = config or Config()
     if not fast and segmenter is not None:
         try:
-            visual, ocr, _, _ = label_prep.process(image, config, segmenter=segmenter)
-            return PreparedQuery(visual, ocr, used_sam=True)
+            visual, ocr, meta, _ = label_prep.process(image, config, segmenter=segmenter)
+            return PreparedQuery(visual, ocr, used_sam=True, warnings=meta["warnings"],
+                                 info=meta["normalize"])
         except RuntimeError:
             pass  # label not found / too small: fall through to the cheap crop
-    return PreparedQuery(*_fast_crop(image, config), used_sam=False,
-                         warnings=["sam_skipped"])
+    visual, ocr, info = _fast_crop(image, config)
+    return PreparedQuery(visual, ocr, used_sam=False, warnings=["sam_skipped"],
+                         info=info, crop_box=FAST_CROP_BOX)
 
 
-def _fast_crop(image: np.ndarray, config: Config) -> tuple[np.ndarray, np.ndarray]:
+FAST_CROP_BOX = (0.05, 0.30, 0.95, 0.95)
+
+
+def _fast_crop(image: np.ndarray, config: Config) -> tuple[np.ndarray, np.ndarray, dict]:
     """No-SAM fallback: bottles are usually held upright with the label in the
     lower-middle third of the frame. Crude but cheap; only used when SAM is
     disabled, unavailable, or fails to find a label.
@@ -84,9 +93,10 @@ def _fast_crop(image: np.ndarray, config: Config) -> tuple[np.ndarray, np.ndarra
     signal to timeout). ocr.py's own preprocessing on this smaller crop is
     the same fast path the service used before SAM was wired in."""
     height, width = image.shape[:2]
-    crop = image[int(0.30 * height):int(0.95 * height), int(0.05 * width):int(0.95 * width)]
-    visual, _, _ = label_prep.normalize(crop, config)
-    return visual, crop
+    left, top, right, bottom = FAST_CROP_BOX
+    crop = image[int(top * height):int(bottom * height), int(left * width):int(right * width)]
+    visual, _, info = label_prep.normalize(crop, config)
+    return visual, crop, info
 
 
 def reference_label_mask(image: np.ndarray) -> np.ndarray | None:

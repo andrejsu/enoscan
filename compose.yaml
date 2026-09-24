@@ -227,6 +227,9 @@ services:
       OCR_RETRY: ${OCR_RETRY:-false}
       RETRIEVER_BASE_URL: http://retriever:8000
       RANKING_MATCH_THRESHOLD: ${RANKING_MATCH_THRESHOLD:-0.45}
+      # Per-stage trace (crops, OCR fields, retriever shortlist, ranking terms)
+      # for the result page's debug panel. Set false to drop it from responses.
+      RANKING_DEBUG: ${RANKING_DEBUG:-true}
     ports:
       - "8083:8000"
     healthcheck:
