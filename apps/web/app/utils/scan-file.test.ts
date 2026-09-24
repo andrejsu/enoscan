@@ -1,5 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { MAX_SCAN_FILE_SIZE, validateScanFile } from './scan-file'
+import { getFirstScanFile, MAX_SCAN_FILE_SIZE, validateScanFile } from './scan-file'
+
+describe('getFirstScanFile', () => {
+  it('returns the first file from a dropped collection', () => {
+    const first = new File(['label'], 'wine-label.jpg', { type: 'image/jpeg' })
+    const second = new File(['bottle'], 'bottle.png', { type: 'image/png' })
+
+    expect(getFirstScanFile([first, second])).toBe(first)
+  })
+
+  it('returns null when no file was supplied', () => {
+    expect(getFirstScanFile([])).toBeNull()
+    expect(getFirstScanFile(null)).toBeNull()
+  })
+})
 
 describe('validateScanFile', () => {
   it('accepts supported images within the limit', () => {

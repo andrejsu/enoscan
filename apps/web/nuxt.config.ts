@@ -43,7 +43,7 @@ export default defineNuxtConfig({
           name: 'description',
           content: 'Наведите камеру на этикетку и найдите точную карточку российского вина.',
         },
-        { name: 'theme-color', content: '#e7e5de' },
+        { name: 'theme-color', content: '#fefdfa' },
       ],
     },
   },
