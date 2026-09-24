@@ -12,10 +12,8 @@
       │                                                │  + RANSAC → slug candidates
       │                                                └─ rank(): weighted field match → one
       │                                                   slug, or an honest not_found
-      │                                             (admin/astro/image proxy still read
-      │                                              the plain Retrieval API below)
       │
-      ├─ (admin, /astro, image proxy) ──► Retrieval API (FastAPI, visual-only SIFT/RANSAC)
+      ├─ (admin, /astro, image proxy) ──► PostgreSQL catalog / MinIO
       └─ JSON chat ───────────► Nuxt sommelier API ──► AI provider
                                       │                    (server-side only)
                                       └─ parameterized SQL tool
@@ -34,6 +32,7 @@ data/dataset (CSV, RAR, eval) ──► importer ──┬─► PostgreSQL (pgv
 - `services/importer` — единственный writer каталога и картинок: миграции, версия датасета, картинки и превью в MinIO, привязка фото к винам.
 - `services/retrieval` содержит несколько независимых FastAPI-сервисов из одного пакета `app/` (см. `services/retrieval/README.md`): `retrieval` — чисто визуальный SIFT-поиск; `retriever` — визуальный DINOv2+SIFT поиск; `ocr-retriever` — Tesseract, отдаёт per-поле кандидатов, не резолвит вино; `ranking` — комбинирует OCR- и визуальные кандидаты в конкретный `slug` и стоит за продуктовым сканером. Ни один не знает о компонентах Nuxt, все только читают PostgreSQL и MinIO.
 - `/admin` использует read-only server API Nuxt, который читает PostgreSQL напрямую: каталог, дубли исходных строк, привязку и проверку фото, состав текущего поискового индекса.
+- `/astro-sommelier` использует тот же read-only PostgreSQL-каталог и выбирает карточки только из текущей сборки поискового индекса.
 - `/sommelier` хранит историю локально в браузере; server API получает только ограниченное окно реплик и никогда не раскрывает ключ провайдера.
 
 ## Два контракта поиска
@@ -62,7 +61,7 @@ OCR и визуальный поиск — не единый блендиров�
 4. При `NUXT_PUBLIC_SCAN_MODE=mock` маршрут возвращает маркированную демонстрационную карточку.
 
 Астрологический сценарий изолирован публичным runtime-флагом `NUXT_PUBLIC_ASTRO_ENABLED`. Проверка выполняется во всех точках входа: навигации, карточке результата, middleware страницы и серверном API. При отключении API отвечает `404`, поэтому скрытие интерфейса не является единственной защитой функции.
-5. В Compose Nuxt проксирует сам запрос сканера через приватный `NUXT_RANKING_BASE_URL` в `ranking` — это финальный, объединённый результат OCR и визуального поиска. `NUXT_RETRIEVAL_BASE_URL` (сервис `retrieval`) остаётся отдельно для оценочного маршрута `/v1/eval/predict` — у `ranking` нет своего оценочного маршрута.
+5. В Compose Nuxt проксирует сам запрос сканера через приватный `NUXT_RANKING_BASE_URL` в `ranking` — это финальный, объединённый результат OCR и визуального поиска. Оценочный маршрут `/v1/eval/predict` вызывается напрямую у сервиса `retrieval`.
 6. Карточки получают `imageUrl` и `imagePreviewUrl` только при наличии привязки в `wine_images`. `/api/wines/{slug}/image` находит основное фото в PostgreSQL и потоком отдаёт оригинал или превью из MinIO с `ETag` по sha256 — независимо от того, попал ли эталон в поисковый индекс какого-либо из сервисов поиска.
 7. Админка запрашивает пагинированный `/api/admin/wines`: Nuxt строит выдачу SQL-запросом к `wines`, `wine_images` и `index_references` текущей сборки, независимо от `retrieval`/`retriever`/`ranking`.
 

@@ -9,12 +9,13 @@ app/label_fields.py's RetrievalFields.
 
 from __future__ import annotations
 
+from collections.abc import Collection
 from collections import Counter
 from math import log
 
 from .catalog import Wine
 from .label_fields import MAX_CANDIDATES, FieldCandidate
-from .ocr import _tokens
+from .ocr import STOP_WORDS, _tokens
 from .text_normalize import token_similarity as _token_similarity
 
 
@@ -32,13 +33,19 @@ class FieldSearch:
     """Fuzzy search over one field's distinct catalog values; normalize once,
     fuzzy-match each query token once — same shape as text_search.TextSearch."""
 
-    def __init__(self, values: set[str]):
-        self.documents = {value: {t for t in _tokens(value) if not t.isdigit()} for value in values}
+    def __init__(self, values: set[str], *, stop_words: Collection[str] = STOP_WORDS,
+                 allow_single_token: bool = False):
+        self.stop_words = frozenset(stop_words)
+        self.allow_single_token = allow_single_token
+        self.documents = {
+            value: {t for t in _tokens(value, stop_words=stop_words) if not t.isdigit()}
+            for value in values
+        }
         counts = Counter(t for tokens in self.documents.values() for t in tokens)
         self.weights = {t: 1 + log((len(self.documents) + 1) / (n + 1)) for t, n in counts.items()}
 
     def top(self, text: str, *, limit: int = MAX_CANDIDATES) -> tuple[FieldCandidate, ...]:
-        query = {t for t in _tokens(text) if not t.isdigit()}
+        query = {t for t in _tokens(text, stop_words=self.stop_words) if not t.isdigit()}
         if not query:
             return ()
         matches = {}
@@ -55,7 +62,9 @@ class FieldSearch:
             if not overlap:
                 continue
             # Same guard as TextSearch: two supported tokens, or one uncommon token.
-            if len(overlap) < 2 and not any(self.weights[t] >= 2 for t in overlap):
+            # Small enum-like fields can explicitly accept one supported token.
+            if (len(overlap) < 2 and not self.allow_single_token
+                    and not any(self.weights[t] >= 2 for t in overlap)):
                 continue
             matched_weight = sum(self.weights[t] * matches[t] for t in overlap)
             value_weight = sum(self.weights[t] for t in tokens)
@@ -78,7 +87,11 @@ class FieldVocabulary:
 
     def __init__(self, wines: list[Wine]):
         self._searches = {
-            field: FieldSearch({value for wine in wines for value in _field_values(wine, field)})
+            field: FieldSearch(
+                {value for wine in wines for value in _field_values(wine, field)},
+                stop_words=() if field == "category" else STOP_WORDS,
+                allow_single_token=field == "category",
+            )
             for field in CLOSED_VOCABULARY_FIELDS
         }
 

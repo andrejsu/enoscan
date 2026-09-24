@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import unicodedata
 import time
+from collections.abc import Collection
 from dataclasses import dataclass
 
 import cv2
@@ -16,10 +17,10 @@ from .text_normalize import CYRILLIC_TO_LATIN, token_similarity as _token_simila
 
 TOKEN_PATTERN = re.compile(r"[a-z0-9]+", re.IGNORECASE)
 VINTAGE_PATTERN = re.compile(r"(?<!\d)(19[5-9]\d|20[0-2]\d)(?!\d)")
-STOP_WORDS = {
+STOP_WORDS = frozenset({
     "beloe", "butylka", "etiketka", "igristoe", "krasnoe", "rozovoe", "suhoe",
     "vino", "wine", "winery",
-}
+})
 
 
 @dataclass(frozen=True)
@@ -216,10 +217,10 @@ def text_score(text: str, wine: Wine) -> float:
     return min(1.0, matches / len(catalog_tokens))
 
 
-def _tokens(value: str) -> set[str]:
+def _tokens(value: str, *, stop_words: Collection[str] = STOP_WORDS) -> set[str]:
     normalized = unicodedata.normalize("NFKC", value).casefold().translate(CYRILLIC_TO_LATIN)
     return {
         token
         for token in TOKEN_PATTERN.findall(normalized)
-        if len(token) >= 3 and token not in STOP_WORDS
+        if len(token) >= 3 and token not in stop_words
     }

@@ -66,6 +66,7 @@ const imageStatusConditions: Record<CatalogImageStatus, string | null> = {
   with_image: 'wi.slug IS NOT NULL',
   without_image: 'wi.slug IS NULL',
   suspicious: `wi.review_status = 'suspicious'`,
+  indexed: 'EXISTS (SELECT 1 FROM index_references ir WHERE ir.build_id = current_build.id AND ir.slug = w.slug)',
   not_indexed: 'NOT EXISTS (SELECT 1 FROM index_references ir WHERE ir.build_id = current_build.id AND ir.slug = w.slug)',
 }
 

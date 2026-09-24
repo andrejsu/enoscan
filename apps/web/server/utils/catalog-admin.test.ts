@@ -18,7 +18,8 @@ describe('admin catalog query parsing', () => {
 
   it('accepts only known image statuses', () => {
     expect(parseAdminQuery({ imageStatus: 'suspicious' }).imageStatus).toBe('suspicious')
-    expect(parseAdminQuery({ imageStatus: 'indexed' }).imageStatus).toBe('all')
+    expect(parseAdminQuery({ imageStatus: 'indexed' }).imageStatus).toBe('indexed')
+    expect(parseAdminQuery({ imageStatus: 'unknown' }).imageStatus).toBe('all')
     expect(parseAdminQuery({}).imageStatus).toBe('all')
   })
 })

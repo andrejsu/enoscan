@@ -258,11 +258,8 @@ services:
       NUXT_PUBLIC_SCAN_MODE: retrieval
       NUXT_PUBLIC_ASTRO_ENABLED: ${NUXT_PUBLIC_ASTRO_ENABLED:-true}
       NUXT_PUBLIC_SOMMELIER_MODE: ${NUXT_PUBLIC_SOMMELIER_MODE:-mock}
-      # /api/scans (the actual scanner) calls ranking — the combined
-      # OCR + visual result. retrievalBaseUrl stays wired for the image
-      # proxy, /admin and /astro, which read the plain catalog/index and
-      # have no ranking equivalent. See nuxt.config.ts's rankingBaseUrl.
-      NUXT_RETRIEVAL_BASE_URL: http://retrieval:8000
+      # /api/scans calls ranking for the combined OCR + visual result.
+      # Catalog-backed web routes read PostgreSQL directly.
       NUXT_RANKING_BASE_URL: http://ranking:8000
       NUXT_SOMMELIER_PROVIDER: ${NUXT_SOMMELIER_PROVIDER:-openai}
       NUXT_SOMMELIER_MODEL: ${NUXT_SOMMELIER_MODEL:-}

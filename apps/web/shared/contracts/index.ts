@@ -148,7 +148,14 @@ export interface SavedPairing {
   savedAt: string
 }
 
-export const catalogImageStatuses = ['all', 'with_image', 'without_image', 'suspicious', 'not_indexed'] as const
+export const catalogImageStatuses = [
+  'all',
+  'with_image',
+  'without_image',
+  'suspicious',
+  'indexed',
+  'not_indexed',
+] as const
 
 export type CatalogImageStatus = (typeof catalogImageStatuses)[number]
 

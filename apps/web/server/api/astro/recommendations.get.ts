@@ -1,6 +1,8 @@
-import type { AstroRecommendationResponse, CatalogAdminResponse, WineCard } from '#shared/contracts'
+import type { AstroRecommendationResponse, WineCard } from '#shared/contracts'
 import { getZodiacWineProfile } from '#shared/contracts'
 import { isFeatureEnabled } from '#shared/utils/feature-flags'
+import { browseCatalog } from '../../utils/catalog-admin'
+import { getCatalogPool } from '../../utils/catalog-db'
 import { sampleRandomItems } from '../../utils/sample-random-items'
 
 export default defineEventHandler(async (event): Promise<AstroRecommendationResponse> => {
@@ -21,29 +23,33 @@ export default defineEventHandler(async (event): Promise<AstroRecommendationResp
   }
 
   try {
+    const pool = getCatalogPool(config.databaseUrl)
     const responses = await Promise.all(profile.catalogQueries.map(q =>
-      $fetch<CatalogAdminResponse>(`${config.retrievalBaseUrl}/v1/catalog`, {
-        query: { q, page: 1, per_page: 60, image_status: 'indexed' },
-      }),
+      browseCatalog(pool, { q, page: 1, imageStatus: 'indexed' }),
     ))
 
-    const uniqueWines = new Map<string, WineCard>()
+    const seenSlugs = new Set<string>()
+    const uniqueWines: WineCard[] = []
     for (const response of responses) {
+      if (!response) {
+        throw new Error('Catalog has not been imported')
+      }
       for (const wine of response.wines) {
-        if (!uniqueWines.has(wine.slug)) {
-          uniqueWines.set(wine.slug, wine)
+        if (!seenSlugs.has(wine.slug)) {
+          seenSlugs.add(wine.slug)
+          uniqueWines.push(wine)
         }
       }
     }
 
-    const wines = sampleRandomItems([...uniqueWines.values()], 3)
+    const wines = sampleRandomItems(uniqueWines, 3)
 
     return { profile, wines }
   }
   catch (error) {
     throw createError({
       statusCode: 502,
-      message: 'Не удалось подобрать вина. Проверьте retrieval-сервис.',
+      message: 'Не удалось подобрать вина. Проверьте PostgreSQL.',
       cause: error,
     })
   }

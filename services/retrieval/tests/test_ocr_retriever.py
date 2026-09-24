@@ -55,6 +55,18 @@ def test_field_vocabulary_only_returns_real_catalog_values():
     assert [c.value for c in candidates] == ["Дивноморское"]
 
 
+def test_category_vocabulary_accepts_an_exact_single_word_category():
+    categories = ("Белое", "Красное", "Розовое", "Оранжевое")
+    wines = [wine(f"wine-{index}", f"Вино {index}", category=category)
+             for index, category in enumerate(categories)]
+    vocabulary = FieldVocabulary(wines)
+
+    for category in categories:
+        candidates = vocabulary.top("category", category.upper())
+
+        assert [(candidate.value, candidate.score) for candidate in candidates] == [(category, 1.0)]
+
+
 def test_one_coincidental_token_does_not_score_full_confidence_on_a_long_name():
     # Regression: garbled OCR on an unrelated photo shared exactly one rare
     # token ("бленд") with "MILLSTREAM Cellar Резерв Бленд №4" and used to
