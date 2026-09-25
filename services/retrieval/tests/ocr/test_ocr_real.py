@@ -20,6 +20,8 @@ WINES = [
          category="Красное", region="Крым", grape_varieties=("Мурведр", "Пино Нуар")),
     Wine("perovskih_polusladkoe_krasnoe", "Полусладкое Красное", "Усадьба Перовских",
          category="Красное", region="Крым", grape_varieties=("Мерло",)),
+    Wine("aristov-anima-millesimato", "Аристов Anima Millesimato", "Кубань-Вино",
+         category="Розовое", region="Кубань", grape_varieties=("Пино Блан", "Пино Нуар", "Шардоне")),
 ] + [Wine(f"decoy-{i}", f"Вино Decoy{i} Sort{i}", f"Winery{i}", category="Белое", region="Кубань")
      for i in range(6)]
 
@@ -40,3 +42,9 @@ def test_patterned_label_reads_the_winery_but_winery_alone_never_matches():
     assert fields.winery and fields.winery[0].value == "Усадьба Перовских"
     assert fields.category and fields.category[0].value == "Красное"
     assert rank(fields, RetrievalFields(), WINES).status == "not_found"
+
+
+def test_front_label_reads_the_bare_vintage_and_the_latin_category():
+    fields = _fields("aristov-anima-millesimato.jpg")
+    assert [c.value for c in fields.year] == ["2024"]
+    assert fields.category and fields.category[0].value == "Розовое"

@@ -41,7 +41,7 @@ export function createMockScanDebug(status: ScanStatus, wines: readonly WineCard
         { field: 'grape_varieties', weight: 0.12, candidates: [] },
         { field: 'abv', weight: null, candidates: [{ value: '13.5', score: 0.79 }] },
         { field: 'category', weight: 0.03, candidates: [{ value: 'Вино', score: 1 }] },
-        { field: 'color', weight: 0.03, candidates: [{ value: 'Красное', score: 1 }] },
+        { field: 'sweetness', weight: null, candidates: [{ value: 'сухое', score: 1 }] },
         { field: 'region', weight: 0.04, candidates: [] },
       ],
     },
@@ -56,16 +56,29 @@ export function createMockScanDebug(status: ScanStatus, wines: readonly WineCard
         wine,
       })),
     },
+    verification: {
+      labelCategory: null,
+      labelYear: '2019',
+      labelSweetness: 'сухое',
+      shortlist: [first, second].filter((wine): wine is WineCard => Boolean(wine)).map((wine, index) => ({
+        slug: wine.slug,
+        wine,
+        readWords: index === 0 ? ['Ребус'] : [],
+        contradiction: null,
+        reason: null,
+      })),
+    },
     ranking: {
       durationMs: 4,
       status,
       score: topScore,
       margin: Math.round((topScore - secondScore) * 1000) / 1000,
-      minMargin: 0.06,
+      minMargin: 0.03,
       candidates: [first, second].filter((wine): wine is WineCard => Boolean(wine)).map((wine, index) => ({
         slug: wine.slug,
         score: index === 0 ? topScore : secondScore,
         wine,
+        rejection: null,
         fields: index === 0
           ? [
               { field: 'name', weight: 0.3, score: status === 'matched' ? 0.64 : 0.2 },

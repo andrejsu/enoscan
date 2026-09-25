@@ -2656,6 +2656,10 @@ h2 {
   grid-template-columns: 16px minmax(0, 1fr) 64px 42px;
 }
 
+.debug-rows--checks li {
+  grid-template-columns: 16px auto minmax(0, 1fr) auto;
+}
+
 .debug-rows li.is-winner {
   border-radius: 6px;
   background: var(--color-soft-green);
@@ -2689,6 +2693,36 @@ h2 {
 .debug-rows__label small {
   color: var(--color-muted);
   font-size: 11px;
+}
+
+.debug-rows__label .debug-rows__rejection {
+  color: var(--color-wine);
+  white-space: normal;
+}
+
+.debug-rows__label .debug-check__words {
+  white-space: normal;
+}
+
+.debug-verdict {
+  justify-self: end;
+  padding: 2px 8px;
+  border: 1px solid currentcolor;
+  border-radius: 999px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.debug-verdict--confirmed {
+  color: var(--color-green-dark);
+}
+
+.debug-verdict--neutral {
+  color: var(--color-muted);
+}
+
+.debug-verdict--rejected {
+  color: var(--color-wine);
 }
 
 .debug-rows__score {

@@ -12,6 +12,7 @@ from .constants import (
     ALIAS_MIN_COUNT,
     ALIAS_MIN_SHARE,
     ALIAS_MIN_SIMILARITY,
+    CATEGORY_SYNONYMS,
     CLOSED_VOCABULARY_FIELDS,
     MIN_TOKEN_LENGTH,
     STOP_WORDS,
@@ -52,8 +53,14 @@ def _phonetic_keys(pattern: re.Pattern, text: str) -> set[str]:
 class FieldSearch:
     def __init__(self, values: set[str], *, stop_words: Collection[str] = STOP_WORDS,
                  allow_single_token: bool = False, exclude: dict[str, set[str]] | None = None,
-                 aliases: dict[str, str] | None = None):
+                 aliases: dict[str, str] | None = None, synonyms: dict[str, str] | None = None,
+                 known: Collection[str] = (), weak: Collection[str] = ()):
         self.stop_words = frozenset(stop_words)
+        self.known = frozenset(known)
+        # Words that never name a value on their own: «ПИНО» of «ПИНО НУАР» is a
+        # grape, not the winery «Шато Пино» (every Шато Пино wine took its vote).
+        self.weak = frozenset(weak)
+        self.synonyms = synonyms or {}
         self.allow_single_token = allow_single_token
         self.aliases = aliases or {}
         exclude = exclude or {}
@@ -67,18 +74,26 @@ class FieldSearch:
     def _terms(self, text: str) -> set[str]:
         return {t for t in tokenize(text, stop_words=self.stop_words, aliases=self.aliases) if not t.isdigit()}
 
+    def _similarity(self, token: str, query: str) -> float:
+        """A word the catalog knows reads as that word: «МУСКАТЕЛЬ» is not also
+        a fuzzy «Мускат». Unknown readings (OCR typos) match fuzzily."""
+        if query in self.known:
+            return 1.0 if token == query else 0.0
+        return token_similarity(token, query)
+
     def explained(self, text: str, value: str) -> set[str]:
         return {q for q in self._terms(text)
-                if any(token_similarity(t, q) >= TOKEN_MATCH_SIMILARITY for t in self.documents.get(value, ()))}
+                if any(self._similarity(t, q) >= TOKEN_MATCH_SIMILARITY for t in self.documents.get(value, ()))}
 
     def top(self, text: str, *, limit: int = MAX_CANDIDATES,
             ignore: Collection[str] = ()) -> tuple[FieldCandidate, ...]:
-        query = self._terms(text) - set(ignore)
+        synonyms = " ".join(self.synonyms[raw] for raw in raw_tokens(text) if raw in self.synonyms)
+        query = self._terms(f"{text} {synonyms}") - set(ignore)
         if not query:
             return ()
         matches = {}
         for token in self.weights:
-            similarity = max((token_similarity(token, q) for q in query), default=0)
+            similarity = max((self._similarity(token, q) for q in query), default=0)
             if similarity >= TOKEN_MATCH_SIMILARITY:
                 matches[token] = similarity
         if not matches:
@@ -92,6 +107,8 @@ class FieldSearch:
             if (len(overlap) < 2 and not self.allow_single_token
                     and not any(self.weights[t] >= UNCOMMON_TOKEN_WEIGHT for t in overlap)):
                 continue
+            if overlap <= self.weak:
+                continue
             matched_weight = sum(self.weights[t] * matches[t] for t in overlap)
             value_weight = sum(self.weights[t] for t in terms)
             coverage = matched_weight / value_weight if value_weight else 0.0
@@ -103,6 +120,10 @@ class FieldSearch:
 class FieldVocabulary:
     def __init__(self, wines: list[Wine]):
         self.aliases = learn_aliases(wines)
+        known = {token for wine in wines for field in CLOSED_VOCABULARY_FIELDS
+                 for value in wine.field_values(field) for token in tokenize(value, aliases=self.aliases)}
+        grapes = {token for wine in wines for value in wine.field_values("grape_varieties")
+                  for token in tokenize(value, aliases=self.aliases)}
         winery_tokens: dict[str, set[str]] = {}
         for wine in wines:
             winery_tokens.setdefault(wine.name.strip(), set()).update(tokenize(wine.winery, aliases=self.aliases))
@@ -113,6 +134,9 @@ class FieldVocabulary:
                 allow_single_token=field == "category",
                 exclude=winery_tokens if field == "name" else None,
                 aliases=self.aliases,
+                synonyms=CATEGORY_SYNONYMS if field == "category" else None,
+                known=known,
+                weak=grapes if field == "winery" else (),
             )
             for field in CLOSED_VOCABULARY_FIELDS
         }

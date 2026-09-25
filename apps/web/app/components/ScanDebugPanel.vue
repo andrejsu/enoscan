@@ -10,6 +10,8 @@ import {
   rankingSegments,
   scanDebugFieldLabels,
   scanDebugStages,
+  verificationVerdict,
+  verificationVerdictLabels,
 } from '~/utils/scan-debug'
 
 const props = defineProps<{
@@ -44,6 +46,17 @@ const preprocessingMetrics = computed(() => {
 
 const visibleWarnings = computed(() =>
   props.debug.preprocessing.warnings.filter(warning => warning !== 'sam_skipped'))
+
+const verificationRows = computed(() => props.debug.verification.shortlist.map(row => ({
+  ...row,
+  verdict: verificationVerdict(row),
+})))
+
+const labelFacts = computed(() => {
+  const { labelCategory, labelYear, labelSweetness } = props.debug.verification
+  const facts = [labelCategory, labelSweetness, labelYear].filter((fact): fact is string => Boolean(fact))
+  return facts.length ? facts.join(' · ') : 'категория, сахар и год не прочитаны'
+})
 
 const rankingRows = computed(() => props.debug.ranking.candidates.map(candidate => ({
   ...candidate,
@@ -83,7 +96,7 @@ function barStyle(score: number) {
             <strong>{{ stage.title }}</strong>
             <span>{{ stage.summary }}</span>
           </span>
-          <span class="scan-debug__ms">{{ stage.durationMs }} мс</span>
+          <span class="scan-debug__ms">{{ stage.durationMs === null ? '—' : `${stage.durationMs} мс` }}</span>
         </li>
       </ol>
 
@@ -220,10 +233,50 @@ function barStyle(score: number) {
           </div>
         </section>
 
-        <!-- 4. Ranking -->
-        <section class="debug-step" aria-labelledby="debug-step-ranking">
+        <!-- 4. Label check -->
+        <section class="debug-step" aria-labelledby="debug-step-verification">
           <header class="debug-step__header">
             <span class="scan-debug__step-number" aria-hidden="true">4</span>
+            <h3 id="debug-step-verification">Сверка с этикеткой</h3>
+          </header>
+          <p class="debug-step__caption">
+            Лидеры ранжирования против текста OCR · на этикетке: {{ labelFacts }}
+          </p>
+
+          <div class="debug-step__body">
+            <ol v-if="verificationRows.length" class="debug-rows debug-rows--checks">
+              <li v-for="(row, index) in verificationRows" :key="row.slug">
+                <span class="debug-rows__rank">{{ index + 1 }}</span>
+                <span class="debug-pair">
+                  <img
+                    v-if="row.wine.imagePreviewUrl"
+                    :src="row.wine.imagePreviewUrl"
+                    :alt="`Эталон ${row.slug}`"
+                    loading="lazy"
+                  >
+                  <span v-else class="debug-pair__missing" aria-label="Нет фото в каталоге">—</span>
+                </span>
+                <span class="debug-rows__label">
+                  <code>{{ row.slug }}</code>
+                  <small>{{ row.wine.name }}</small>
+                  <small class="debug-check__words">
+                    {{ row.readWords.length ? `прочитано: ${row.readWords.join(', ')}` : 'слов названия на этикетке нет' }}
+                  </small>
+                  <small v-if="row.reason" class="debug-rows__rejection">{{ row.reason }}</small>
+                </span>
+                <span class="debug-verdict" :class="`debug-verdict--${row.verdict}`">
+                  {{ verificationVerdictLabels[row.verdict] }}
+                </span>
+              </li>
+            </ol>
+            <p v-else class="debug-empty">Сверять нечего: ранжирование пусто.</p>
+          </div>
+        </section>
+
+        <!-- 5. Ranking -->
+        <section class="debug-step" aria-labelledby="debug-step-ranking">
+          <header class="debug-step__header">
+            <span class="scan-debug__step-number" aria-hidden="true">5</span>
             <h3 id="debug-step-ranking">Ранжирование</h3>
             <span class="scan-debug__ms">{{ debug.ranking.durationMs }} мс</span>
           </header>
@@ -250,6 +303,7 @@ function barStyle(score: number) {
                 <span class="debug-rows__label">
                   <code>{{ row.slug }}</code>
                   <small>{{ row.wine.name }}</small>
+                  <small v-if="row.rejection" class="debug-rows__rejection">Этикетка против: {{ row.rejection }}</small>
                 </span>
                 <span
                   class="debug-stack"

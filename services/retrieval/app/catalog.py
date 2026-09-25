@@ -7,6 +7,8 @@ from urllib.parse import quote
 import psycopg
 from psycopg.rows import dict_row
 
+from .sweetness import catalog_sugar_level
+
 
 YEAR_PATTERN = re.compile(r"(?<!\d)(19\d{2}|20\d{2})(?!\d)")
 UNKNOWN_NAME = "Без названия"
@@ -24,6 +26,8 @@ class Wine:
     grape_varieties: tuple[str, ...] = ()
     description: str | None = None
     has_image: bool = False
+    # No catalog column: derived from name, slug, source photo file name (app/sweetness.py).
+    sweetness: str | None = None
 
     def as_card(self) -> dict[str, object]:
         year_match = YEAR_PATTERN.search(self.name)
@@ -72,7 +76,8 @@ def _optional(value: str | None) -> str | None:
 
 
 WINE_COLUMNS = """
-  w.slug, w.name, w.winery, w.category, w.color, w.region, w.grape_varieties, w.description
+  w.slug, w.name, w.winery, w.category, w.color, w.region, w.grape_varieties, w.description,
+  w.source_image_filename
 """
 
 
@@ -87,6 +92,7 @@ def _wine(row: dict[str, object], has_image: bool) -> Wine:
         grape_varieties=tuple(row["grape_varieties"] or ()),
         description=row["description"],
         has_image=has_image,
+        sweetness=catalog_sugar_level(row["name"], row["slug"], row.get("source_image_filename")),
     )
 
 

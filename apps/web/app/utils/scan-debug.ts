@@ -1,4 +1,4 @@
-import type { ScanDebug, ScanDebugField, ScanDebugOcr, ScanDebugRankingTerm } from '#shared/contracts'
+import type { ScanDebug, ScanDebugField, ScanDebugOcr, ScanDebugRankingTerm, ScanDebugVerification } from '#shared/contracts'
 
 export const scanDebugFieldLabels: Readonly<Record<ScanDebugField, string>> = {
   name: 'Название',
@@ -7,7 +7,7 @@ export const scanDebugFieldLabels: Readonly<Record<ScanDebugField, string>> = {
   grape_varieties: 'Сорта',
   abv: 'Крепость',
   category: 'Категория',
-  color: 'Цвет',
+  sweetness: 'Сахар',
   region: 'Регион',
   slug: 'Визуал',
 }
@@ -15,7 +15,8 @@ export const scanDebugFieldLabels: Readonly<Record<ScanDebugField, string>> = {
 export interface ScanDebugStage {
   key: keyof ScanDebug
   title: string
-  durationMs: number
+  /** null when the stage has no timing of its own (the label check runs inside ranking). */
+  durationMs: number | null
   summary: string
   hasProblem: boolean
 }
@@ -61,6 +62,22 @@ export function rankingSegments(terms: readonly ScanDebugRankingTerm[], score: n
     .filter(segment => segment.contribution > 0)
 }
 
+export type VerificationVerdict = 'confirmed' | 'neutral' | 'rejected'
+
+export const verificationVerdictLabels: Readonly<Record<VerificationVerdict, string>> = {
+  confirmed: 'подтверждено',
+  neutral: 'без возражений',
+  rejected: 'отклонено',
+}
+
+/** Contradicted wines are rejected; the rest are confirmed when the label shows words of their name. */
+export function verificationVerdict(row: ScanDebugVerification['shortlist'][number]): VerificationVerdict {
+  if (row.contradiction) {
+    return 'rejected'
+  }
+  return row.readWords.length ? 'confirmed' : 'neutral'
+}
+
 /** Score the top-1 wine had to reach for `matched`: runner-up plus the minimum margin. */
 export function rankingMatchLine(ranking: ScanDebug['ranking']): number | null {
   const runnerUp = ranking.candidates[1]
@@ -72,7 +89,8 @@ export function firstFieldWithCandidates(fields: ScanDebugOcr['fields']): ScanDe
 }
 
 export function scanDebugStages(debug: ScanDebug): ScanDebugStage[] {
-  const { preprocessing, ocr, retriever, ranking } = debug
+  const { preprocessing, ocr, retriever, verification, ranking } = debug
+  const rejectedCount = verification.shortlist.filter(row => row.contradiction).length
   const topVisual = retriever.candidates[0]
   const filledFields = ocr.fields.filter(field => field.candidates.length > 0).length
 
@@ -99,6 +117,15 @@ export function scanDebugStages(debug: ScanDebug): ScanDebugStage[] {
         ? `Недоступен: ${retriever.error}`
         : topVisual ? `top-1 ${formatScore(topVisual.score)}` : 'Нет кандидатов',
       hasProblem: Boolean(retriever.error) || !topVisual,
+    },
+    {
+      key: 'verification',
+      title: 'Сверка с этикеткой',
+      durationMs: null,
+      summary: rejectedCount
+        ? `отклонено ${rejectedCount} из ${verification.shortlist.length}`
+        : `${verification.shortlist.length} без противоречий`,
+      hasProblem: verification.shortlist.length > 0 && rejectedCount === verification.shortlist.length,
     },
     {
       key: 'ranking',

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ScanDebug, WineCard } from '#shared/contracts'
-import { cropBoxStyle, firstFieldWithCandidates, formatScore, rankingMatchLine, rankingSegments, scanDebugStages } from './scan-debug'
+import { cropBoxStyle, firstFieldWithCandidates, formatScore, rankingMatchLine, rankingSegments, scanDebugStages, verificationVerdict } from './scan-debug'
 
 const debug: ScanDebug = {
   preprocessing: {
@@ -24,7 +24,14 @@ const debug: ScanDebug = {
     ],
   },
   retriever: { durationMs: 900, error: 'ConnectTimeout', candidates: [] },
+  verification: { labelCategory: null, labelYear: null, labelSweetness: null, shortlist: [] },
   ranking: { durationMs: 4, status: 'not_found', score: 0.3, margin: 0.02, minMargin: 0.08, candidates: [] },
+}
+
+const checkedWine: WineCard = {
+  slug: 'anima', name: 'Аристов Anima Millesimato', producer: 'Кубань-Вино', year: null, category: 'Розовое',
+  color: null, region: null, grapeVarieties: [], description: null, servingTemperature: null, imageUrl: null,
+  imagePreviewUrl: null,
 }
 
 describe('scan debug helpers', () => {
@@ -60,7 +67,7 @@ describe('scan debug helpers', () => {
       slug: 'rebus', name: 'Ребус', producer: 'Дивноморское', year: null, category: null, color: null, region: null,
       grapeVarieties: [], description: null, servingTemperature: null, imageUrl: null, imagePreviewUrl: null,
     }
-    const candidates = [0.5, 0.45].map(score => ({ slug: String(score), score, wine, fields: [] }))
+    const candidates = [0.5, 0.45].map(score => ({ slug: String(score), score, wine, fields: [], rejection: null }))
     expect(rankingMatchLine({ ...debug.ranking, candidates })).toBeCloseTo(0.53)
   })
 
@@ -70,9 +77,24 @@ describe('scan debug helpers', () => {
 
   it('flags the failing stages of a scan', () => {
     const stages = scanDebugStages(debug)
-    expect(stages.map(stage => stage.key)).toEqual(['preprocessing', 'ocr', 'retriever', 'ranking'])
-    expect(stages.map(stage => stage.hasProblem)).toEqual([false, false, true, true])
+    expect(stages.map(stage => stage.key)).toEqual(['preprocessing', 'ocr', 'retriever', 'verification', 'ranking'])
+    expect(stages.map(stage => stage.hasProblem)).toEqual([false, false, true, false, true])
     expect(stages[2]?.summary).toContain('ConnectTimeout')
-    expect(stages[3]?.summary).toBe('отрыв 0.020 < 0.080')
+    expect(stages[3]?.durationMs).toBeNull()
+    expect(stages[4]?.summary).toBe('отрыв 0.020 < 0.080')
+  })
+
+  it('reads a label check as rejected, confirmed by name words, or neutral', () => {
+    const row = { slug: 'a', wine: checkedWine, readWords: [] as string[], contradiction: null, reason: null }
+    expect(verificationVerdict(row)).toBe('neutral')
+    expect(verificationVerdict({ ...row, readWords: ['Millesimato'] })).toBe('confirmed')
+    expect(verificationVerdict({ ...row, readWords: ['Anima'], contradiction: 'category', reason: 'на этикетке Розовое' }))
+      .toBe('rejected')
+  })
+
+  it('flags a label check that rejects the whole shortlist', () => {
+    const rejected = { slug: 'a', wine: checkedWine, readWords: [], contradiction: 'year' as const, reason: 'на этикетке 2024' }
+    const stages = scanDebugStages({ ...debug, verification: { labelCategory: null, labelYear: '2024', labelSweetness: null, shortlist: [rejected] } })
+    expect(stages[3]).toMatchObject({ summary: 'отклонено 1 из 1', hasProblem: true })
   })
 })

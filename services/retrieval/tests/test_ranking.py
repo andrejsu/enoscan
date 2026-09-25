@@ -147,3 +147,113 @@ def test_tied_top_candidates_do_not_match():
     ocr_fields = RetrievalFields(name=(FieldCandidate("Ребус", 1.0),))
     result = rank(ocr_fields, RetrievalFields(), wines)
     assert result.status == "not_found" and result.margin == 0.0
+
+
+ANIMA = [wine("blush", "Аристов Anima Pinot Grigio Blush", "Кубань-Вино", category="Розовое"),
+         wine("brut-white", "Аристов ANIMA Millesimato белое брют", "Кубань-Вино", category="Белое"),
+         wine("millesimato", "Аристов Anima Millesimato", "Кубань-Вино", category="Розовое"),
+         wine("roze", "Аристов 8 Розе", "Кубань-Вино", category="Розовое")]
+ANIMA_VISUAL = visual(("blush", 0.679), ("brut-white", 0.639), ("millesimato", 0.628))
+
+
+def test_label_word_of_a_sibling_overturns_the_visual_leader():
+    # Regression (aristov-anima-millesimato photo): the visual retriever put
+    # Anima Blush first, while the label read MILLESIMATO and ROSE.
+    ocr_fields = RetrievalFields(name=(FieldCandidate("Аристов 8 Розе", 0.33),
+                                       FieldCandidate("Аристов Anima Millesimato", 0.29),
+                                       FieldCandidate("Аристов ANIMA Millesimato белое брют", 0.24)),
+                                 category=(FieldCandidate("Розовое", 1.0),))
+    result = rank(ocr_fields, ANIMA_VISUAL, ANIMA, ocr_text="ARISTOV ANMA MILLESIMATO BRUT ROSE 2024")
+    # «Аристов 8 Розе», OCR's best name, is checked too and loses to MILLESIMATO.
+    assert result.rejected.keys() == {"blush", "brut-white", "roze"}
+    kinds = {check.slug: check.kind for check in result.checks}
+    assert kinds == {"blush": "name", "brut-white": "category", "millesimato": None, "roze": "name"}
+    assert "«Millesimato»" in result.rejected["blush"]
+    assert next(c for c in result.checks if c.slug == "millesimato").read_words == ("Аристов", "Millesimato")
+    assert result.status == "matched" and result.slug == "millesimato"
+    assert [slug for slug, _ in result.ranked(4)][0] == "millesimato"
+
+
+def test_without_label_text_the_shortlist_is_not_checked():
+    result = rank(RetrievalFields(), ANIMA_VISUAL, ANIMA)
+    assert result.rejected == {}
+    assert result.ranked(1)[0][0] == "blush"
+
+
+def test_a_word_every_sibling_shares_rejects_nobody():
+    # «Пет-Нат» and a line name fit each sibling equally; only the visual decides.
+    wines = [wine("petnat-riesling", "Петнат Рислинг"), wine("petnat-rubin", "Пет-Нат Рубин")]
+    ocr_fields = RetrievalFields(name=(FieldCandidate("Пет-Нат Рубин", 0.50),))
+    result = rank(ocr_fields, visual(("petnat-riesling", 0.78), ("petnat-rubin", 0.52)), wines, ocr_text="Пет-Нат")
+    assert result.rejected == {}
+    assert result.ranked(1)[0][0] == "petnat-riesling"
+
+
+def test_a_different_vintage_on_the_label_rejects_the_catalog_vintage():
+    wines = [wine("avrora-2023", "Аврора 2023"), wine("avrora-2024", "Аврора 2024")]
+    ocr_fields = RetrievalFields(year=(FieldCandidate("2024", 0.99),))
+    result = rank(ocr_fields, visual(("avrora-2023", 0.70), ("avrora-2024", 0.60)), wines, ocr_text="АВРОРА 2024")
+    assert result.rejected.keys() == {"avrora-2023"}
+    assert result.status == "matched" and result.slug == "avrora-2024"
+
+
+def test_label_that_contradicts_every_close_wine_is_not_found():
+    wines = [wine("a", "Кокур", category="Белое"), wine("b", "Мерло", category="Белое")]
+    ocr_fields = RetrievalFields(category=(FieldCandidate("Красное", 1.0),))
+    result = rank(ocr_fields, visual(("a", 0.9), ("b", 0.5)), wines, ocr_text="Rosso")
+    assert result.rejected.keys() == {"a", "b"}
+    assert result.status == "not_found"
+
+
+def test_label_year_confirms_a_found_wine_but_finds_none_alone():
+    # Regression (aristov-kyuve-aleksandr augmentations): the label's «2022»
+    # scored every «… 2022» wine and pushed the right one out of the top-5.
+    target, dated = wine("cuvee", "Кюве Александр", "Аристов"), wine("david", "Давид 2022", "Другая")
+    ocr_fields = RetrievalFields(year=(FieldCandidate("2022", 0.99),))
+    result = rank(ocr_fields, visual(("cuvee", 0.6)), [target, dated])
+    assert result.evidence["david"] == 0.0
+    assert rank(ocr_fields, visual(("david", 0.6)), [target, dated]).evidence["david"] == \
+        rank(RetrievalFields(), visual(("david", 0.6)), [target, dated]).evidence["david"]  # visual alone: no credit
+    confirmed = wine("cuvee-2022", "Кюве Александр 2022", "Аристов")
+    named = RetrievalFields(name=(FieldCandidate(confirmed.name, 0.5),), year=ocr_fields.year)
+    assert rank(named, visual(("cuvee-2022", 0.6)), [confirmed]).evidence["cuvee-2022"] > \
+        rank(RetrievalFields(name=named.name), visual(("cuvee-2022", 0.6)), [confirmed]).evidence["cuvee-2022"]
+
+
+def test_the_name_ocr_read_is_checked_even_outside_the_visual_top():
+    # Regression (Massandra shelf photo): the visual retriever saw only the
+    # label family; OCR read «МУСКАТЕЛЬ БЕЛЫЙ», whose wine had no visual match.
+    wines = [wine("kagor", "Кагор Гурзуф", "Массандра"), wine("portvein", "Портвейн Белый Гурзуф", "Массандра"),
+             wine("muskat", "Мускат Белый Южнобережный", "Массандра"), wine("muskatel", "Мускатель белый", "Массандра")]
+    ocr_fields = RetrievalFields(name=(FieldCandidate("Мускатель белый", 0.6),),
+                                 winery=(FieldCandidate("Массандра", 0.9),))
+    result = rank(ocr_fields, visual(("kagor", 0.72), ("portvein", 0.70), ("muskat", 0.69)), wines,
+                  ocr_text="МАССАНДРА МУСКАТЕЛЬ БЕЛЫЙ ГОД УРОЖАЯ 2023")
+    assert result.rejected.keys() == {"kagor", "portvein", "muskat"}  # «Мускат» is not «Мускатель»
+    assert result.status == "matched" and result.slug == "muskatel"
+
+
+def test_ocr_alone_needs_the_distinctive_words_of_the_name_on_the_label():
+    # Regression (Табия photo, not in the catalog): «Пино Нуар полусухое» is
+    # also the full catalog name of another winery's wine, with no word of its own.
+    generic, named = wine("novyy-svet", "Пино Нуар полусухое", "Новый Свет"), wine("muskatel", "Мускатель белый")
+    ocr_fields = RetrievalFields(name=(FieldCandidate(generic.name, 0.63),))
+    result = rank(ocr_fields, RetrievalFields(), [generic, named], ocr_text="ТАБИЯ ВИНОДЕЛЬНЯ Пино Нуар полусухое 2025")
+    assert result.ranked(1)[0][0] == "novyy-svet" and result.status == "not_found"
+    ocr_fields = RetrievalFields(name=(FieldCandidate(named.name, 0.6),))
+    assert rank(ocr_fields, RetrievalFields(), [generic, named], ocr_text="МУСКАТЕЛЬ БЕЛЫЙ").slug == "muskatel"
+
+
+def test_label_sugar_level_picks_the_one_of_identical_siblings():
+    # Regression (Жемчужная 9 Пино Нуар, Мускат Розовый): three wines with one
+    # label and one name differ only in «сухое / полусухое / полусладкое».
+    name = "Жемчужная 9 Пино Нуар, Мускат Розовый"
+    siblings = [wine(slug, name, "Жемчужная", category="Розовое", sweetness=level)
+                for slug, level in (("dry", "сухое"), ("semi-dry", "полусухое"), ("semi-sweet", "полусладкое"))]
+    others = [wine(f"decoy-{i}", f"Вино {i}", "Другая") for i in range(3)]
+    ocr_fields = RetrievalFields(name=(FieldCandidate(name, 0.8),), sweetness=(FieldCandidate("полусухое", 1.0),))
+    result = rank(ocr_fields, visual(("semi-sweet", 0.71), ("dry", 0.70), ("semi-dry", 0.69)), siblings + others,
+                  ocr_text="ЖЕМЧУЖНАЯ 9 ПИНО НУАР МУСКАТ РОЗОВЫЙ РОЗОВОЕ ПОЛУСУХОЕ 2024")
+    kinds = {check.slug: check.kind for check in result.checks}
+    assert (kinds["dry"], kinds["semi-dry"], kinds["semi-sweet"]) == ("sweetness", None, "sweetness")
+    assert result.status == "matched" and result.slug == "semi-dry"

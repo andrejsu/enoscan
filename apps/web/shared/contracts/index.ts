@@ -58,7 +58,7 @@ export interface ScanResponse {
 }
 
 export const scanDebugFields = [
-  'name', 'winery', 'year', 'grape_varieties', 'abv', 'category', 'color', 'region', 'slug',
+  'name', 'winery', 'year', 'grape_varieties', 'abv', 'category', 'sweetness', 'region', 'slug',
 ] as const
 
 export type ScanDebugField = (typeof scanDebugFields)[number]
@@ -113,6 +113,25 @@ export interface ScanDebugRetriever {
   }[]
 }
 
+export type ScanDebugContradiction = 'name' | 'category' | 'year' | 'sweetness'
+
+/** Ranking's top wines checked against the label text before the decision (verify_shortlist). */
+export interface ScanDebugVerification {
+  /** The label facts wines are checked against: the only category / year / sugar level OCR read, null when none or several. */
+  labelCategory: string | null
+  labelYear: string | null
+  labelSweetness: string | null
+  shortlist: readonly {
+    slug: string
+    wine: WineCard
+    /** Words of the wine's catalog name that the label shows. */
+    readWords: readonly string[]
+    /** What on the label contradicts the wine; null when nothing does. */
+    contradiction: ScanDebugContradiction | null
+    reason: string | null
+  }[]
+}
+
 export interface ScanDebugRankingTerm {
   field: ScanDebugField
   weight: number
@@ -132,6 +151,8 @@ export interface ScanDebugRanking {
     score: number
     wine: WineCard
     fields: readonly ScanDebugRankingTerm[]
+    /** Why the label contradicts this wine (it is ranked last then); null when it does not. */
+    rejection: string | null
   }[]
 }
 
@@ -139,6 +160,7 @@ export interface ScanDebug {
   preprocessing: ScanDebugPreprocessing
   ocr: ScanDebugOcr
   retriever: ScanDebugRetriever
+  verification: ScanDebugVerification
   ranking: ScanDebugRanking
 }
 

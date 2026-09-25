@@ -22,7 +22,6 @@ def test_extract_year_needs_one_unambiguous_vintage(text, expected):
 @pytest.mark.parametrize("text,years,abvs", [
     ("Урожай 2019 12,5 %", ["2019"], ["12.5"]),
     ("Основано в 2019", [], []),
-    ("2019", [], []),
     ("0,75 л", [], []),
     ("alc 13.5", [], ["13.5"]),
     ("2019 розлив урожай", [], []),
@@ -30,6 +29,21 @@ def test_extract_year_needs_one_unambiguous_vintage(text, expected):
 def test_fields_need_context(text, years, abvs):
     assert [c.value for c in extract_year_candidates([word(text)])] == years
     assert [c.value for c in extract_abv_candidates([word(text)])] == abvs
+
+
+@pytest.mark.parametrize("lines,years", [
+    (["MILLESIMATO", "BRUT ROSE 2024"], ["2024"]),
+    (["2019"], ["2019"]),
+    (["Урожай 2019", "Cuvee 2021"], ["2019"]),
+    (["2019", "2021"], []),
+    (["Since 1995", "Brut"], []),
+    (["Годен до 15.03.2024"], []),
+    (["ГОСТ 32030-2013"], []),
+    (["ГОСТ Р 55242 2012"], []),
+])
+def test_label_without_a_harvest_word_yields_its_only_year(lines, years):
+    words = [word(text, line=(1, 1, index)) for index, text in enumerate(lines)]
+    assert [c.value for c in extract_year_candidates(words)] == years
 
 
 def test_low_confidence_year_abstains():

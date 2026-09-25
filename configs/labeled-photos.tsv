@@ -8,3 +8,4 @@ image_path	expected_slug
 ../data/eval/queries/02eef911.webp	massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16
 ../data/eval/queries/019c68d0.jpg	
 ../data/eval/queries/096ca74e.jpg	
+../services/retrieval/tests/fixtures/aristov-anima-millesimato.jpg	aristov-anima-millesimato

@@ -14,9 +14,11 @@ from dataclasses import dataclass
 
 
 # `year`/`abv` are OCR-only: they read off the label directly and have no
-# column on catalog.Wine. Everything else mirrors an existing Wine field.
+# column on catalog.Wine; `sweetness` matches Wine.sweetness, derived from
+# catalog text. Everything else mirrors an existing Wine field. There is no
+# `color`: the catalog's color is free-text tasting notes, not a label word.
 REQUIRED_FIELDS = ("name", "winery")
-OPTIONAL_FIELDS = ("year", "grape_varieties", "abv", "category", "color", "region")
+OPTIONAL_FIELDS = ("year", "grape_varieties", "abv", "category", "sweetness", "region")
 TEXT_FIELDS = REQUIRED_FIELDS + OPTIONAL_FIELDS
 
 MAX_CANDIDATES = 10
@@ -36,7 +38,7 @@ class RetrievalFields:
     year: tuple[FieldCandidate, ...] = ()
     abv: tuple[FieldCandidate, ...] = ()
     category: tuple[FieldCandidate, ...] = ()
-    color: tuple[FieldCandidate, ...] = ()
+    sweetness: tuple[FieldCandidate, ...] = ()  # sugar level the label names (app/sweetness.py)
     region: tuple[FieldCandidate, ...] = ()
     slug: tuple[FieldCandidate, ...] = ()  # visual-retriever-only field
 

@@ -44,5 +44,6 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
         "fields": asdict(trace.fields),
         "words": [{"text": w.text, "confidence": w.confidence, "bbox": list(w.bbox)} for w in trace.label.words],
         "durationMs": trace.ocr_ms,
+        "passes": list(trace.passes),
         "engine": ENGINE_NAME,
     }

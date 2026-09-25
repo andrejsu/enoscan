@@ -1,1 +1,5 @@
 slug,action,strapi_filename,note
+perovskih_polusuhoe_krasnoe,set,Krasnoe_polusuhoe_2024_a4eadaac17.webp,"Fuzzy mapping gave it Zolotaya Balka's Polusuhoe_beloe; this file (paired with Krasnoe_polusladkoe_2024) shows Усадьба Перовских Полусухое Красное 2024 and was mapped to leto-risling-2024-polusuhoe-vino"
+perovskih_polusladkoe_rosovoe,reject,,"Fuzzy mapping gave it Zolotaya Balka's Polusladkoe_beloe (a sparkling bottle of another winery); no matching Perovskih file in the archive"
+zhemchuzhnaya-9-pino-nuar-muskat-rozovyj,set,Pino_Nuar_Muskat_suh_82108c8383.webp,"Source photo «Пино Нуар,Мускат сух» (сухое); fuzzy mapping swapped it with the -1 sibling, whose photo reads РОЗОВОЕ ПОЛУСУХОЕ"
+zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-1,set,Pino_Nuar_Muskat_p_suh_6f84a398e4.webp,"Source photo «Пино Нуар, Мускат п.сух» (полусухое); swapped with the base sibling, see the line above"

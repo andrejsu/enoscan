@@ -5,7 +5,7 @@ import numpy as np
 from app.catalog import Wine
 from app.label_fields import TEXT_FIELDS, FieldCandidate, RetrievalFields, fields_from_json
 from app.ranking import rank
-from app.scan_debug import DEBUG_LIMIT, ocr_debug, preprocessing_debug, ranking_debug, retriever_debug
+from app.scan_debug import DEBUG_LIMIT, ocr_debug, preprocessing_debug, ranking_debug, retriever_debug, verification_debug
 
 
 def wine(slug, name="Ребус 2019", winery="Дивноморское"):
@@ -75,3 +75,16 @@ def test_ranking_debug_sorts_top_ten_with_field_terms():
     assert debug["status"] == result.status and debug["minMargin"] == 0.06
     assert debug["margin"] == result.margin
     assert debug["durationMs"] == 3
+
+
+def test_verification_debug_shows_each_checked_wine_and_the_label_facts():
+    wines = [wine("blush", "Аристов Anima Blush"), wine("millesimato", "Аристов Anima Millesimato")]
+    ocr_fields = RetrievalFields(year=(FieldCandidate("2024", 0.99),))
+    visual = RetrievalFields(slug=(FieldCandidate("blush", 0.7), FieldCandidate("millesimato", 0.6)))
+    result = rank(ocr_fields, visual, wines, ocr_text="ARISTOV MILLESIMATO 2024")
+    debug = verification_debug(result, ocr_fields, {w.slug: w for w in wines})
+    assert debug["labelYear"] == "2024" and debug["labelCategory"] is None
+    rows = {row["slug"]: row for row in debug["shortlist"]}
+    assert rows["blush"]["contradiction"] == "name" and "«Millesimato»" in rows["blush"]["reason"]
+    assert rows["millesimato"]["contradiction"] is None
+    assert rows["millesimato"]["readWords"] == ["Аристов", "Millesimato"]

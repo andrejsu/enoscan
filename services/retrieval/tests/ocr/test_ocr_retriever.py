@@ -42,6 +42,18 @@ def test_category_vocabulary_accepts_an_exact_single_word_category():
         assert [(candidate.value, candidate.score) for candidate in candidates] == [(category, 1.0)]
 
 
+def test_foreign_label_word_finds_the_catalog_category():
+    categories = ("Белое", "Красное", "Розовое", "Оранжевое")
+    wines = [wine(f"wine-{index}", f"Вино {index}", category=category)
+             for index, category in enumerate(categories)]
+    vocabulary = FieldVocabulary(wines)
+
+    for label, category in [("BRUT ROSE 2024", "Розовое"), ("Rosé", "Розовое"), ("Sauvignon Blanc", "Белое"),
+                            ("Rosso Toscana", "Красное"), ("ORANGE", "Оранжевое")]:
+        assert [c.value for c in vocabulary.top("category", label)] == [category], label
+    assert vocabulary.top("category", "MILLESIMATO BRUT") == ()
+
+
 def test_one_coincidental_token_does_not_score_full_confidence_on_a_long_name():
     target = wine(name="Millstream Cellar Резерв Бленд Номер Четыре")
     wines = [target] + [wine(f"decoy-{i}", f"Вино Decoy{i} Sort{i}", f"Winery{i}") for i in range(6)]
@@ -123,3 +135,36 @@ def test_catalog_teaches_pairs_the_sound_rules_miss():
 def test_one_coincidence_is_not_an_alias():
     wines = [wine("a", "Kodzor", "Кодзора")] + [wine(f"decoy-{name}", f"Вино {name}", name) for name in _DECOY_WINERIES]
     assert "kodzor" not in learn_aliases(wines)
+
+
+def test_ocr_reads_the_middle_of_a_photo_and_falls_back_to_the_full_frame():
+    retriever = OcrRetriever(FieldVocabulary([wine()]))
+    photo = np.zeros((4000, 3000, 3), dtype=np.uint8)
+    readable = OcrResult((word("Ребус"), word("Дивноморское", line=(1, 1, 2)), word("2019", line=(1, 1, 3))))
+    with patch("app.ocr.retriever.extract_label", return_value=readable) as extract:
+        assert retriever.trace(photo).passes == ("crop",)
+    assert extract.call_args.args[0].shape == (3000, 1500, 3)  # OCR_CROP_BOX of a 3000×4000 photo
+
+    with patch("app.ocr.retriever.extract_label", side_effect=[OcrResult(), readable]) as extract:
+        trace = retriever.trace(photo)
+    assert trace.passes == ("crop", "full") and extract.call_args.args[0].shape == (4000, 3000, 3)
+
+    bottle = np.zeros((6000, 1400, 3), dtype=np.uint8)  # a tall bottle shot: keep its full width
+    with patch("app.ocr.retriever.extract_label", return_value=readable) as extract:
+        retriever.trace(bottle)
+    assert extract.call_args.args[0].shape == (4500, 1400, 3)
+
+    close_up = np.zeros((447, 447, 3), dtype=np.uint8)  # already a close-up: read whole, once
+    with patch("app.ocr.retriever.extract_label", return_value=readable) as extract:
+        assert retriever.trace(close_up).passes == ("full",)
+    assert extract.call_args.args[0].shape == (447, 447, 3)
+
+
+def test_a_grape_word_alone_never_names_a_winery():
+    # Regression (Жемчужная 9 «ПИНО НУАР»): «Пино» matched the winery «Шато Пино».
+    wines = [wine(winery="Шато Пино", grape_varieties=("Пино Нуар",)),
+             wine("zh", "Жемчужная 9 Пино Нуар", "АРАТТИ", grape_varieties=("Пино Нуар",))] + \
+            [wine(f"decoy-{name}", f"Вино {name}", name) for name in _DECOY_WINERIES]
+    vocabulary = FieldVocabulary(wines)
+    assert vocabulary.top("winery", "ЖЕМЧУЖНАЯ ПИНО НУАР РОЗОВОЕ") == ()
+    assert vocabulary.top("winery", "CHATEAU PINOT")[0].value == "Шато Пино"

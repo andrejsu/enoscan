@@ -19,7 +19,8 @@ from .catalog import Wine
 from .label_fields import TEXT_FIELDS, RetrievalFields
 from .label_normalize import prepare_query
 from .ocr.constants import SEARCH_TEXT_MIN_CONFIDENCE
-from .ranking import FIELD_WEIGHTS, RankingResult, field_breakdown
+from .ocr.retriever import ocr_crop
+from .ranking import FIELD_WEIGHTS, RankingResult, field_breakdown, only_value
 
 
 DEBUG_LIMIT = 10
@@ -43,8 +44,8 @@ def _optional_number(info: dict, key: str) -> float | None:
 
 
 def preprocessing_debug(source: np.ndarray) -> dict[str, object]:
-    """label_prep's view of the photo — what the visual retriever searches.
-    Recomputed here for the panel only; OCR reads the full frame."""
+    """label_prep's view of the photo — what the visual retriever searches —
+    and the crop OCR reads first. Recomputed here for the panel only."""
     started = time.perf_counter()
     prepared = prepare_query(source, fast=True)
     info = prepared.info
@@ -57,7 +58,7 @@ def preprocessing_debug(source: np.ndarray) -> dict[str, object]:
         "images": {
             "source": image_data_url(source),
             "visual": image_data_url(prepared.visual),
-            "ocr": image_data_url(source),
+            "ocr": image_data_url(ocr_crop(source)),
         },
         "metrics": {
             "labelWidth": label_px[0] if label_px else None,
@@ -70,6 +71,12 @@ def preprocessing_debug(source: np.ndarray) -> dict[str, object]:
     }
 
 
+def ocr_search_text(payload: dict | None) -> str:
+    """The OCR service's words as one line, as the OCR service itself searches them."""
+    words = (payload or {}).get("words", [])
+    return " ".join(w["text"] for w in words if w["confidence"] >= SEARCH_TEXT_MIN_CONFIDENCE)
+
+
 def ocr_debug(payload: dict | None, error: str | None, duration_ms: int,
               fields: RetrievalFields) -> dict[str, object]:
     """``payload`` is the OCR service's response, None when the call failed."""
@@ -77,8 +84,8 @@ def ocr_debug(payload: dict | None, error: str | None, duration_ms: int,
     confidences = [word["confidence"] for word in words]
     return {
         "durationMs": duration_ms,
-        "passes": ["full"] if payload else [],
-        "text": " ".join(w["text"] for w in words if w["confidence"] >= SEARCH_TEXT_MIN_CONFIDENCE),
+        "passes": (payload or {}).get("passes", ["full"] if payload else []),
+        "text": ocr_search_text(payload),
         "wordCount": len(words),
         "meanConfidence": round(sum(confidences) / len(confidences), 1) if confidences else None,
         "error": error,
@@ -128,7 +135,27 @@ def ranking_debug(result: RankingResult, ocr_fields: RetrievalFields, visual_fie
                     {"field": item.field, "weight": item.weight, "score": round(item.score, 4)}
                     for item in field_breakdown(wines_by_slug[slug], ocr_fields, visual_fields)
                 ],
+                "rejection": result.rejected.get(slug),
             }
             for slug, score in result.ranked(DEBUG_LIMIT) if slug in wines_by_slug
+        ],
+    }
+
+
+def verification_debug(result: RankingResult, ocr_fields: RetrievalFields,
+                       wines_by_slug: dict[str, Wine]) -> dict[str, object]:
+    return {
+        "labelCategory": only_value(ocr_fields.category),
+        "labelYear": only_value(ocr_fields.year),
+        "labelSweetness": only_value(ocr_fields.sweetness),
+        "shortlist": [
+            {
+                "slug": check.slug,
+                "wine": wines_by_slug[check.slug].as_card(),
+                "readWords": list(check.read_words),
+                "contradiction": check.kind,
+                "reason": check.reason,
+            }
+            for check in result.checks if check.slug in wines_by_slug
         ],
     }

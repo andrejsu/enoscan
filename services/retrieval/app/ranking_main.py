@@ -24,7 +24,14 @@ from .common.upload import decode_upload, read_image_upload
 from .label_fields import FieldCandidate, RetrievalFields, fields_from_json
 from .ranking import RankingResult, rank
 from .ranking_config import load_ranking_settings
-from .scan_debug import ocr_debug, preprocessing_debug, ranking_debug, retriever_debug
+from .scan_debug import (
+    ocr_debug,
+    ocr_search_text,
+    preprocessing_debug,
+    ranking_debug,
+    retriever_debug,
+    verification_debug,
+)
 
 
 # Same response contract as app/service.py and app/retriever_main.py
@@ -110,7 +117,8 @@ async def _scan(image: UploadFile, content: bytes) -> Scan:
     visual_fields = RetrievalFields(slug=tuple(FieldCandidate(c["slug"], c["score"]) for c in visual_candidates))
 
     rank_started = time.perf_counter()
-    result = rank(ocr_fields, visual_fields, list(wines_by_slug.values()), min_margin=settings.min_margin)
+    result = rank(ocr_fields, visual_fields, list(wines_by_slug.values()), min_margin=settings.min_margin,
+                  ocr_text=ocr_search_text(ocr))
     rank_ms = round((time.perf_counter() - rank_started) * 1000)
     return Scan(result, ocr, ocr_error, ocr_ms, ocr_fields, visual_candidates, visual_error, visual_ms,
                 visual_fields, rank_ms, round((time.perf_counter() - started) * 1000))
@@ -162,6 +170,7 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
             "preprocessing": await run_in_threadpool(preprocessing_debug, decoded),
             "ocr": ocr_debug(ocr, scan.ocr_error, scan.ocr_ms, scan.ocr_fields),
             "retriever": retriever_debug(scan.visual_candidates, scan.visual_error, scan.visual_ms, wines_by_slug),
+            "verification": verification_debug(result, scan.ocr_fields, wines_by_slug),
             "ranking": ranking_debug(result, scan.ocr_fields, scan.visual_fields, wines_by_slug,
                                      settings.min_margin, scan.rank_ms),
         }} if settings.debug else {}),
