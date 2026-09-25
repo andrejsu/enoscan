@@ -23,7 +23,7 @@ def request(base, route, content, mime):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--base", default="http://127.0.0.1:18080")
+    parser.add_argument("--base", default="http://127.0.0.1:8080")
     parser.add_argument("--archive", type=Path, default=Path("data/dataset/eval.zip"))
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
@@ -37,7 +37,9 @@ def main():
             eval_status, evaluation = request(args.base, "/v1/eval/predict", content, mime)
             top = product.get("candidates", [{}])[0].get("slug", "") if product.get("candidates") else ""
             assert status == eval_status == 200, (name, status, eval_status)
-            assert evaluation == {"slug": top}, (name, evaluation, top)
+            # Unsure scans may be left empty under RANKING_EVAL_POLICY=matched.
+            allowed = [{"slug": top}] if product["status"] == "matched" else [{"slug": top}, {"slug": ""}]
+            assert evaluation in allowed, (name, evaluation, top)
             assert product["confidence"]["kind"] == "similarity"
             assert "diagnostics" not in product
             rows.append({"photo": name, "status": product["status"], "slug": top,

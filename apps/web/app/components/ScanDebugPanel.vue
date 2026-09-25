@@ -6,6 +6,7 @@ import {
   cropBoxStyle,
   firstFieldWithCandidates,
   formatScore,
+  rankingMatchLine,
   rankingSegments,
   scanDebugFieldLabels,
   scanDebugStages,
@@ -46,8 +47,10 @@ const visibleWarnings = computed(() =>
 
 const rankingRows = computed(() => props.debug.ranking.candidates.map(candidate => ({
   ...candidate,
-  segments: rankingSegments(candidate.fields),
+  segments: rankingSegments(candidate.fields, candidate.score),
 })))
+
+const matchLine = computed(() => rankingMatchLine(props.debug.ranking))
 
 const rankingLegend = computed(() => {
   const fields = new Set(rankingRows.value.flatMap(row => row.segments.map(segment => segment.field)))
@@ -225,8 +228,8 @@ function barStyle(score: number) {
             <span class="scan-debug__ms">{{ debug.ranking.durationMs }} мс</span>
           </header>
           <p class="debug-step__caption">
-            Порог {{ formatScore(debug.ranking.threshold) }} · итог {{ formatScore(debug.ranking.score) }}
-            · {{ statusLabels[debug.ranking.status] }}
+            Отрыв от второго {{ formatScore(debug.ranking.margin) }} · нужно не меньше {{ formatScore(debug.ranking.minMargin) }}
+            · итог {{ formatScore(debug.ranking.score) }} · {{ statusLabels[debug.ranking.status] }}
           </p>
 
           <div class="debug-step__body">
@@ -250,7 +253,8 @@ function barStyle(score: number) {
                 </span>
                 <span
                   class="debug-stack"
-                  :style="{ '--threshold': `${clampShare(debug.ranking.threshold) * 100}%` }"
+                  :class="{ 'debug-stack--no-line': matchLine === null }"
+                  :style="{ '--threshold': `${clampShare(matchLine ?? 0) * 100}%` }"
                   :title="row.fields.map(term => `${scanDebugFieldLabels[term.field]}: ${formatScore(term.score)} × ${term.weight}`).join('\n')"
                 >
                   <span class="sr-only">

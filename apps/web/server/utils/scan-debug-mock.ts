@@ -11,6 +11,8 @@ function placeholderImage(label: string, width: number, height: number, fill: st
 export function createMockScanDebug(status: ScanStatus, wines: readonly WineCard[]): ScanDebug {
   const [first, second] = wines
   const topScore = status === 'matched' ? 0.714 : 0.44
+  // Unmatched demo sits just under the minimum margin, like a near-duplicate sibling.
+  const secondScore = status === 'matched' ? 0.136 : 0.41
 
   return {
     preprocessing: {
@@ -58,10 +60,11 @@ export function createMockScanDebug(status: ScanStatus, wines: readonly WineCard
       durationMs: 4,
       status,
       score: topScore,
-      threshold: 0.45,
+      margin: Math.round((topScore - secondScore) * 1000) / 1000,
+      minMargin: 0.06,
       candidates: [first, second].filter((wine): wine is WineCard => Boolean(wine)).map((wine, index) => ({
         slug: wine.slug,
-        score: index === 0 ? topScore : 0.136,
+        score: index === 0 ? topScore : secondScore,
         wine,
         fields: index === 0
           ? [

@@ -112,23 +112,23 @@ def retriever_debug(candidates: list[dict], error: str | None, duration_ms: int,
 
 
 def ranking_debug(result: RankingResult, ocr_fields: RetrievalFields, visual_fields: RetrievalFields,
-                  wines_by_slug: dict[str, Wine], threshold: float, duration_ms: int) -> dict[str, object]:
-    ranked = sorted(result.evidence.items(), key=lambda item: item[1], reverse=True)[:DEBUG_LIMIT]
+                  wines_by_slug: dict[str, Wine], min_margin: float, duration_ms: int) -> dict[str, object]:
     return {
         "durationMs": duration_ms,
         "status": result.status,
         "score": result.score,
-        "threshold": threshold,
+        "margin": result.margin,
+        "minMargin": min_margin,
         "candidates": [
             {
                 "slug": slug,
                 "score": score,
                 "wine": wines_by_slug[slug].as_card(),
                 "fields": [
-                    {"field": item.field, "weight": item.weight, "score": item.score}
+                    {"field": item.field, "weight": item.weight, "score": round(item.score, 4)}
                     for item in field_breakdown(wines_by_slug[slug], ocr_fields, visual_fields)
                 ],
             }
-            for slug, score in ranked if slug in wines_by_slug
+            for slug, score in result.ranked(DEBUG_LIMIT) if slug in wines_by_slug
         ],
     }

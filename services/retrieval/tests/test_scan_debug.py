@@ -65,12 +65,13 @@ def test_ranking_debug_sorts_top_ten_with_field_terms():
     wines = [wine(f"w{i}", name=f"Вино {i}", winery=f"Винодельня {i}") for i in range(15)]
     by_slug = {item.slug: item for item in wines}
     ocr_fields = RetrievalFields(name=(FieldCandidate("Вино 3", 1.0),))
-    visual_fields = RetrievalFields(slug=(FieldCandidate("w3", 0.8), FieldCandidate("w5", 0.9)))
-    result = rank(ocr_fields, visual_fields, wines, threshold=0.45)
-    debug = ranking_debug(result, ocr_fields, visual_fields, by_slug, 0.45, 3)
+    visual_fields = RetrievalFields(slug=(FieldCandidate("w3", 0.9), FieldCandidate("w5", 0.8)))
+    result = rank(ocr_fields, visual_fields, wines, min_margin=0.06)
+    debug = ranking_debug(result, ocr_fields, visual_fields, by_slug, 0.06, 3)
     scores = [item["score"] for item in debug["candidates"]]
     assert len(scores) == DEBUG_LIMIT and scores == sorted(scores, reverse=True)
     assert debug["candidates"][0]["slug"] == "w3"
     assert {term["field"] for term in debug["candidates"][0]["fields"]} == {"name", "slug"}
-    assert debug["status"] == result.status and debug["threshold"] == 0.45
+    assert debug["status"] == result.status and debug["minMargin"] == 0.06
+    assert debug["margin"] == result.margin
     assert debug["durationMs"] == 3

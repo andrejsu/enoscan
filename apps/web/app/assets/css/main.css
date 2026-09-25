@@ -2721,6 +2721,10 @@ h2 {
   background: var(--color-ink);
 }
 
+.debug-stack--no-line::after {
+  content: none;
+}
+
 .debug-pair {
   display: flex;
   gap: 2px;

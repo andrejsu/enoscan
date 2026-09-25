@@ -2,14 +2,13 @@
 
 Локальный baseline поиска конкретной карточки по фотографии этикетки. Он строит SIFT-индекс по фото, привязанным к винам в таблице `wine_images` (её заполняет `services/importer`), получает кандидатов через FLANN и перепроверяет их геометрию через RANSAC — чисто визуальный поиск. Сервис не зависит от Nuxt UI и не использует облачные ключи.
 
-OCR (RapidOCR) и объединение его результата с визуальным поиском больше не часть этого сервиса — они вынесены в отдельные сервисы: `ocr-retriever` (`app/ocr/main.py`) отдаёт per-поле кандидатов, `ranking` (`app/ranking_main.py`) комбинирует их с визуальными кандидатами `retriever` и резолвит slug. `ranking` — тот сервис, что реально стоит за продуктовым сканером (`apps/web`'s `/api/scans`, через `NUXT_RANKING_BASE_URL`); `retrieval` (этот сервис) остаётся визуальным baseline и источником для `/v1/eval/predict`. См. `app/label_fields.py` и `app/ranking.py`.
+OCR (RapidOCR) и объединение его результата с визуальным поиском больше не часть этого сервиса — они вынесены в отдельные сервисы: `ocr-retriever` (`app/ocr/main.py`) отдаёт per-поле кандидатов, `ranking` (`app/ranking_main.py`) комбинирует их с визуальными кандидатами `retriever` и резолвит slug. `ranking` — тот сервис, что реально стоит за продуктовым сканером (`apps/web`'s `/api/scans`, через `NUXT_RANKING_BASE_URL`); он же отдаёт оценочный `/v1/eval/predict` на порту 8080, чтобы top-1 оценки и сканера совпадал. `retrieval` (этот сервис, порт 8084) остаётся визуальным baseline для `scripts/eval_search.py`. См. `app/label_fields.py` и `app/ranking.py`.
 
 ## Запуск
 
 Корневой `docker compose up --build` сначала запускает `importer`, затем `retrieval-index`, затем поднимает API:
 
-- `POST /v1/search` — продуктовый ответ `matched | uncertain | not_found`;
-- `POST /v1/eval/predict` — строгий ответ `{"slug":"..."}` для скрипта организаторов;
+- `POST /v1/search` — ответ `matched | uncertain | not_found` визуального baseline;
 - `GET /health` — готовность загруженного индекса.
 
 Каталог для админки и картинки вин отдаёт Nuxt напрямую из PostgreSQL и MinIO, этот сервис их не проксирует.

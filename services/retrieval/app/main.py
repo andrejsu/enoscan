@@ -1,6 +1,4 @@
 from contextlib import asynccontextmanager
-from time import perf_counter
-
 from fastapi import FastAPI, File, HTTPException, UploadFile
 
 from .catalog import current_dataset_version
@@ -44,14 +42,3 @@ def run_search(content: bytes) -> dict[str, object]:
 @app.post("/v1/search")
 async def product_search(image: UploadFile = File(...)) -> dict[str, object]:
     return run_search(await read_image_upload(image, settings.max_upload_bytes))
-
-
-@app.post("/v1/eval/predict")
-async def evaluation_search(image: UploadFile = File(...)) -> dict[str, str]:
-    started = perf_counter()
-    result = run_search(await read_image_upload(image, settings.max_upload_bytes))
-    candidates = result["candidates"]
-    top = candidates[0] if isinstance(candidates, list) and candidates else None
-    slug = top.get("slug") if isinstance(top, dict) else None
-    _ = perf_counter() - started
-    return {"slug": slug if isinstance(slug, str) else ""}

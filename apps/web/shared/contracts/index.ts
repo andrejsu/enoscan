@@ -122,8 +122,11 @@ export interface ScanDebugRankingTerm {
 export interface ScanDebugRanking {
   durationMs: number
   status: ScanStatus
+  /** Top-1 wine's score. */
   score: number
-  threshold: number
+  /** Top-1 minus top-2 score; `matched` needs at least `minMargin`. */
+  margin: number
+  minMargin: number
   candidates: readonly {
     slug: string
     score: number

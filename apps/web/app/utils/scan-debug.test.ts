@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { ScanDebug } from '#shared/contracts'
-import { cropBoxStyle, firstFieldWithCandidates, formatScore, rankingSegments, scanDebugStages } from './scan-debug'
+import type { ScanDebug, WineCard } from '#shared/contracts'
+import { cropBoxStyle, firstFieldWithCandidates, formatScore, rankingMatchLine, rankingSegments, scanDebugStages } from './scan-debug'
 
 const debug: ScanDebug = {
   preprocessing: {
@@ -24,7 +24,7 @@ const debug: ScanDebug = {
     ],
   },
   retriever: { durationMs: 900, error: 'ConnectTimeout', candidates: [] },
-  ranking: { durationMs: 4, status: 'not_found', score: 0.3, threshold: 0.45, candidates: [] },
+  ranking: { durationMs: 4, status: 'not_found', score: 0.3, margin: 0.02, minMargin: 0.08, candidates: [] },
 }
 
 describe('scan debug helpers', () => {
@@ -43,14 +43,25 @@ describe('scan debug helpers', () => {
       { field: 'name', weight: 0.3, score: 1 },
       { field: 'winery', weight: 0.2, score: 0 },
       { field: 'slug', weight: 0.2, score: 0.5 },
-    ])
+    ], 0.42)
     expect(segments.map(segment => segment.field)).toEqual(['name', 'slug'])
     const total = segments.reduce((sum, segment) => sum + segment.contribution, 0)
-    expect(total).toBeCloseTo((0.3 * 1 + 0.2 * 0.5) / 0.7)
+    expect(total).toBeCloseTo(0.42)
+    expect(segments[0]?.contribution).toBeCloseTo(0.42 * 0.3 / 0.4)
   })
 
   it('returns no segments without evidence', () => {
-    expect(rankingSegments([])).toEqual([])
+    expect(rankingSegments([], 0)).toEqual([])
+  })
+
+  it('puts the match line at the runner-up score plus the minimum margin', () => {
+    expect(rankingMatchLine(debug.ranking)).toBeNull()
+    const wine: WineCard = {
+      slug: 'rebus', name: 'Ребус', producer: 'Дивноморское', year: null, category: null, color: null, region: null,
+      grapeVarieties: [], description: null, servingTemperature: null, imageUrl: null, imagePreviewUrl: null,
+    }
+    const candidates = [0.5, 0.45].map(score => ({ slug: String(score), score, wine, fields: [] }))
+    expect(rankingMatchLine({ ...debug.ranking, candidates })).toBeCloseTo(0.53)
   })
 
   it('opens the OCR block on the first field that has candidates', () => {
@@ -62,6 +73,6 @@ describe('scan debug helpers', () => {
     expect(stages.map(stage => stage.key)).toEqual(['preprocessing', 'ocr', 'retriever', 'ranking'])
     expect(stages.map(stage => stage.hasProblem)).toEqual([false, false, true, true])
     expect(stages[2]?.summary).toContain('ConnectTimeout')
-    expect(stages[3]?.summary).toBe('0.300 ≤ 0.450')
+    expect(stages[3]?.summary).toBe('отрыв 0.020 < 0.080')
   })
 })

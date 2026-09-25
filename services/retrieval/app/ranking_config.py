@@ -11,7 +11,16 @@ from dataclasses import dataclass
 from os import environ
 
 from .common.settings import load_database_url, load_max_upload_bytes
-from .ranking import MATCH_THRESHOLD
+from .ranking import MIN_MARGIN
+
+
+# What /v1/eval/predict returns when ranking is not confident: `matched`
+# answers only matches and leaves the rest empty, which the organizer's script
+# records as null; `top1` always answers with the best wine. Two of the three
+# public organizer photos are wines outside the catalog, and on the labelled
+# real photos `matched` scored 0.78 match rate vs 0.56 for `top1` at equal
+# recall — switch to `top1` if the organizer counts null as always wrong.
+EVAL_POLICIES = ("matched", "top1")
 
 
 @dataclass(frozen=True)
@@ -22,7 +31,8 @@ class RankingSettings:
     ocr_timeout: float
     retriever_base_url: str
     retriever_timeout: float
-    match_threshold: float
+    min_margin: float
+    eval_policy: str
     debug: bool  # attach the per-stage debug trace to every /v1/search response
 
 
@@ -34,6 +44,13 @@ def load_ranking_settings() -> RankingSettings:
         ocr_timeout=float(environ.get("OCR_TIMEOUT_SECONDS", "8")),
         retriever_base_url=environ.get("RETRIEVER_BASE_URL", "http://retriever:8000"),
         retriever_timeout=float(environ.get("RETRIEVER_TIMEOUT_SECONDS", "8")),
-        match_threshold=float(environ.get("RANKING_MATCH_THRESHOLD", str(MATCH_THRESHOLD))),
+        min_margin=float(environ.get("RANKING_MIN_MARGIN", str(MIN_MARGIN))),
+        eval_policy=_eval_policy(environ.get("RANKING_EVAL_POLICY", "matched")),
         debug=environ.get("RANKING_DEBUG", "true").lower() == "true",
     )
+
+
+def _eval_policy(value: str) -> str:
+    if value not in EVAL_POLICIES:
+        raise ValueError(f"RANKING_EVAL_POLICY must be one of {EVAL_POLICIES}, got {value!r}")
+    return value

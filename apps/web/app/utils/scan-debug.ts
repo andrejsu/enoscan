@@ -42,19 +42,29 @@ export function cropBoxStyle(box: readonly [number, number, number, number]): Re
 
 export interface RankingSegment {
   field: ScanDebugField
-  /** weight × score / Σweight: this field's share of the wine's total score. */
+  /** This field's share of the wine's total score. */
   contribution: number
 }
 
-/** Splits a wine's ranking score into per-field parts that add up to the score itself. */
-export function rankingSegments(terms: readonly ScanDebugRankingTerm[]): RankingSegment[] {
-  const totalWeight = terms.reduce((sum, term) => sum + term.weight, 0)
-  if (totalWeight <= 0) {
+/**
+ * Splits a wine's score into per-field parts that add up to the score itself.
+ * The score is Σ weight × per-field probability over a fixed total weight,
+ * so scaling each field's weight × probability to the score is exact.
+ */
+export function rankingSegments(terms: readonly ScanDebugRankingTerm[], score: number): RankingSegment[] {
+  const support = terms.reduce((sum, term) => sum + term.weight * term.score, 0)
+  if (support <= 0) {
     return []
   }
   return terms
-    .map(term => ({ field: term.field, contribution: term.weight * term.score / totalWeight }))
+    .map(term => ({ field: term.field, contribution: score * term.weight * term.score / support }))
     .filter(segment => segment.contribution > 0)
+}
+
+/** Score the top-1 wine had to reach for `matched`: runner-up plus the minimum margin. */
+export function rankingMatchLine(ranking: ScanDebug['ranking']): number | null {
+  const runnerUp = ranking.candidates[1]
+  return runnerUp ? runnerUp.score + ranking.minMargin : null
 }
 
 export function firstFieldWithCandidates(fields: ScanDebugOcr['fields']): ScanDebugField | null {
@@ -94,7 +104,7 @@ export function scanDebugStages(debug: ScanDebug): ScanDebugStage[] {
       key: 'ranking',
       title: 'Ранжирование',
       durationMs: ranking.durationMs,
-      summary: `${formatScore(ranking.score)} ${ranking.score > ranking.threshold ? '>' : '≤'} ${formatScore(ranking.threshold)}`,
+      summary: `отрыв ${formatScore(ranking.margin)} ${ranking.margin >= ranking.minMargin ? '≥' : '<'} ${formatScore(ranking.minMargin)}`,
       hasProblem: ranking.status !== 'matched',
     },
   ]

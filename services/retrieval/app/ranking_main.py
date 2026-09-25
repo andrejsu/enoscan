@@ -13,6 +13,7 @@ stack into OOM restart loops.
 import asyncio
 import time
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 
 import httpx
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -21,7 +22,7 @@ from fastapi.concurrency import run_in_threadpool
 from .catalog import Wine, current_dataset_version, load_wines
 from .common.upload import decode_upload, read_image_upload
 from .label_fields import FieldCandidate, RetrievalFields, fields_from_json
-from .ranking import rank
+from .ranking import RankingResult, rank
 from .ranking_config import load_ranking_settings
 from .scan_debug import ocr_debug, preprocessing_debug, ranking_debug, retriever_debug
 
@@ -76,13 +77,26 @@ async def _post_image(base_url: str, timeout: float, content: bytes, content_typ
     return payload, error, round((time.perf_counter() - started) * 1000)
 
 
-@app.post("/v1/search")
-async def search(image: UploadFile = File(...)) -> dict[str, object]:
+@dataclass(frozen=True)
+class Scan:
+    result: RankingResult
+    ocr: dict | None
+    ocr_error: str | None
+    ocr_ms: int
+    ocr_fields: RetrievalFields
+    visual_candidates: list[dict]
+    visual_error: str | None
+    visual_ms: int
+    visual_fields: RetrievalFields
+    rank_ms: int
+    total_ms: int
+
+
+async def _scan(image: UploadFile, content: bytes) -> Scan:
+    """The one OCR + visual + ranking pass behind both the product and the
+    evaluation route, so their top-1 can never diverge."""
     if http_client is None:
         raise HTTPException(status_code=503, detail="Ранжирование ещё загружается.")
-    content = await read_image_upload(image, settings.max_upload_bytes)
-    decoded = decode_upload(content)
-
     started = time.perf_counter()
     (ocr, ocr_error, ocr_ms), (visual, visual_error, visual_ms) = await asyncio.gather(
         _post_image(settings.ocr_base_url, settings.ocr_timeout, content, image.content_type, image.filename),
@@ -96,47 +110,69 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
     visual_fields = RetrievalFields(slug=tuple(FieldCandidate(c["slug"], c["score"]) for c in visual_candidates))
 
     rank_started = time.perf_counter()
-    result = rank(ocr_fields, visual_fields, list(wines_by_slug.values()), threshold=settings.match_threshold)
+    result = rank(ocr_fields, visual_fields, list(wines_by_slug.values()), min_margin=settings.min_margin)
     rank_ms = round((time.perf_counter() - rank_started) * 1000)
+    return Scan(result, ocr, ocr_error, ocr_ms, ocr_fields, visual_candidates, visual_error, visual_ms,
+                visual_fields, rank_ms, round((time.perf_counter() - started) * 1000))
 
-    total_ms = round((time.perf_counter() - started) * 1000)
 
-    ranked = sorted(result.evidence.items(), key=lambda item: item[1], reverse=True)[:RESPONSE_LIMIT]
+def evaluation_slug(result: RankingResult, policy: str) -> str:
+    """Slug for the organizer's script; an empty string is recorded as null."""
+    if result.status == "matched" and result.slug:
+        return result.slug
+    if policy == "top1" and result.score > 0:
+        return result.ranked(1)[0][0]
+    return ""
+
+
+@app.post("/v1/search")
+async def search(image: UploadFile = File(...)) -> dict[str, object]:
+    content = await read_image_upload(image, settings.max_upload_bytes)
+    decoded = decode_upload(content)
+    scan = await _scan(image, content)
+    result = scan.result
+
     candidates = [{"slug": slug, "score": score, "wine": wines_by_slug[slug].as_card()}
-                 for slug, score in ranked if slug in wines_by_slug]
-    top_score = candidates[0]["score"] if candidates else 0.0
-    second_score = candidates[1]["score"] if len(candidates) > 1 else 0.0
-    margin = max(0.0, top_score - second_score)
-
+                  for slug, score in result.ranked(RESPONSE_LIMIT) if slug in wines_by_slug]
     wine_card = (wines_by_slug[result.slug].as_card()
-                if result.status == "matched" and result.slug else None)
+                 if result.status == "matched" and result.slug else None)
     alternatives = [candidate["wine"] for candidate in candidates[1:4]]
 
     guidance = None
     if result.status == "not_found":
         guidance = "Совпадение не подтверждено. Снимите этикетку крупнее и захватите и текст, и саму бутылку."
 
+    ocr = scan.ocr
     return {
         "status": result.status,
         "wine": wine_card,
         "candidates": candidates,
-        "confidence": {"kind": "similarity", "top1Score": top_score, "margin": round(margin, 4)},
-        "timing": {"totalMs": total_ms, "stages": {
-            "ocr": ocr_ms, "visual": visual_ms,
+        "confidence": {"kind": "similarity", "top1Score": result.score, "margin": result.margin},
+        "timing": {"totalMs": scan.total_ms, "stages": {
+            "ocr": scan.ocr_ms, "visual": scan.visual_ms,
         }},
         "alternatives": alternatives,
         "version": {
-            "model": "ranking-ocr-visual-v2",
+            "model": "ranking-ocr-visual-v3",
             "catalog": dataset_version,
-            "configuration": f"threshold{settings.match_threshold};ocr={ocr.get('engine') if ocr else 'none'}",
+            "configuration": f"margin{settings.min_margin};ocr={ocr.get('engine') if ocr else 'none'}",
         },
         **({"guidance": guidance} if guidance else {}),
         **({"debug": {
             "preprocessing": await run_in_threadpool(preprocessing_debug, decoded),
-            "ocr": ocr_debug(ocr, ocr_error, ocr_ms, ocr_fields),
-            "retriever": retriever_debug(visual_candidates, visual_error, visual_ms, wines_by_slug),
-            "ranking": ranking_debug(result, ocr_fields, visual_fields, wines_by_slug,
-                                     settings.match_threshold, rank_ms),
+            "ocr": ocr_debug(ocr, scan.ocr_error, scan.ocr_ms, scan.ocr_fields),
+            "retriever": retriever_debug(scan.visual_candidates, scan.visual_error, scan.visual_ms, wines_by_slug),
+            "ranking": ranking_debug(result, scan.ocr_fields, scan.visual_fields, wines_by_slug,
+                                     settings.min_margin, scan.rank_ms),
         }} if settings.debug else {}),
         "isMock": False,
     }
+
+
+@app.post("/v1/eval/predict")
+async def evaluation_predict(image: UploadFile = File(...)) -> dict[str, str]:
+    """Strict `{"slug": "..."}` for the organizer's participant_test.sh."""
+    content = await read_image_upload(image, settings.max_upload_bytes)
+    decode_upload(content)  # same 4xx for a broken file as the product route
+    scan = await _scan(image, content)
+    return {"slug": evaluation_slug(scan.result, settings.eval_policy)}
