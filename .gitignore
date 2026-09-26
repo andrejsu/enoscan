@@ -16,8 +16,17 @@ data/
 models/
 indexes/
 
+# Python local state
+.venv/
+venv/
 __pycache__/
-*.pyc
+*.py[cod]
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 reports/*.json
 reports/eval/
@@ -26,6 +35,6 @@ reports/eval/
 !reports/photo-search-http.json
 !reports/mapping_audit_*.json
 
-graphify-out/cache/
-
-.pytest_cache/
+# Generated code analysis
+.code-review-graph/
+graphify-out/
