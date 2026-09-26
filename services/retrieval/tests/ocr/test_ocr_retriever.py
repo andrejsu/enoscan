@@ -143,25 +143,24 @@ def test_ocr_reads_the_middle_of_a_photo_and_falls_back_to_the_full_frame():
     readable = OcrResult((word("Ребус"), word("Дивноморское", line=(1, 1, 2)), word("2019", line=(1, 1, 3))))
     with patch("app.ocr.retriever.extract_label", return_value=readable) as extract:
         assert retriever.trace(photo).passes == ("crop",)
-    assert extract.call_args.args[0].shape == (3000, 1500, 3)  # OCR_CROP_BOX of a 3000×4000 photo
+    assert extract.call_args.args[0].shape == (3000, 1500, 3)
 
     with patch("app.ocr.retriever.extract_label", side_effect=[OcrResult(), readable]) as extract:
         trace = retriever.trace(photo)
     assert trace.passes == ("crop", "full") and extract.call_args.args[0].shape == (4000, 3000, 3)
 
-    bottle = np.zeros((6000, 1400, 3), dtype=np.uint8)  # a tall bottle shot: keep its full width
+    bottle = np.zeros((6000, 1400, 3), dtype=np.uint8)
     with patch("app.ocr.retriever.extract_label", return_value=readable) as extract:
         retriever.trace(bottle)
     assert extract.call_args.args[0].shape == (4500, 1400, 3)
 
-    close_up = np.zeros((447, 447, 3), dtype=np.uint8)  # already a close-up: read whole, once
+    close_up = np.zeros((447, 447, 3), dtype=np.uint8)
     with patch("app.ocr.retriever.extract_label", return_value=readable) as extract:
         assert retriever.trace(close_up).passes == ("full",)
     assert extract.call_args.args[0].shape == (447, 447, 3)
 
 
 def test_a_grape_word_alone_never_names_a_winery():
-    # Regression (Жемчужная 9 «ПИНО НУАР»): «Пино» matched the winery «Шато Пино».
     wines = [wine(winery="Шато Пино", grape_varieties=("Пино Нуар",)),
              wine("zh", "Жемчужная 9 Пино Нуар", "АРАТТИ", grape_varieties=("Пино Нуар",))] + \
             [wine(f"decoy-{name}", f"Вино {name}", name) for name in _DECOY_WINERIES]

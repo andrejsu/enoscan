@@ -48,26 +48,20 @@ import numpy as np
 
 @dataclass
 class Config:
-    # [1] сегментация
     sam_dir: Path = Path.home() / ".cache" / "label_preprocess" / "sam_vit_b_quant"
-    grid: int = 8                      # сетка точек для автопоиска
-    # [2] геометрия
-    unwrap: str = "auto"               # auto | always | never
-    unwrap_min_angle: float = 20.0     # развёртка включается, если край этикетки дальше этого угла
-    max_stretch: float = 2.5           # предел локального растяжения при развёртке (у краёв)
-    fallback_radius: float = 1.15      # R / полуширина этикетки, если силуэт бутылки не найден
-    # [4] нормализация
-    visual_size: int = 512             # длинная сторона для визуальных эмбеддингов
-    ocr_height: int = 1024             # целевая высота для OCR
+    grid: int = 8
+    unwrap: str = "auto"
+    unwrap_min_angle: float = 20.0
+    max_stretch: float = 2.5
+    fallback_radius: float = 1.15
+    visual_size: int = 512
+    ocr_height: int = 1024
     max_upscale: float = 2.0
     clahe_clip: float = 1.5
     denoise_min_sigma: float = 3.0
     min_label_height: int = 400
 
 
-# ═══════════════════════════════════════════════════════════════════════════ #
-# [0] Качество кадра
-# ═══════════════════════════════════════════════════════════════════════════ #
 def sharpness(img: np.ndarray) -> float:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
     return float(cv2.Laplacian(gray, cv2.CV_64F).var())
@@ -80,9 +74,6 @@ def noise_sigma(gray: np.ndarray) -> float:
     return float(np.sqrt(np.pi / 2) * np.abs(conv).mean() / 6)
 
 
-# ═══════════════════════════════════════════════════════════════════════════ #
-# [1] Сегментация — Segment Anything через onnxruntime
-# ═══════════════════════════════════════════════════════════════════════════ #
 SAM_URL = ("https://github.com/vietanhdev/anylabeling-assets/releases/download/"
            "v0.4.0/segment_anything_vit_b_quant-r20230416.zip")
 
@@ -138,7 +129,6 @@ class Segmenter:
         self.dec = ort.InferenceSession(str(dec), so, providers=["CPUExecutionProvider"])
         self.cfg = cfg
 
-    # --- низкоуровневое ------------------------------------------------------ #
     def set_image(self, img: np.ndarray):
         self.full = img.shape[:2]
         s = 1024 / max(self.full)
@@ -156,7 +146,7 @@ class Segmenter:
         out = self.full if full_res else self.work
         m, iou, _ = self.dec.run(None, {
             "image_embeddings": self.emb,
-            "point_coords": np.asarray(pts_work, np.float32)[None],   # work == вход 1024
+            "point_coords": np.asarray(pts_work, np.float32)[None],
             "point_labels": np.asarray(labels, np.float32)[None],
             "mask_input": np.zeros((1, 1, 256, 256), np.float32),
             "has_mask_input": np.zeros(1, np.float32),
@@ -164,7 +154,6 @@ class Segmenter:
         })
         return m[0] > 0, iou[0]
 
-    # --- поиск этикетки ------------------------------------------------------ #
     def _candidates(self) -> list[dict]:
         h, w = self.work
         lap = cv2.Laplacian(self.small_gray, cv2.CV_32F)
@@ -203,7 +192,7 @@ class Segmenter:
         ys, xs = np.nonzero(label)
         cx, cy, hh = xs.mean(), ys.mean(), ys.max() - ys.min()
         pool = list(cands)
-        for dy in (-0.5, 0.0, 0.5):   # точки на этикетке и чуть выше/ниже неё — по стеклу
+        for dy in (-0.5, 0.0, 0.5):
             masks, iou = self.decode([[cx, cy + dy * hh * 1.1], [0, 0]], [1, -1])
             pool += [{"mask": masks[i]} for i in range(1, len(iou)) if iou[i] > 0.7]
         la = label.sum()
@@ -234,9 +223,6 @@ class Segmenter:
 
         bottle_w = self._find_bottle(label_w, cands)
 
-        # Финальная маска — в полном разрешении, box-промпт по найденной рамке.
-        # Из вариантов SAM берём тот, что ближе всего к найденной маске: «самый
-        # уверенный» вариант часто прихватывает соседнее стекло под этикеткой.
         up = cv2.resize(label_w.astype(np.uint8), self.full[::-1], interpolation=cv2.INTER_NEAREST) > 0
         ys, xs = np.nonzero(label_w)
         masks, _ = self.decode([[xs.min(), ys.min()], [xs.max(), ys.max()]], [2, 3], full_res=True)
@@ -265,9 +251,6 @@ def clean_mask(mask: np.ndarray) -> np.ndarray:
     return out > 0
 
 
-# ═══════════════════════════════════════════════════════════════════════════ #
-# [2] Геометрия — всё считается на точках контура, картинки не вращаются
-# ═══════════════════════════════════════════════════════════════════════════ #
 def contour_points(mask: np.ndarray) -> np.ndarray:
     cs, _ = cv2.findContours(mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
     return max(cs, key=cv2.contourArea)[:, 0, :].astype(np.float64)
@@ -376,18 +359,17 @@ def fit_arcs(p: np.ndarray, xl: float, xr: float, axis: float | None = None):
         if best is None or err < best[0]:
             best = (err, vx, coef)
     _, vx, (at, ab, sl, ct, cb) = best
-    # В форму a·x² + b·x + c, чтобы остальной код работал через np.polyval
     to_poly = lambda a, c: np.array([a, sl - 2 * a * vx, a * vx * vx - sl * vx + c])
     return to_poly(at, ct), to_poly(ab, cb), float(vx)
 
 
 @dataclass
 class Geometry:
-    center: np.ndarray                 # центр вращения (в кадре)
-    theta: float                       # угол поворота, рад
-    xl: float; xr: float               # боковые края этикетки (в «вертикальной» системе)
-    top: np.ndarray; bot: np.ndarray   # дуги y = a x² + b x + c
-    axis: float; R: float              # ось и радиус бутылки
+    center: np.ndarray
+    theta: float
+    xl: float; xr: float
+    top: np.ndarray; bot: np.ndarray
+    axis: float; R: float
     radius_source: str
     th_l_raw: float; th_r_raw: float
     cylinder: bool
@@ -399,7 +381,6 @@ def estimate_geometry(label: np.ndarray, bottle: np.ndarray | None, cfg: Config)
     p = contour_points(label)
     c = p.mean(axis=0)
 
-    # Наклон: сначала по краям в исходном кадре, потом 2 уточнения в повёрнутом
     th = np.arctan(side_slope(p))
     for _ in range(2):
         th += np.arctan(side_slope(rotate_pts(p, c, th)))
@@ -409,7 +390,6 @@ def estimate_geometry(label: np.ndarray, bottle: np.ndarray | None, cfg: Config)
     xl, xr = float(np.median(L)), float(np.median(R_))
     y_lo, y_hi = np.quantile(pu[:, 1], [0.02, 0.98])
 
-    # Ось и радиус: лучше всего — по силуэту бутылки на высоте этикетки
     axis, R, src = None, None, "fallback"
     if bottle is not None:
         pb = rotate_pts(contour_points(bottle), c, th)
@@ -417,14 +397,14 @@ def estimate_geometry(label: np.ndarray, bottle: np.ndarray | None, cfg: Config)
         sel = np.abs(pb[:, 1] - y_mid) < 0.3 * hgt
         if sel.sum() > 20:
             yb, Lb, Rb = side_profile(pb[sel], 0.0, 1.0, 24)
-            w = float(np.quantile(Rb - Lb, 0.25))       # рука/блик могут расширять — нижний квартиль
+            w = float(np.quantile(Rb - Lb, 0.25))
             ax = float(np.median((Lb + Rb) / 2))
             if 0.95 * (xr - xl) <= w <= 3.0 * (xr - xl) and ax - w / 2 <= xl + 0.05 * w and ax + w / 2 >= xr - 0.05 * w:
                 axis, R, src = ax, w / 2, "bottle_silhouette"
 
     top, bot, vx = fit_arcs(pu, xl, xr, axis)
     if axis is None:
-        axis = vx                                       # вершина дуг — лучшая оценка оси без бутылки
+        axis = vx
         R = max(axis - xl, xr - axis) * cfg.fallback_radius
 
     th_l_raw = float(np.arcsin(np.clip((axis - xl) / R, 0, 1)))
@@ -446,17 +426,10 @@ def estimate_geometry(label: np.ndarray, bottle: np.ndarray | None, cfg: Config)
     return g
 
 
-# ═══════════════════════════════════════════════════════════════════════════ #
-# [3] Ресэмплинг — одна интерполяция из исходного кадра
-# ═══════════════════════════════════════════════════════════════════════════ #
 def resample(img: np.ndarray, g: Geometry) -> np.ndarray:
     hgt = float(np.polyval(g.bot, g.axis) - np.polyval(g.top, g.axis))
     out_h = int(round(hgt))
     if g.cylinder:
-        # Развёртка с «мягким потолком»: координата развёртки u(x) растёт как
-        # du/dx = min(1/cos θ(x), max_stretch). В центре это точная развёртка
-        # цилиндра (u = R·θ), у краёв — ограниченное растяжение: ничего не
-        # обрезается и не размазывается в полосы.
         xs = np.linspace(g.xl, g.xr, int(4 * (g.xr - g.xl)) + 2)
         sin_t = np.clip((xs - g.axis) / g.R, -1, 1)
         rate = np.minimum(1 / np.sqrt(np.maximum(1 - sin_t ** 2, 1e-9)), g.max_stretch)
@@ -470,16 +443,13 @@ def resample(img: np.ndarray, g: Geometry) -> np.ndarray:
         raise RuntimeError("Этикетка слишком маленькая")
     yt, yb = np.polyval(g.top, x), np.polyval(g.bot, x)
     t = np.linspace(0, 1, out_h)[:, None]
-    yu = yt[None, :] + t * (yb - yt)[None, :]              # «улыбка» верх/низ выпрямляется
+    yu = yt[None, :] + t * (yb - yt)[None, :]
     xu = np.broadcast_to(x[None, :], yu.shape)
     mx, my = unrotate_xy(xu, yu, g.center, g.theta)
     return cv2.remap(img, mx.astype(np.float32), my.astype(np.float32),
                      interpolation=cv2.INTER_LANCZOS4, borderMode=cv2.BORDER_REPLICATE)
 
 
-# ═══════════════════════════════════════════════════════════════════════════ #
-# [4] Нормализация — всё «усиливающее» в родном разрешении, масштаб в конце
-# ═══════════════════════════════════════════════════════════════════════════ #
 def glare_mask(img: np.ndarray) -> np.ndarray:
     """
     Блики: почти пересвеченные пиксели, заметно ярче своего окружения.
@@ -514,12 +484,9 @@ def normalize(flat: np.ndarray, cfg: Config) -> tuple[np.ndarray, np.ndarray, di
         base = cv2.fastNlMeansDenoisingColored(flat, None, h, h, 7, 21)
         info["denoised"] = True
 
-    # --- визуальная ветка: цвет НЕ трогаем (никакого gray-world: бордовая этикетка
-    #     стала бы серой, а цвет — сильный признак для поиска похожих этикеток)
     s = cfg.visual_size / max(base.shape[:2])
     visual, _ = _resize(base, s, cfg.max_upscale)
 
-    # --- OCR-ветка
     L = cv2.cvtColor(base, cv2.COLOR_BGR2LAB)[..., 0]
     gm = glare_mask(flat)
     info["glare_frac"] = round(float(gm.mean()), 3)
@@ -527,23 +494,18 @@ def normalize(flat: np.ndarray, cfg: Config) -> tuple[np.ndarray, np.ndarray, di
         L = cv2.inpaint(L, gm, 3, cv2.INPAINT_TELEA)
     tiles = int(np.clip(round(min(L.shape) / 128), 2, 8))
     L = cv2.createCLAHE(cfg.clahe_clip, (tiles, tiles)).apply(L)
-    # Полярность: OCR-модели обучены в основном на тёмном тексте по светлому фону.
-    # Текст — меньшинство пикселей; если меньшинство светлое — инвертируем.
     thr, _ = cv2.threshold(L, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     if (L > thr).mean() < 0.4:
         L = 255 - L
         info["inverted"] = True
     ocr, sc = _resize(L, cfg.ocr_height / L.shape[0], cfg.max_upscale)
-    if sc <= 1.0:                                        # резкость — только без увеличения
+    if sc <= 1.0:
         blur = cv2.GaussianBlur(ocr, (0, 0), 1.0)
         ocr = cv2.addWeighted(ocr, 1.4, blur, -0.4, 0)
     info["ocr_scale"] = round(float(sc), 2)
     return visual, ocr, info
 
 
-# ═══════════════════════════════════════════════════════════════════════════ #
-# Отладочные картинки
-# ═══════════════════════════════════════════════════════════════════════════ #
 def debug_segmentation(img, label, bottle):
     vis = img.copy()
     vis[label] = (0.5 * vis[label] + [0, 110, 0]).astype(np.uint8)
@@ -576,14 +538,10 @@ def debug_geometry(img, g: Geometry):
     return vis
 
 
-# ═══════════════════════════════════════════════════════════════════════════ #
-# Пайплайн
-# ═══════════════════════════════════════════════════════════════════════════ #
 def process(img: np.ndarray, cfg: Config, roi=None, mask=None, segmenter: Segmenter | None = None):
     warns: list[str] = []
     debug: dict[str, np.ndarray] = {}
 
-    # [1]
     if mask is not None:
         label, bottle, seg = clean_mask(mask), None, {"mode": "external_mask"}
     else:
@@ -595,7 +553,6 @@ def process(img: np.ndarray, cfg: Config, roi=None, mask=None, segmenter: Segmen
         warns.append("этикетка касается края кадра — часть может быть обрезана")
     debug["1_segmentation"] = debug_segmentation(img, label, bottle)
 
-    # [2]
     g = estimate_geometry(label, bottle, cfg)
     if g.info.get("stretch_capped") and g.info["edge_stretch_full"] > 1.5 * cfg.max_stretch:
         warns.append(f"этикетка заходит за бок бутылки — у краёв растяжение ограничено {cfg.max_stretch}×, "
@@ -604,13 +561,11 @@ def process(img: np.ndarray, cfg: Config, roi=None, mask=None, segmenter: Segmen
         warns.append("силуэт бутылки не найден, радиус оценён грубо — развёртка может растягивать края")
     debug["2_geometry"] = debug_geometry(img, g)
 
-    # [3]
     flat = resample(img, g)
     debug["3_flat_native"] = flat
     if flat.shape[0] < cfg.min_label_height:
         warns.append(f"этикетка всего {flat.shape[0]} px по высоте — мелкий текст не восстановить, снимайте ближе")
 
-    # [4]
     visual, ocr, norm = normalize(flat, cfg)
     if norm["glare_frac"] > 0.15:
         warns.append(f"много бликов ({norm['glare_frac']:.0%}) — смените угол съёмки")

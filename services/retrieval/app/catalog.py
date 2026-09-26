@@ -26,7 +26,6 @@ class Wine:
     grape_varieties: tuple[str, ...] = ()
     description: str | None = None
     has_image: bool = False
-    # No catalog column: derived from name, slug, source photo file name (app/sweetness.py).
     sweetness: str | None = None
 
     def as_card(self) -> dict[str, object]:

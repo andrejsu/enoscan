@@ -15,13 +15,11 @@ export const scanDebugFieldLabels: Readonly<Record<ScanDebugField, string>> = {
 export interface ScanDebugStage {
   key: keyof ScanDebug
   title: string
-  /** null when the stage has no timing of its own (the label check runs inside ranking). */
   durationMs: number | null
   summary: string
   hasProblem: boolean
 }
 
-// Raw similarity, never a percentage — see CODE_RULES «TypeScript и данные».
 export function formatScore(score: number): string {
   return score.toFixed(3)
 }
@@ -43,15 +41,9 @@ export function cropBoxStyle(box: readonly [number, number, number, number]): Re
 
 export interface RankingSegment {
   field: ScanDebugField
-  /** This field's share of the wine's total score. */
   contribution: number
 }
 
-/**
- * Splits a wine's score into per-field parts that add up to the score itself.
- * The score is Σ weight × per-field probability over a fixed total weight,
- * so scaling each field's weight × probability to the score is exact.
- */
 export function rankingSegments(terms: readonly ScanDebugRankingTerm[], score: number): RankingSegment[] {
   const support = terms.reduce((sum, term) => sum + term.weight * term.score, 0)
   if (support <= 0) {
@@ -70,7 +62,6 @@ export const verificationVerdictLabels: Readonly<Record<VerificationVerdict, str
   rejected: 'отклонено',
 }
 
-/** Contradicted wines are rejected; the rest are confirmed when the label shows words of their name. */
 export function verificationVerdict(row: ScanDebugVerification['shortlist'][number]): VerificationVerdict {
   if (row.contradiction) {
     return 'rejected'
@@ -78,7 +69,6 @@ export function verificationVerdict(row: ScanDebugVerification['shortlist'][numb
   return row.readWords.length ? 'confirmed' : 'neutral'
 }
 
-/** Score the top-1 wine had to reach for `matched`: runner-up plus the minimum margin. */
 export function rankingMatchLine(ranking: ScanDebug['ranking']): number | null {
   const runnerUp = ranking.candidates[1]
   return runnerUp ? runnerUp.score + ranking.minMargin : null

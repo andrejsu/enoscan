@@ -15,7 +15,6 @@ import re
 DRY, SEMI_DRY, SEMI_SWEET, SWEET = "сухое", "полусухое", "полусладкое", "сладкое"
 BRUT, EXTRA_BRUT, BRUT_NATURE = "брют", "экстра брют", "брют натюр"
 
-# Longest first: a matched span is blanked, so «полусухое» never also reads as «сухое».
 _PATTERNS = tuple((re.compile(pattern), value) for pattern, value in (
     (r"\b(?:экстра|extra|ekstra) (?:брют|brut|bryut)\b", EXTRA_BRUT),
     (r"\b(?:брют|brut|bryut) (?:натюр|nature|natyur)\b|\bzero dosage\b|\bdosage zero\b|\bpas dos[eé]\b",

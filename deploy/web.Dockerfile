@@ -1,7 +1,3 @@
-# Production image for apps/web: builds the Nuxt server bundle and ships only
-# `.output` on a slim runtime. The root ./Dockerfile stays the dev container
-# (mounted workspace, `nuxt dev`); this one is used by compose.prod.yaml.
-# Build context is the repo root.
 FROM node:22.22.2-bookworm-slim AS build
 
 WORKDIR /src

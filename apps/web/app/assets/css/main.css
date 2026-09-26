@@ -233,7 +233,6 @@ h2 {
   text-transform: uppercase;
 }
 
-/* Mobile: the primary navigation is a bottom tab bar within thumb reach. */
 .site-nav {
   position: fixed;
   z-index: 30;
@@ -2301,7 +2300,6 @@ h2 {
   width: 100%;
 }
 
-/* Scan debug panel */
 .scan-debug {
   max-width: 920px;
   margin: 18px auto 0;
@@ -2517,7 +2515,6 @@ h2 {
   background: var(--debug-surface);
 }
 
-/* Shrink-wraps the image so the crop overlay's percentages match its box. */
 .debug-prep__frame {
   position: relative;
   max-width: 100%;

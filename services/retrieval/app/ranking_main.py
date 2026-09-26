@@ -36,10 +36,6 @@ from .scan_debug import (
 )
 
 
-# Same response contract as app/service.py and app/retriever_main.py
-# (apps/web's #shared/contracts ScanResponse) — this is the one service
-# meant to sit behind the product's scanner, so it must speak the same
-# shape they do, not a leaner one-off.
 RESPONSE_LIMIT = 5
 
 settings = load_ranking_settings()
@@ -228,6 +224,6 @@ async def evaluation_predict(image: UploadFile = IMAGE_FIELD) -> dict[str, str]:
     строка, скрипт записывает её как `null`; при `top1` всегда отдаётся лучшее
     вино. Скрипт ждёт ответ не дольше 10 секунд."""
     content = await read_image_upload(image, settings.max_upload_bytes)
-    decode_upload(content)  # same 4xx for a broken file as the product route
+    decode_upload(content)
     scan = await _scan(image, content)
     return {"slug": evaluation_slug(scan.result, settings.eval_policy)}

@@ -1,16 +1,4 @@
 #!/usr/bin/env python3
-# Baseline on sift-v2.npz, 200 refs x 5 augmentations, seed 42 (2026-09-16, before Phase 2+):
-#   Recall@1 = 0.958   Recall@5 = 0.996   Recall@10 = 0.996
-#   blur 0.935 | jpeg 0.980 | perspective 0.975 | brightness 0.975 | combined 0.925
-# Queries here are degraded copies of the indexed images, so this is a near-duplicate
-# upper bound, not a prediction of organizer-eval accuracy on real photos.
-#
-# --profile hard, same index/refs/seed, 7 augmentations (2026-09-16):
-#   Recall@1 = 0.832   Recall@5 = 0.875   Recall@10 = 0.876
-#   hard_perspective 0.970 | crop_zoom 0.965 | motion_blur 0.840 | low_light 0.965
-#   glare 0.970 | shelf 0.950 | hard_combined 0.165
-# Recall@10 sits only 4.4 points above Recall@1: when the shortlist misses, it misses
-# entirely, so the failure is in candidate selection rather than in reranking.
 from __future__ import annotations
 
 import argparse
@@ -29,7 +17,7 @@ for _root in (_HERE.parent / "services" / "retrieval", _HERE.parent):
         sys.path.insert(0, str(_root))
         break
 
-from app.catalog import load_references  # noqa: I001
+from app.catalog import load_references
 from app.config import load_settings
 from app.index import SIFT_INDEX_KIND, SiftIndex
 from app.index_store import current_index_path
@@ -49,7 +37,7 @@ def run_eval(samples: int, seed: int = 42, profile: str = "easy") -> None:
 
     augmentations = PROFILES[profile]
     aug_names = list(augmentations.keys())
-    aug_fns: list[Callable[[np.ndarray], np.ndarray]] = [augmentations[n] for n in aug_names]  # type: ignore[assignment]
+    aug_fns: list[Callable[[np.ndarray], np.ndarray]] = [augmentations[n] for n in aug_names]
     n_refs = len(selected)
     n_augs = len(aug_names)
     total = n_refs * n_augs

@@ -37,7 +37,6 @@ def main():
             eval_status, evaluation = request(args.base, "/v1/eval/predict", content, mime)
             top = product.get("candidates", [{}])[0].get("slug", "") if product.get("candidates") else ""
             assert status == eval_status == 200, (name, status, eval_status)
-            # Unsure scans may be left empty under RANKING_EVAL_POLICY=matched.
             allowed = [{"slug": top}] if product["status"] == "matched" else [{"slug": top}, {"slug": ""}]
             assert evaluation in allowed, (name, evaluation, top)
             assert product["confidence"]["kind"] == "similarity"

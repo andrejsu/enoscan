@@ -72,7 +72,6 @@ export interface ScanResponse {
   recommendations?: readonly ScanRecommendation[]
   version: ScanVersion
   guidance?: string
-  /** Per-stage trace from the ranking service; absent when RANKING_DEBUG=false. */
   debug?: ScanDebug
   isMock: boolean
 }
@@ -87,9 +86,7 @@ export interface ScanDebugPreprocessing {
   durationMs: number
   usedSam: boolean
   warnings: readonly string[]
-  /** Fast-crop box as [left, top, right, bottom] fractions of the source frame; null after SAM. */
   cropBox: readonly [number, number, number, number] | null
-  /** JPEG data URLs: uploaded frame, color branch for visual search, what OCR read (the full frame). */
   images: { source: string, visual: string, ocr: string }
   metrics: {
     labelWidth: number | null
@@ -115,7 +112,6 @@ export interface ScanDebugOcr {
   error: string | null
   fields: readonly {
     field: ScanDebugField
-    /** Ranking weight; null for fields ranking does not use (abv). */
     weight: number | null
     candidates: readonly ScanDebugFieldCandidate[]
   }[]
@@ -135,18 +131,14 @@ export interface ScanDebugRetriever {
 
 export type ScanDebugContradiction = 'name' | 'winery' | 'category' | 'year' | 'sweetness'
 
-/** Ranking's top wines checked against the label text before the decision (verify_shortlist). */
 export interface ScanDebugVerification {
-  /** The label facts wines are checked against: the only category / year / sugar level OCR read, null when none or several. */
   labelCategory: string | null
   labelYear: string | null
   labelSweetness: string | null
   shortlist: readonly {
     slug: string
     wine: WineCard
-    /** Words of the wine's catalog name that the label shows. */
     readWords: readonly string[]
-    /** What on the label contradicts the wine; null when nothing does. */
     contradiction: ScanDebugContradiction | null
     reason: string | null
   }[]
@@ -161,9 +153,7 @@ export interface ScanDebugRankingTerm {
 export interface ScanDebugRanking {
   durationMs: number
   status: ScanStatus
-  /** Top-1 wine's score. */
   score: number
-  /** Top-1 minus top-2 score; `matched` needs at least `minMargin`. */
   margin: number
   minMargin: number
   candidates: readonly {
@@ -171,7 +161,6 @@ export interface ScanDebugRanking {
     score: number
     wine: WineCard
     fields: readonly ScanDebugRankingTerm[]
-    /** Why the label contradicts this wine (it is ranked last then); null when it does not. */
     rejection: string | null
   }[]
 }

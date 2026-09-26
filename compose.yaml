@@ -95,12 +95,6 @@ services:
       retries: 30
     restart: unless-stopped
 
-  # --- Standalone wine-label retriever ------------------------------------
-  # A separate service from retrieval/retrieval-index above: own image
-  # (Dockerfile.retriever), own index kind (retriever_index.py, stored in
-  # MinIO), DINOv2 embeddings in pgvector, own models volume. Changing
-  # retriever tuning never affects the retrieval/retrieval-index services.
-  # See services/retrieval/app/retriever.py.
   retriever-model:
     build:
       context: .
@@ -162,12 +156,6 @@ services:
       retries: 60
     restart: unless-stopped
 
-  # --- Standalone OCR field retriever --------------------------------------
-  # The only place OCR runs: RapidOCR (PP-OCRv5, Cyrillic, ONNX on CPU,
-  # models baked into the image) reads the full frame, app/ocr/retriever.py
-  # turns it into per-field candidates (app/label_fields.py) — it never
-  # resolves a wine itself. ranking calls it over HTTP. No prebuilt index:
-  # catalog vocabulary is built from the DB at startup.
   ocr-retriever:
     build:
       context: .
@@ -193,14 +181,6 @@ services:
       retries: 30
     restart: unless-stopped
 
-  # --- Standalone ranking --------------------------------------------------
-  # Combines the OCR field extractor and the visual retriever's evidence
-  # into one resolved slug. See app/ranking.py, app/ranking_main.py.
-  # Calls ocr-retriever and retriever over HTTP, concurrently, instead of
-  # loading its own OCR models or DINOv2 index — running in-process copies
-  # was enough to OOM the compose stack. This is the one
-  # service wired behind web's actual scanner (see the `web` service
-  # below); everything else here stays unplugged for standalone testing.
   ranking:
     build:
       context: .
@@ -223,13 +203,8 @@ services:
       OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-8}
       RETRIEVER_BASE_URL: http://retriever:8000
       RANKING_MIN_MARGIN: ${RANKING_MIN_MARGIN:-0.03}
-      # matched: /v1/eval/predict answers only confident matches, the rest go
-      # to the organizer's script as null; top1: always the best wine.
       RANKING_EVAL_POLICY: ${RANKING_EVAL_POLICY:-matched}
-      # Per-stage trace (crops, OCR fields, retriever shortlist, ranking terms)
-      # for the result page's debug panel. Set false to drop it from responses.
       RANKING_DEBUG: ${RANKING_DEBUG:-true}
-    # 8080 is the organizer script's default endpoint port.
     ports:
       - "8080:8000"
     healthcheck:
@@ -258,8 +233,6 @@ services:
       NUXT_PUBLIC_SCAN_MODE: retrieval
       NUXT_PUBLIC_ASTRO_ENABLED: ${NUXT_PUBLIC_ASTRO_ENABLED:-true}
       NUXT_PUBLIC_SOMMELIER_MODE: ${NUXT_PUBLIC_SOMMELIER_MODE:-mock}
-      # /api/scans calls ranking for the combined OCR + visual result.
-      # Catalog-backed web routes read PostgreSQL directly.
       NUXT_RANKING_BASE_URL: http://ranking:8000
       NUXT_SOMMELIER_PROVIDER: ${NUXT_SOMMELIER_PROVIDER:-openai}
       NUXT_SOMMELIER_MODEL: ${NUXT_SOMMELIER_MODEL:-}

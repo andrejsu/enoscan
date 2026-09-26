@@ -36,7 +36,7 @@ def test_ocr_debug_lists_every_field_even_without_candidates():
     debug = ocr_debug(PAYLOAD, None, 320, FIELDS)
     assert [item["field"] for item in debug["fields"]] == list(TEXT_FIELDS)
     assert debug["fields"][0]["candidates"] == [{"value": "Ребус 2019", "score": 0.9}]
-    assert debug["text"] == "Ребус"  # low-confidence words are not searched, so not shown as searched text
+    assert debug["text"] == "Ребус"
     assert debug["wordCount"] == 2
     assert debug["passes"] == ["full"]
     assert debug["durationMs"] == 320

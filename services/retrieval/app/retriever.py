@@ -24,25 +24,16 @@ from .retriever_index import Candidate, IndexedReference, RetrieverIndex
 from .label_normalize import Config as LabelConfig, Segmenter, prepare_query
 
 
-# Geometric evidence (SIFT inliers surviving RANSAC) still matters more than
-# embedding similarity alone — two different wines from the same winery
-# template can sit close in embedding space, but they won't share enough
-# matching keypoints to fool RANSAC — but a 0.6/0.4 split let SIFT alone flip
-# an otherwise-correct pick when a wrong candidate happened to have a few
-# more good_matches (see tests/tune_weights_experiment.py, run 2026-09-22 on
-# the 6 real fixtures: 0.30-0.55 all scored 4/6 top-1 hits vs 3/6 at 0.60).
-# 0.45 sits mid-plateau rather than at either edge.
 SIFT_WEIGHT = 0.45
 EMBEDDING_WEIGHT = 0.55
 EMBEDDING_SHORTLIST_LIMIT = 20
-# Top match + 9 ranked alternatives — see RETRIEVER.md.
 DEFAULT_LIMIT = 10
 
 
 @dataclass(frozen=True)
 class RetrievalResult:
-    candidates: list[Candidate]   # sorted by combined visual score, descending
-    ocr_image: np.ndarray         # same normalized crop, handed back for an optional OCR pass
+    candidates: list[Candidate]
+    ocr_image: np.ndarray
     used_sam: bool
     warnings: list[str]
     timing: dict[str, int] = field(default_factory=dict)

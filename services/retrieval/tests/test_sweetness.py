@@ -8,9 +8,9 @@ from app.sweetness import catalog_sugar_level, contradicts, sugar_level
     ("Вино розовое сухое", "сухое"),
     ("КРЫМ ЗОЛОТАЯ БАЛКА МУСКАТ ПОЛУСЛАДКОЕ БЕЛОЕ", "полусладкое"),
     ("ARISTOV MILLESIMATO BRUT ROSE 2024", "брют"),
-    ("EXTRA BRUT·ZERO DOSAGE", None),  # two different levels on one label: abstain
+    ("EXTRA BRUT·ZERO DOSAGE", None),
     ("fanagoriya-extra-brut-rose-2019-igristoe-bryut-rozovoe-ekstra-bryut-12", "экстра брют"),
-    ("abrau-dyurso-abrau-kupazh-krasnyy-polsusladkoe-kaberne-sovinon", "полусладкое"),  # catalog typo
+    ("abrau-dyurso-abrau-kupazh-krasnyy-polsusladkoe-kaberne-sovinon", "полусладкое"),
     ("Пино Нуар, Мускат п.сл.webp", "полусладкое"),
     ("Пино Нуар, Мускат п.сух.webp", "полусухое"),
     ("Пино Нуар,Мускат сух.webp", "сухое"),
@@ -24,7 +24,6 @@ def test_one_parser_reads_labels_slugs_and_photo_file_names(text, level):
 
 
 def test_catalog_level_takes_the_first_source_that_names_one():
-    # Жемчужная 9 siblings: the level is only in the source photo's file name.
     assert catalog_sugar_level("Жемчужная 9 Пино Нуар, Мускат Розовый", "zhemchuzhnaya-9-pino-nuar-muskat-rozovyj-2",
                                "Пино Нуар, Мускат п.сл.webp") == "полусладкое"
     assert catalog_sugar_level("Полусухое Красное", "perovskih_polusuhoe_krasnoe", "Polusuhoe_beloe.webp") == "полусухое"

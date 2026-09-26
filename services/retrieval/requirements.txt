@@ -8,5 +8,5 @@ pgvector==0.4.*
 psycopg[binary]==3.2.10
 python-multipart==0.0.20
 uvicorn==0.35.0
-Pillow==12.*  # tests: EXIF fixtures; was pulled in by pytesseract
+Pillow==12.*
 pytest==8.3.*

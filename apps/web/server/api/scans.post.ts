@@ -83,7 +83,6 @@ export default defineEventHandler(async (event): Promise<ScanResponse> => {
     }
   }
 
-  // Mock branches make every product state reproducible before the CV service exists.
   const filename = image.filename?.toLowerCase() || ''
   const status = filename.includes('uncertain')
     ? 'uncertain'

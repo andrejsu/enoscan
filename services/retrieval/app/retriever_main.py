@@ -25,8 +25,6 @@ from .retriever_index import RETRIEVER_INDEX_KIND, RetrieverIndex
 from .storage import ObjectStore
 
 
-# "candidates" in the /v1/search response holds all 10: the top pick plus 9
-# ranked alternatives, sorted by score descending — see RETRIEVER.md.
 RESPONSE_LIMIT = 10
 ALTERNATIVES_LIMIT = RESPONSE_LIMIT - 1
 
@@ -82,11 +80,6 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
     wine_card = top.wine.as_card() if top else None
     alternatives = [_wine_card_with_image(item) for item in candidates[1:1 + ALTERNATIVES_LIMIT]]
 
-    # margin=0.015 (not the original 0.04): at SIFT_WEIGHT=0.45 the 6 real
-    # fixtures' correct top-1 picks had margins of 0.017-0.28, and the 2
-    # genuinely wrong ones topped out at 0.011 — a real gap, not a knife's
-    # edge, but calibrated on a 6-photo sample; revisit once there's a
-    # bigger labelled set (see tests/tune_weights_experiment.py).
     if top and top.inliers >= 7 and top.good_matches >= 10 and top_score >= 0.3 and margin >= 0.015:
         status = "matched"
     elif top and top_score >= 0.12:

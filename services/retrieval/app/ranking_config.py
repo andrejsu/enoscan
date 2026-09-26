@@ -14,12 +14,6 @@ from .common.settings import load_database_url, load_max_upload_bytes
 from .ranking import MIN_MARGIN
 
 
-# What /v1/eval/predict returns when ranking is not confident: `matched`
-# answers only matches and leaves the rest empty, which the organizer's script
-# records as null; `top1` always answers with the best wine. Two of the three
-# public organizer photos are wines outside the catalog, and on the labelled
-# real photos `matched` scored 0.78 match rate vs 0.56 for `top1` at equal
-# recall — switch to `top1` if the organizer counts null as always wrong.
 EVAL_POLICIES = ("matched", "top1")
 
 
@@ -33,7 +27,7 @@ class RankingSettings:
     retriever_timeout: float
     min_margin: float
     eval_policy: str
-    debug: bool  # attach the per-stage debug trace to every /v1/search response
+    debug: bool
 
 
 def load_ranking_settings() -> RankingSettings:

@@ -57,8 +57,6 @@ class FieldSearch:
                  known: Collection[str] = (), weak: Collection[str] = ()):
         self.stop_words = frozenset(stop_words)
         self.known = frozenset(known)
-        # Words that never name a value on their own: «ПИНО» of «ПИНО НУАР» is a
-        # grape, not the winery «Шато Пино» (every Шато Пино wine took its vote).
         self.weak = frozenset(weak)
         self.synonyms = synonyms or {}
         self.allow_single_token = allow_single_token

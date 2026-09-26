@@ -21,9 +21,6 @@ from .catalog import Wine
 from .image_features import ImageFeatures, extract_features
 
 
-# Hard ceiling on how many candidates get a full SIFT+RANSAC rerank per
-# search, independent of visual_limit and however large the embedding
-# extra_slugs union is. Reranking is the single biggest non-SAM latency cost.
 RERANK_CAP = 40
 RETRIEVER_INDEX_KIND = "retriever-v2"
 
@@ -67,10 +64,6 @@ class RetrieverIndex:
         self.descriptors = descriptors
         self.owners = owners
         self.offsets = offsets
-        # trees=2/checks=32 (vs. a more typical trees=4/checks=64): a full
-        # 2098-reference index at trees=4 measured ~2.65GB resident and,
-        # combined with SAM, got OOM-killed under real load. This index is
-        # its own file/process, so the trade only affects the retriever.
         self.matcher = cv2.FlannBasedMatcher({"algorithm": 1, "trees": 2}, {"checks": 32})
         self.matcher.add([self.descriptors])
         self.matcher.train()

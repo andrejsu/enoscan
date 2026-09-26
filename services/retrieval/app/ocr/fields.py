@@ -8,7 +8,6 @@ from .constants import ABV_MAX, ABV_MIN, FIELD_LINE_MIN_CONFIDENCE
 from .engine import OcrWord
 
 
-# A year inside a date or a standard number ("15.03.2024", "ГОСТ 32030-2013") is not a vintage.
 _VINTAGE = re.compile(r"(?<![\d./-])(19[5-9]\d|20[0-2]\d)(?![\d]|[./-]\d)")
 _VINTAGE_CONTEXT = re.compile(r"урожа|vintage|harvest", re.IGNORECASE)
 _NOT_VINTAGE_CONTEXT = re.compile(r"основан|since|founded|розлив|bottl|гост", re.IGNORECASE)

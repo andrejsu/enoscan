@@ -108,7 +108,6 @@ class SiftIndex:
         candidates = [self._rerank(owner, query) for owner in shortlist]
         candidates.sort(key=lambda item: (item.score, item.inliers, item.good_matches), reverse=True)
         search_ms = round((time.perf_counter() - search_started) * 1000)
-        # Deduplicate reference views before truncation, so one wine cannot occupy all slots.
         unique = {}
         for candidate in candidates:
             unique.setdefault(candidate.wine.slug, candidate)
@@ -132,7 +131,6 @@ class SiftIndex:
                 inliers = int(mask.sum())
 
         evidence = (inliers * 2.0) + min(len(good), 40)
-        # A capped score made 10 and 200 inliers indistinguishable before text reranking.
         score = evidence / (evidence + 60.0)
         return Candidate(
             wine=self.references[owner].wine,

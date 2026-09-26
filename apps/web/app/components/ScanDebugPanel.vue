@@ -101,7 +101,6 @@ function barStyle(score: number) {
       </ol>
 
       <div class="scan-debug__grid">
-        <!-- 1. label_prep -->
         <section class="debug-step" aria-labelledby="debug-step-preprocessing">
           <header class="debug-step__header">
             <span class="scan-debug__step-number" aria-hidden="true">1</span>
@@ -149,7 +148,6 @@ function barStyle(score: number) {
           </div>
         </section>
 
-        <!-- 2. OCR -->
         <section class="debug-step" aria-labelledby="debug-step-ocr">
           <header class="debug-step__header">
             <span class="scan-debug__step-number" aria-hidden="true">2</span>
@@ -193,7 +191,6 @@ function barStyle(score: number) {
           </div>
         </section>
 
-        <!-- 3. Visual retriever -->
         <section class="debug-step" aria-labelledby="debug-step-retriever">
           <header class="debug-step__header">
             <span class="scan-debug__step-number" aria-hidden="true">3</span>
@@ -233,7 +230,6 @@ function barStyle(score: number) {
           </div>
         </section>
 
-        <!-- 4. Label check -->
         <section class="debug-step" aria-labelledby="debug-step-verification">
           <header class="debug-step__header">
             <span class="scan-debug__step-number" aria-hidden="true">4</span>
@@ -273,7 +269,6 @@ function barStyle(score: number) {
           </div>
         </section>
 
-        <!-- 5. Ranking -->
         <section class="debug-step" aria-labelledby="debug-step-ranking">
           <header class="debug-step__header">
             <span class="scan-debug__step-number" aria-hidden="true">5</span>

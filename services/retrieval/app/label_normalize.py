@@ -27,17 +27,17 @@ import numpy as np
 
 def _import_label_prep():
     try:
-        import label_prep  # noqa: F401
+        import label_prep
         return label_prep
     except ImportError:
         pass
     for candidate in (
-        Path("/app/scripts"),  # container: Dockerfile copies scripts/label_prep.py here
-        Path(__file__).resolve().parents[3] / "scripts",  # repo checkout: <repo>/scripts
+        Path("/app/scripts"),
+        Path(__file__).resolve().parents[3] / "scripts",
     ):
         if (candidate / "label_prep.py").is_file():
             sys.path.insert(0, str(candidate))
-            import label_prep  # noqa: F401
+            import label_prep
             return label_prep
     raise ImportError("Cannot locate label_prep.py; expected at /app/scripts or <repo>/scripts")
 
@@ -49,13 +49,11 @@ Segmenter = label_prep.Segmenter
 
 @dataclass(frozen=True)
 class PreparedQuery:
-    visual: np.ndarray   # color-preserving crop, for SIFT + DINOv2
-    ocr: np.ndarray      # grayscale+CLAHE+deglare (used_sam) or plain BGR crop (fast path)
+    visual: np.ndarray
+    ocr: np.ndarray
     used_sam: bool
     warnings: list[str] = field(default_factory=list)
-    # label_prep.normalize()'s measurements (sharpness, noise, glare, ...).
     info: dict = field(default_factory=dict)
-    # Fast path only: the crop as (left, top, right, bottom) fractions of the frame.
     crop_box: tuple[float, float, float, float] | None = None
 
 
@@ -71,7 +69,7 @@ def prepare_query(image: np.ndarray, *, segmenter: "Segmenter | None" = None,
             return PreparedQuery(visual, ocr, used_sam=True, warnings=meta["warnings"],
                                  info=meta["normalize"])
         except RuntimeError:
-            pass  # label not found / too small: fall through to the cheap crop
+            pass
     visual, ocr, info = _fast_crop(image, config)
     return PreparedQuery(visual, ocr, used_sam=False, warnings=["sam_skipped"],
                          info=info, crop_box=FAST_CROP_BOX)
@@ -153,8 +151,6 @@ def prepare_reference_image(source: np.ndarray, *, config: Config | None = None)
     if mask is not None:
         visual, _, _, _ = label_prep.process(image, config, mask=mask)
         return visual
-    # No usable alpha band: a broad bottle-body crop keeps the image searchable
-    # without guessing at label edges that aren't there.
     height, width = image.shape[:2]
     if has_alpha:
         opaque = source[:, :, 3] > 127

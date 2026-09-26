@@ -43,87 +43,37 @@ from .ocr.tokens import token_similarity, tokenize
 from .sweetness import contradicts as sugar_contradicts
 
 
-# Relative importance; scores are divided by their fixed sum. Absent on
-# purpose: `abv` — catalog.Wine has no ABV column to match; `sweetness` —
-# siblings of one label differ in it and nothing else, so it decides as a
-# contradiction in verify_shortlist rather than as a vote shared by every
-# «сухое» of the catalog.
-# Tuned 2026-09-25 on 156 queries (9 real photos + 147 hard augmentations of
-# catalog images, see scripts/README.md); held on both halves of the set.
-# Still a small sample — revisit with more real photos.
 FIELD_WEIGHTS = {
     "slug": 0.70, "name": 0.20, "winery": 0.20, "grape_varieties": 0.12,
     "year": 0.08, "region": 0.04, "category": 0.03,
 }
 TOTAL_WEIGHT = sum(FIELD_WEIGHTS.values())
 
-# Softmax temperature per source, in raw-score units: how far below the
-# field's top-1 a candidate may sit and still share its probability.
-# Visual scores bunch within ~0.1 of each other, OCR ones spread wider.
 VISUAL_TEMPERATURE = 0.05
 OCR_TEMPERATURE = 0.06
 
-# Minimum top-1 minus top-2 score for `matched`. Lowered from 0.06 to 0.03 on
-# 2026-09-25 by product decision, to answer more photos without the choice
-# screen. Measured on the bench (10 real photos + 147 hard augmentations,
-# after the label check): the real photos stayed 7 right / 0 wrong at both
-# values, the augmentations went 89 right / 14 wrong -> 90 right / 28 wrong
-# (F1 0.712 -> 0.679). The closest out-of-catalog photo sits at 0.025: 0.02
-# already answers it wrongly.
 MIN_MARGIN = 0.03
 
-# A wine's share of the visual field (among wines the label does not
-# contradict) below which the visual match alone does not identify it
-# (_is_identified). A new Inkerman «Каберне» got 0.18 for the family's «Шато
-# Руж» from the shared label design, and the winery, grape and colour —
-# fields every Inkerman red shares — made up the margin. Real photos matched
-# on the visual match alone sat at 0.32-0.94 (2026-09-26, tests/fixtures/green);
-# the one below (0.15) also had its name read.
 VISUAL_IDENTIFY_MIN = 0.25
-
-# Only the visual match and the name can pin down one wine (_is_identified).
-# The rest (winery, grape, category, region, year, sweetness) are shared by many
-# wines: OCR reading only "Красное" must never match whichever red wine
-# comes first. Those fields may still rank, never match alone.
-
-# Fields that only confirm a wine whose name OCR read on the label. A
-# label's «2022» is one of hundreds of «… 2022» names in the catalog:
-# counted for all of them, it pushed wines with no other evidence into the
-# top-5, and a faint visual match («Аврора 2024», 10 inliers) took the full
-# year credit next to the wine the label actually names.
 CONFIRMING_FIELDS = ("year",)
 
-# How many of the ranking's top wines are checked against the label. Near
-# twins (one line, several cuvées) sit within the visual top-3. The
-# runner-up is checked as well, down the ranking up to VERIFY_LIMIT wines.
 VERIFY_SHORTLIST = 3
 VERIFY_LIMIT = 8
 
-# Style words the catalog puts into some names and not others («Экстра
-# брют» on the label, bare «Кюве Александр» in the catalog): never evidence
-# that the label names another wine.
 STYLE_WORDS = "брют brut экстра extra резерв reserve riserva сухое полусухое полусладкое сладкое классик classic"
-
-# A category, year or sugar level the label states is a fact, so a wine it
-# contradicts leaves the race. A name contradiction is softer (OCR may have missed this
-# wine's words): the wine only drops below the rest and still counts as the
-# runner-up of any wine below it.
 HARD_CONTRADICTIONS = ("winery", "category", "year", "sweetness")
-
-# A winery word more wineries than this use («Винодельня», «Шато», «Крым»)
-# names no winery in particular: seen on a label it contradicts nobody.
 WINERY_WORD_MAX_WINERIES = 2
 
 
 @dataclass(frozen=True)
 class RankingResult:
-    status: str  # "matched" | "not_found"
-    slug: str | None  # set only when matched
-    score: float  # top-1 wine's score, whether or not it matched
-    margin: float  # top-1 minus top-2 score, among wines the label does not contradict
-    evidence: dict[str, float]  # every catalog slug's score, for inspection
-    rejected: dict[str, str] = field(default_factory=dict)  # slug -> why the label contradicts it
-    checks: tuple["LabelCheck", ...] = ()  # the shortlist as verify_shortlist saw it, in ranking order
+    status: str
+    slug: str | None
+    score: float
+    margin: float
+    evidence: dict[str, float]
+    rejected: dict[str, str] = field(default_factory=dict)
+    checks: tuple["LabelCheck", ...] = ()
 
     def ranked(self, limit: int) -> list[tuple[str, float]]:
         return _ranked(self.evidence, limit, self.rejected)
@@ -131,8 +81,6 @@ class RankingResult:
 
 def _ranked(evidence: dict[str, float], limit: int,
             rejected: dict[str, str] | None = None) -> list[tuple[str, float]]:
-    # Rejected wines go last; slug breaks score ties, so equal evidence never
-    # depends on catalog order.
     rejected = rejected or {}
     return sorted(evidence.items(), key=lambda item: (item[0] in rejected, -item[1], item[0]))[:limit]
 
@@ -141,7 +89,7 @@ def _ranked(evidence: dict[str, float], limit: int,
 class FieldContribution:
     field: str
     weight: float
-    score: float  # this wine's probability within the field, 0 when absent
+    score: float
 
 
 def _actual_values(wine: Wine, field: str) -> set[str]:
@@ -234,10 +182,10 @@ def only_value(candidates: tuple[FieldCandidate, ...]) -> str | None:
 class LabelCheck:
     """One shortlisted wine checked against the label (verify_shortlist)."""
     slug: str
-    read_words: tuple[str, ...]  # words of its catalog name the label shows, as the catalog spells them
-    kind: str | None = None  # "name" | "winery" | "category" | "year" | "sweetness" when the label contradicts the wine
-    reason: str | None = None  # human-readable, for the debug panel
-    is_fully_read: bool = False  # the label shows every distinctive word of its name
+    read_words: tuple[str, ...]
+    kind: str | None = None
+    reason: str | None = None
+    is_fully_read: bool = False
 
 
 def _catalog_words(wine: Wine, tokens: set[str]) -> tuple[str, ...]:
@@ -298,7 +246,6 @@ def verify_shortlist(shortlist: list[Wine], ocr_fields: RetrievalFields, ocr_tex
         for rival in shortlist:
             if rival.slug == wine.slug:
                 continue
-            # Catalog names are exact spellings: «Мускат» and «Мускатель» are two words here.
             speaks_for_rival = seen[rival.slug] - names[wine.slug]
             speaks_for_wine = seen[wine.slug] - names[rival.slug]
             if speaks_for_rival and not speaks_for_wine:
@@ -337,23 +284,18 @@ def rank(ocr_fields: RetrievalFields, visual_fields: RetrievalFields, wines: lis
     by_slug = {wine.slug: wine for wine in wines}
     order = [slug for slug, _ in _ranked(evidence, len(evidence))]
     shortlist = [by_slug[slug] for slug in order[:VERIFY_SHORTLIST]]
-    # The name OCR read best is checked too, even when visual evidence left it
-    # outside the top: each block may put a wine forward, the label decides.
     named = {candidate.value for candidate in ocr_fields.name[:1]}
     shortlist += [wine for wine in wines if wine.name.strip() in named and wine not in shortlist]
     generic_winery = generic_winery_tokens(wines)
     while True:
         checks = verify_shortlist(shortlist, ocr_fields, ocr_text, generic_winery)
         slug, margin, rival = _decide(evidence, order, checks)
-        # The runner-up the margin is measured against must face the label too.
         if rival is None or rival in {wine.slug for wine in shortlist} or len(shortlist) >= VERIFY_LIMIT:
             break
         shortlist.append(by_slug[rival])
     rejected = {check.slug: check.reason for check in checks if check.kind}
     score = evidence[slug]
     if len(rejected) == len(checks):
-        # The label contradicts every checked wine: an honest not_found, not a
-        # guess from further down the list.
         return RankingResult("not_found", None, score, margin, evidence, rejected, checks)
     is_identified = _is_identified(breakdowns[slug],
                                    next((c for c in checks if c.slug == slug), None) if ocr_text.strip() else None,

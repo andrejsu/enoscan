@@ -27,7 +27,7 @@ class OcrTrace:
     fields: RetrievalFields
     label: OcrResult
     ocr_ms: int = 0
-    passes: tuple[str, ...] = ("full",)  # "crop" (OCR_CROP_BOX), then "full" when the crop read too little
+    passes: tuple[str, ...] = ("full",)
 
 
 def ocr_crop_box(image: np.ndarray) -> tuple[float, float, float, float]:

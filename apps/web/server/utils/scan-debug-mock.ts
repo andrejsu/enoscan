@@ -7,11 +7,9 @@ function placeholderImage(label: string, width: number, height: number, fill: st
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
 }
 
-/** Mock-mode stand-in for the ranking service's debug trace, so the panel renders without the CV stack. */
 export function createMockScanDebug(status: ScanStatus, wines: readonly WineCard[]): ScanDebug {
   const [first, second] = wines
   const topScore = status === 'matched' ? 0.714 : 0.44
-  // Unmatched demo sits just under the minimum margin, like a near-duplicate sibling.
   const secondScore = status === 'matched' ? 0.136 : 0.41
 
   return {

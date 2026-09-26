@@ -121,7 +121,6 @@ def main():
                        confidence=body["confidence"], timing=body["timing"], version=body["version"],
                        diagnostics=getattr(prediction, "diagnostics", {}))
         except Exception as error:
-            # Evaluation records failures in the denominator; production does not swallow them.
             row["error"] = f"{type(error).__name__}: {error}"
         row["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 2)
         rows.append(row)
