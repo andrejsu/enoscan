@@ -1,7 +1,6 @@
 import unittest
 
-from app.catalog import Wine
-from app.index import Candidate
+from app.catalog.models import Wine
 
 
 def wine(**overrides: object) -> Wine:
@@ -41,16 +40,6 @@ class CatalogTest(unittest.TestCase):
         item = wine(grape_varieties=("Кокур", "Мускат"), has_image=True)
 
         self.assertEqual(Wine.from_json(item.to_json()), item)
-
-
-def candidate(slug: str, name: str, score: float = 0.5) -> Candidate:
-    return Candidate(
-        wine=wine(slug=slug, name=name),
-        image_sha256=f"{slug}-sha",
-        score=score,
-        good_matches=12,
-        inliers=8,
-    )
 
 
 if __name__ == "__main__":

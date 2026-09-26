@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from app.embedding_store import EmbeddingStore
 from app.index_store import IndexedImage, register_build
+from app.visual.embedding_store import EmbeddingStore
 
 from conftest import seed_catalog
 

@@ -1,5 +1,5 @@
 """Real photos against the running stack: the ranking route of this working
-tree (app/ranking_main.py) with the live OCR and visual retriever services
+tree (app/search/api.py) with the live OCR and visual retriever services
 and the imported catalog. Skipped when any of them is not reachable — run it
 inside the compose network (README, «Python-тесты сервиса»).
 
@@ -24,7 +24,7 @@ import psycopg
 import pytest
 from fastapi.testclient import TestClient
 
-from app import ranking_main
+from app.search import api
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -48,7 +48,7 @@ def _photos(folder: str) -> list[Path]:
 
 
 def _unreachable() -> str | None:
-    settings = ranking_main.settings
+    settings = api.settings
     try:
         with psycopg.connect(settings.database_url, connect_timeout=3):
             pass
@@ -66,7 +66,7 @@ def _unreachable() -> str | None:
 def client() -> Iterator[TestClient]:
     if reason := _unreachable():
         pytest.skip(reason)
-    with TestClient(ranking_main.app) as client:
+    with TestClient(api.app) as client:
         yield client
 
 
@@ -89,7 +89,7 @@ def test_every_yellow_photo_has_an_expectation():
 @pytest.mark.parametrize("photo", _photos("green"), ids=lambda path: path.name)
 def test_catalog_wine_is_matched(client, photo):
     expected = GREEN_SLUGS.get(photo.name, photo.stem)
-    assert expected in ranking_main.wines_by_slug, f"{expected} is not in the imported catalog"
+    assert expected in api.service.wines_by_slug, f"{expected} is not in the imported catalog"
     body = scan(client, photo)
     assert body["status"] == "matched" and body["wine"]["slug"] == expected, describe(body)
     assert body["recommendations"] == []

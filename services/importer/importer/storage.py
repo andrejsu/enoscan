@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
@@ -40,24 +38,12 @@ class ObjectStore:
     def put_bytes(self, bucket: str, key: str, content: bytes, content_type: str) -> None:
         self.client.put_object(Bucket=bucket, Key=key, Body=content, ContentType=content_type)
 
-    def put_file(self, bucket: str, key: str, path: Path, content_type: str) -> None:
-        self.client.upload_file(str(path), bucket, key, ExtraArgs={"ContentType": content_type})
-
-    def get_bytes(self, bucket: str, key: str) -> bytes:
-        return self.client.get_object(Bucket=bucket, Key=key)["Body"].read()
-
     def list_keys(self, bucket: str, prefix: str = "") -> list[str]:
         keys: list[str] = []
         paginator = self.client.get_paginator("list_objects_v2")
         for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
             keys.extend(item["Key"] for item in page.get("Contents", []))
         return keys
-
-    def delete_prefix(self, bucket: str, prefix: str) -> None:
-        keys = self.list_keys(bucket, prefix)
-        for start in range(0, len(keys), 1000):
-            chunk = keys[start:start + 1000]
-            self.client.delete_objects(Bucket=bucket, Delete={"Objects": [{"Key": key} for key in chunk]})
 
 
 def _status(error: ClientError) -> int:

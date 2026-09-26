@@ -1,6 +1,6 @@
 import psycopg
 
-from app.catalog import current_dataset_version, load_references, load_wines
+from app.catalog.repository import current_dataset_version, load_references, load_wines
 from app.index_store import IndexedImage, find_build, object_key_for, register_build
 
 from conftest import seed_catalog

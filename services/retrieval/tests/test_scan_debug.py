@@ -2,10 +2,11 @@ from dataclasses import asdict
 
 import numpy as np
 
-from app.catalog import Wine
-from app.label_fields import TEXT_FIELDS, FieldCandidate, RetrievalFields, fields_from_json
-from app.ranking import rank
-from app.scan_debug import DEBUG_LIMIT, ocr_debug, preprocessing_debug, ranking_debug, retriever_debug, verification_debug
+from app.catalog.models import Wine
+from app.evidence import TEXT_FIELDS, FieldCandidate, RetrievalFields, fields_from_json
+from app.search.debug import DEBUG_LIMIT, ocr_debug, preprocessing_debug, ranking_debug, retriever_debug, verification_debug
+from app.search.ranking import rank
+from app.search.service import ProducerReply
 
 
 def wine(slug, name="Ребус 2019", winery="Дивноморское"):
@@ -33,7 +34,7 @@ def test_fields_survive_the_json_round_trip_between_services():
 
 
 def test_ocr_debug_lists_every_field_even_without_candidates():
-    debug = ocr_debug(PAYLOAD, None, 320, FIELDS)
+    debug = ocr_debug(ProducerReply(PAYLOAD, None, 320), FIELDS)
     assert [item["field"] for item in debug["fields"]] == list(TEXT_FIELDS)
     assert debug["fields"][0]["candidates"] == [{"value": "Ребус 2019", "score": 0.9}]
     assert debug["text"] == "Ребус"
@@ -44,7 +45,7 @@ def test_ocr_debug_lists_every_field_even_without_candidates():
 
 
 def test_ocr_debug_reports_an_unreachable_ocr_service():
-    debug = ocr_debug(None, "ConnectError", 5, RetrievalFields())
+    debug = ocr_debug(ProducerReply(None, "ConnectError", 5), RetrievalFields())
     assert debug["error"] == "ConnectError"
     assert debug["passes"] == [] and debug["wordCount"] == 0
     assert debug["meanConfidence"] is None
@@ -54,7 +55,7 @@ def test_retriever_debug_keeps_ten_and_survives_unknown_slugs():
     wines = {"a": wine("a")}
     raw = [{"slug": "a", "score": 0.5, "goodMatches": 12, "inliers": 8}] + \
           [{"slug": f"gone-{i}", "score": 0.1} for i in range(15)]
-    debug = retriever_debug(raw, None, 900, wines)
+    debug = retriever_debug(ProducerReply(None, None, 900), raw, wines)
     assert len(debug["candidates"]) == DEBUG_LIMIT
     assert debug["candidates"][0]["wine"]["slug"] == "a"
     assert debug["candidates"][1]["wine"] is None

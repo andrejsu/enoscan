@@ -12,17 +12,6 @@ HOMOGLYPH_MIN_LETTERS = 3
 ABV_MIN = 1
 ABV_MAX = 30
 
-MIN_TOKEN_LENGTH = 3
-STOP_WORDS = frozenset({
-    "beloe", "butylka", "etiketka", "igristoe", "krasnoe", "rozovoe", "suhoe",
-    "vino", "wine", "winery",
-})
-
-FUZZY_MIN_LENGTH = 5
-FUZZY_MAX_LENGTH_GAP = 2
-PREFIX_MIN_LENGTH = 6
-PREFIX_SIMILARITY = 0.9
-TOKEN_MATCH_SIMILARITY = 0.82
 UNCOMMON_TOKEN_WEIGHT = 2
 
 ALIAS_MIN_COUNT = 2

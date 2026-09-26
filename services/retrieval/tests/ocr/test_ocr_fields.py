@@ -1,7 +1,8 @@
 import pytest
 
+from app.label_text.vintage import extract_year
 from app.ocr.engine import OcrWord
-from app.ocr.fields import extract_abv_candidates, extract_year, extract_year_candidates
+from app.ocr.fields import extract_abv_candidates, extract_year_candidates
 
 
 def word(text, confidence=90, line=(1, 1, 1)):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Evaluate the complete SearchService; synthetic results are never real-photo accuracy."""
+"""Evaluate the legacy SIFT baseline (BaselineSearch); synthetic results are never real-photo accuracy."""
 from __future__ import annotations
 
 import argparse
@@ -17,9 +17,9 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "services/retrieval"))
+from app.baseline.service import BaselineSearch
 from app.image_features import decode_image
-from app.index import SiftIndex
-from app.service import SearchService
+from app.sift_index import SiftIndex
 from eval_augmentations import PROFILES
 
 
@@ -77,20 +77,21 @@ def main():
     parser.add_argument("--visual-limit", type=int, choices=range(1, 201), default=24, metavar="1..200")
     args = parser.parse_args()
     source_hash = hashlib.sha256()
-    for path in sorted((ROOT / "services/retrieval/app").glob("*.py")):
-        source_hash.update(path.name.encode() + path.read_bytes())
-    from app.catalog import current_dataset_version, load_references
-    from app.config import load_settings
-    from app.index import SIFT_INDEX_KIND
+    app_dir = ROOT / "services/retrieval/app"
+    for path in sorted(app_dir.rglob("*.py")):
+        source_hash.update(str(path.relative_to(app_dir)).encode() + path.read_bytes())
+    from app.baseline.config import SIFT_CONFIG, SIFT_INDEX_KIND
+    from app.catalog.repository import current_dataset_version, load_references
+    from app.common.settings import load_database_url
     from app.index_store import current_index_path
     from app.storage import IMAGES_BUCKET, ObjectStore
 
-    database_url = load_settings().database_url
+    database_url = load_database_url()
     store = ObjectStore()
     index_path = current_index_path(database_url, SIFT_INDEX_KIND, store)
-    index = SiftIndex.load(str(index_path))
+    index = SiftIndex.load(str(index_path), SIFT_CONFIG)
     dataset_version = current_dataset_version(database_url)
-    service = SearchService(index, visual_limit=args.visual_limit, dataset_version=dataset_version)
+    service = BaselineSearch(index, visual_limit=args.visual_limit, dataset_version=dataset_version)
     if args.manifest:
         entries = read_manifest(args.manifest)
         if args.split:

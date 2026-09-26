@@ -47,8 +47,6 @@ class Mapping:
     review_status: str = "auto"
 
 
-
-
 def _stem(filename: str) -> str:
     return PurePosixPath(filename).stem
 

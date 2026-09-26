@@ -5,8 +5,8 @@ import time
 
 import numpy as np
 
-from ..label_fields import FieldCandidate, RetrievalFields
-from ..sweetness import sugar_level
+from ..evidence import FieldCandidate, RetrievalFields
+from ..label_text.sweetness import sugar_level
 from .constants import (
     CLOSED_VOCABULARY_FIELDS,
     OCR_CROP_BOX,
@@ -49,9 +49,6 @@ def ocr_crop(image: np.ndarray) -> np.ndarray:
 class OcrRetriever:
     def __init__(self, vocabulary: FieldVocabulary) -> None:
         self.vocabulary = vocabulary
-
-    def extract(self, image: np.ndarray) -> RetrievalFields:
-        return self.trace(image).fields
 
     def trace(self, image: np.ndarray) -> OcrTrace:
         started = time.perf_counter()

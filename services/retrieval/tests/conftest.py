@@ -8,7 +8,7 @@ import uuid
 import psycopg
 import pytest
 
-from app.config import load_settings
+from app.common.settings import load_database_url
 
 
 MIGRATIONS = Path(environ.get("MIGRATIONS_DIR", Path(__file__).resolve().parents[3] / "db" / "migrations"))
@@ -23,7 +23,7 @@ def _with_database(url: str, name: str) -> str:
 def migrated_database_url() -> Iterator[str]:
     if not MIGRATIONS.is_dir():
         pytest.skip(f"Migrations directory is not available: {MIGRATIONS}")
-    admin_url = load_settings().database_url
+    admin_url = load_database_url()
     name = f"vinolog_test_{uuid.uuid4().hex[:10]}"
     try:
         with psycopg.connect(admin_url, autocommit=True, connect_timeout=3) as connection:

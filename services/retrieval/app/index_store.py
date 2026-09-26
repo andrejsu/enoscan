@@ -2,17 +2,19 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import tempfile
 
 import psycopg
 
+from .catalog.repository import current_dataset_version
+from .image_features import ImageFeatures
+from .sift_index import IndexedReference, save_index
 from .storage import INDEXES_BUCKET, ObjectStore
 
 
 @dataclass(frozen=True)
 class IndexBuild:
     id: int
-    kind: str
-    dataset_version: str
     object_key: str
     reference_count: int
 
@@ -31,7 +33,7 @@ def find_build(database_url: str, kind: str, version: str) -> IndexBuild | None:
     with psycopg.connect(database_url) as connection:
         row = connection.execute(
             """
-            SELECT id, kind, dataset_version, object_key, reference_count
+            SELECT id, object_key, reference_count
             FROM index_builds
             WHERE kind = %s AND dataset_version = %s
             """,
@@ -60,14 +62,19 @@ def register_build(database_url: str, kind: str, version: str, object_key: str,
                     """,
                     [(build_id, position, item.slug, item.image_sha256) for position, item in enumerate(references)],
                 )
-    return IndexBuild(build_id, kind, version, object_key, len(references))
+    return IndexBuild(build_id, object_key, len(references))
 
 
-def publish_index(store: ObjectStore, database_url: str, kind: str, version: str, path: Path,
-                  references: list[IndexedImage]) -> IndexBuild:
+def publish_index(store: ObjectStore, database_url: str, kind: str, version: str,
+                  references: list[IndexedReference], features: list[ImageFeatures]) -> IndexBuild:
+    """Save the SIFT index, upload it and register the build with its references."""
     object_key = object_key_for(kind, version)
-    store.put_file(INDEXES_BUCKET, object_key, path)
-    return register_build(database_url, kind, version, object_key, references)
+    with tempfile.TemporaryDirectory() as directory:
+        path = Path(directory) / "index.npz"
+        save_index(str(path), references, features)
+        store.put_file(INDEXES_BUCKET, object_key, path)
+    return register_build(database_url, kind, version, object_key,
+                          [IndexedImage(item.wine.slug, item.image_sha256) for item in references])
 
 
 def fetch_index(store: ObjectStore, build: IndexBuild, directory: Path = Path("/tmp/vinolog-indexes")) -> Path:
@@ -87,7 +94,5 @@ def require_build(database_url: str, kind: str, version: str) -> IndexBuild:
 
 
 def current_index_path(database_url: str, kind: str, store: ObjectStore | None = None) -> Path:
-    from .catalog import current_dataset_version
-
     version = current_dataset_version(database_url)
     return fetch_index(store or ObjectStore(), require_build(database_url, kind, version))

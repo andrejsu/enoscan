@@ -16,14 +16,14 @@ import onnxruntime as ort
 
 _HERE = Path(__file__).resolve().parent
 for _root in (_HERE.parent / "services" / "retrieval", _HERE.parent):
-    if (_root / "app" / "index.py").exists():
+    if (_root / "app" / "__init__.py").exists():
         sys.path.insert(0, str(_root))
         break
 
 import psycopg
 
-from app.catalog import load_references
-from app.config import load_settings
+from app.catalog.repository import load_references
+from app.common.settings import load_database_url
 from app.storage import IMAGES_BUCKET, ObjectStore
 
 OVERRIDES_HEADER = ["slug", "action", "strapi_filename", "note"]
@@ -146,9 +146,9 @@ def run_audit(
     output_dir: str,
     orphan_threshold: float = 0.90,
 ) -> Path:
-    settings = load_settings()
+    database_url = load_database_url()
     store = ObjectStore()
-    references = load_references(settings.database_url)
+    references = load_references(database_url)
     session = load_session(model_path)
     print(f"Loaded {len(references)} mapped references.")
 
@@ -182,7 +182,7 @@ def run_audit(
         for position, peer, score in sorted(flagged, key=lambda item: item[2], reverse=True)
     ]
 
-    orphan_media = load_orphans(settings.database_url)
+    orphan_media = load_orphans(database_url)
     print(f"Found {len(orphan_media)} orphaned original images.")
 
     orphan_embeddings, orphan_usable = embed_objects(

@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pytest
 
-from app.catalog import Wine
+from app.catalog.models import Wine
+from app.evidence import RetrievalFields
 from app.image_features import decode_image
-from app.label_fields import RetrievalFields
 from app.ocr.retriever import OcrRetriever
 from app.ocr.vocabulary import FieldVocabulary
-from app.ranking import rank
+from app.search.ranking import rank
 
 
 pytestmark = pytest.mark.skipif(find_spec("rapidocr") is None, reason="rapidocr is not installed")
@@ -28,7 +28,7 @@ WINES = [
 
 def _fields(name: str) -> RetrievalFields:
     retriever = OcrRetriever(FieldVocabulary(WINES))
-    return retriever.extract(decode_image((FIXTURES / name).read_bytes()))
+    return retriever.trace(decode_image((FIXTURES / name).read_bytes())).fields
 
 
 def test_readable_label_yields_the_wine_name():

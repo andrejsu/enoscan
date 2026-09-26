@@ -64,7 +64,7 @@ services:
     depends_on:
       importer:
         condition: service_completed_successfully
-    command: ["python", "-m", "app.build_index"]
+    command: ["python", "-m", "app.baseline.build_index"]
     environment: &retrieval-environment
       <<: *storage-environment
       PGHOST: db
@@ -99,7 +99,7 @@ services:
     build:
       context: .
       dockerfile: services/retrieval/Dockerfile.retriever
-    command: ["sh", "-c", "python -m app.download_model && python -m app.download_sam"]
+    command: ["sh", "-c", "python -m app.visual.download_model && python -m app.visual.download_sam"]
     environment:
       MODEL_PATH: /models/dinov2-small.onnx
       SAM_MODEL_DIR: /models/sam_vit_b_quant
@@ -116,7 +116,7 @@ services:
         condition: service_completed_successfully
       retriever-model:
         condition: service_completed_successfully
-    command: ["python", "-m", "app.build_retriever_index"]
+    command: ["python", "-m", "app.visual.build_index"]
     environment: &retriever-environment
       <<: *storage-environment
       PGHOST: db
@@ -160,7 +160,7 @@ services:
     build:
       context: .
       dockerfile: services/retrieval/Dockerfile.retriever
-    command: ["uvicorn", "app.ocr.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["uvicorn", "app.ocr.api:app", "--host", "0.0.0.0", "--port", "8000"]
     depends_on:
       importer:
         condition: service_completed_successfully
@@ -185,7 +185,7 @@ services:
     build:
       context: .
       dockerfile: services/retrieval/Dockerfile.retriever
-    command: ["uvicorn", "app.ranking_main:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["uvicorn", "app.search.api:app", "--host", "0.0.0.0", "--port", "8000"]
     depends_on:
       db:
         condition: service_healthy

@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY services/retrieval/app ./app
 COPY scripts/label_prep.py ./scripts/label_prep.py
-RUN python -m app.download_model && python -m app.download_sam
+RUN python -m app.visual.download_model && python -m app.visual.download_sam
 
 FROM busybox:1.37
 

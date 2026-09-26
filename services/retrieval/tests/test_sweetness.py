@@ -1,6 +1,6 @@
 import pytest
 
-from app.sweetness import catalog_sugar_level, contradicts, sugar_level
+from app.label_text.sweetness import catalog_sugar_level, contradicts, sugar_level
 
 
 @pytest.mark.parametrize("text,level", [

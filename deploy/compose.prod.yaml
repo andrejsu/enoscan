@@ -88,7 +88,7 @@ services:
         condition: service_completed_successfully
       retriever-model:
         condition: service_completed_successfully
-    command: ["python", "-m", "app.build_retriever_index"]
+    command: ["python", "-m", "app.visual.build_index"]
     environment: &retriever-environment
       <<: [*storage-environment, *db-environment]
       MODEL_PATH: /models/dinov2-small.onnx
@@ -119,7 +119,7 @@ services:
 
   ranking:
     image: *retriever-image
-    command: ["uvicorn", "app.ranking_main:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["uvicorn", "app.search.api:app", "--host", "0.0.0.0", "--port", "8000"]
     depends_on:
       db:
         condition: service_healthy

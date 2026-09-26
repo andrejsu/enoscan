@@ -6,20 +6,25 @@ from difflib import SequenceMatcher
 from math import log
 import re
 
-from ..catalog import Wine
-from ..label_fields import MAX_CANDIDATES, FieldCandidate
+from ..catalog.models import Wine
+from ..evidence import MAX_CANDIDATES, FieldCandidate
+from ..label_text.tokens import (
+    MIN_TOKEN_LENGTH,
+    STOP_WORDS,
+    TOKEN_MATCH_SIMILARITY,
+    phonetic_key,
+    raw_tokens,
+    token_similarity,
+    tokenize,
+)
 from .constants import (
     ALIAS_MIN_COUNT,
     ALIAS_MIN_SHARE,
     ALIAS_MIN_SIMILARITY,
     CATEGORY_SYNONYMS,
     CLOSED_VOCABULARY_FIELDS,
-    MIN_TOKEN_LENGTH,
-    STOP_WORDS,
-    TOKEN_MATCH_SIMILARITY,
     UNCOMMON_TOKEN_WEIGHT,
 )
-from .tokens import phonetic_key, raw_tokens, token_similarity, tokenize
 
 
 _LATIN_WORD = re.compile(r"[a-zà-öø-ÿ]+")

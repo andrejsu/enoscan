@@ -13,22 +13,23 @@ import numpy as np
 
 _HERE = Path(__file__).resolve().parent
 for _root in (_HERE.parent / "services" / "retrieval", _HERE.parent):
-    if (_root / "app" / "index.py").exists():
+    if (_root / "app" / "__init__.py").exists():
         sys.path.insert(0, str(_root))
         break
 
-from app.catalog import load_references
-from app.config import load_settings
-from app.index import SIFT_INDEX_KIND, SiftIndex
+from app.baseline.config import SIFT_CONFIG, SIFT_INDEX_KIND
+from app.catalog.repository import load_references
+from app.common.settings import load_database_url
 from app.index_store import current_index_path
+from app.sift_index import SiftIndex
 from app.storage import IMAGES_BUCKET, ObjectStore
 from eval_augmentations import PROFILES
 
 
 def run_eval(samples: int, seed: int = 42, profile: str = "easy") -> None:
-    database_url = load_settings().database_url
+    database_url = load_database_url()
     store = ObjectStore()
-    index = SiftIndex.load(str(current_index_path(database_url, SIFT_INDEX_KIND, store)))
+    index = SiftIndex.load(str(current_index_path(database_url, SIFT_INDEX_KIND, store)), SIFT_CONFIG)
     object_keys = {reference.image_sha256: reference.object_key for reference in load_references(database_url)}
     references = index.references
 

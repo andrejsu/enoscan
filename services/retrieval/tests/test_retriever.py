@@ -5,10 +5,10 @@ import pytest
 
 pytest.importorskip("label_prep")
 
-from app import retriever as retriever_module
-from app.catalog import Wine
-from app.retriever import EMBEDDING_WEIGHT, SIFT_WEIGHT, VisualRetriever
-from app.retriever_index import Candidate, IndexedReference, SearchResult
+from app.catalog.models import Wine
+from app.sift_index import Candidate, IndexedReference, SearchResult
+from app.visual import retriever as retriever_module
+from app.visual.retriever import EMBEDDING_WEIGHT, SIFT_WEIGHT, VisualRetriever
 
 
 SLUGS = [f"wine-{position}" for position in range(6)]
@@ -34,7 +34,7 @@ class SiftStub:
     def search(self, image, *, limit, visual_limit, extra_slugs):
         wines = {reference.wine.slug: reference.wine for reference in self.references}
         slugs = list(dict.fromkeys([*self.sift, *extra_slugs]))
-        candidates = [Candidate(wines[slug], f"sha-{slug}", self.sift.get(slug, 0.0), 20, 10) for slug in slugs]
+        candidates = [Candidate(wines[slug], self.sift.get(slug, 0.0), 20, 10) for slug in slugs]
         return SearchResult(candidates=candidates, feature_ms=1, search_ms=1)
 
 
@@ -42,7 +42,7 @@ class EncoderStub:
     def __init__(self, query: np.ndarray) -> None:
         self.query = query
 
-    def encode_one(self, image) -> np.ndarray:
+    def encode(self, image) -> np.ndarray:
         return self.query
 
 
@@ -52,11 +52,11 @@ def test_combined_scores_match_full_embedding_scan(monkeypatch) -> None:
     vectors = {slug: (vector / np.linalg.norm(vector)).astype(np.float32) for slug, vector in vectors.items()}
     query = vectors["wine-4"] * 0.9 + vectors["wine-1"] * 0.1
     query = (query / np.linalg.norm(query)).astype(np.float32)
-    references = [IndexedReference(Wine(slug, slug, "Винодельня", has_image=True), f"sha-{slug}", "slug", 1.0)
+    references = [IndexedReference(Wine(slug, slug, "Винодельня", has_image=True), f"sha-{slug}")
                   for slug in SLUGS]
     sift = {"wine-0": 0.6, "wine-2": 0.3}
     monkeypatch.setattr(retriever_module, "prepare_query", lambda image, **_: SimpleNamespace(
-        visual=image, ocr=image, used_sam=False, warnings=[]))
+        visual=image, used_sam=False, warnings=[]))
 
     result = VisualRetriever(
         SiftStub(references, sift), encoder=EncoderStub(query), embedding_store=NumpyEmbeddingStore(vectors),

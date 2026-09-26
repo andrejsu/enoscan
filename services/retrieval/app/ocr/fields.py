@@ -3,21 +3,16 @@ from __future__ import annotations
 from collections.abc import Callable, Iterable
 import re
 
-from ..label_fields import MAX_CANDIDATES, FieldCandidate
+from ..evidence import MAX_CANDIDATES, FieldCandidate
+from ..label_text.vintage import VINTAGE
 from .constants import ABV_MAX, ABV_MIN, FIELD_LINE_MIN_CONFIDENCE
 from .engine import OcrWord
 
 
-_VINTAGE = re.compile(r"(?<![\d./-])(19[5-9]\d|20[0-2]\d)(?![\d]|[./-]\d)")
 _VINTAGE_CONTEXT = re.compile(r"урожа|vintage|harvest", re.IGNORECASE)
 _NOT_VINTAGE_CONTEXT = re.compile(r"основан|since|founded|розлив|bottl|гост", re.IGNORECASE)
 _ABV = re.compile(r"(?<![\d.,])(\d{1,2}(?:[.,]\d)?)\s*(?:%|об\.?\b)|\balc\.?\s*(\d{1,2}(?:[.,]\d)?)(?![\d.,])",
                   re.IGNORECASE)
-
-
-def extract_year(text: str) -> int | None:
-    found = {int(match) for match in _VINTAGE.findall(text)}
-    return found.pop() if len(found) == 1 else None
 
 
 def extract_year_candidates(words: Iterable[OcrWord], *,
@@ -41,11 +36,11 @@ def extract_abv_candidates(words: Iterable[OcrWord], *,
 def _line_years(text: str) -> set[int]:
     if not _VINTAGE_CONTEXT.search(text) or _NOT_VINTAGE_CONTEXT.search(text):
         return set()
-    return {int(match) for match in _VINTAGE.findall(text)}
+    return {int(match) for match in VINTAGE.findall(text)}
 
 
 def _unmarked_years(text: str) -> set[int]:
-    return set() if _NOT_VINTAGE_CONTEXT.search(text) else {int(match) for match in _VINTAGE.findall(text)}
+    return set() if _NOT_VINTAGE_CONTEXT.search(text) else {int(match) for match in VINTAGE.findall(text)}
 
 
 def _line_abvs(text: str) -> list[float]:

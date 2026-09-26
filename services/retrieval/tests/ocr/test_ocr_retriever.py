@@ -2,10 +2,10 @@ from unittest.mock import patch
 
 import numpy as np
 
-from app.catalog import Wine
+from app.catalog.models import Wine
+from app.label_text.tokens import tokenize
 from app.ocr.engine import OcrResult, OcrWord
 from app.ocr.retriever import OcrRetriever
-from app.ocr.tokens import tokenize
 from app.ocr.vocabulary import FieldVocabulary, learn_aliases
 
 

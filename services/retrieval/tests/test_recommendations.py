@@ -1,7 +1,7 @@
-from app.catalog import Wine
-from app.label_fields import FieldCandidate, RetrievalFields
-from app.ranking import RankingResult, rank
-from app.recommendations import recommend
+from app.catalog.models import Wine
+from app.evidence import FieldCandidate, RetrievalFields
+from app.search.ranking import RankingResult, rank
+from app.search.recommendations import recommend
 
 
 MUSKATEL = Wine("muskatel-belyy", "Мускатель белый", "Массандра", category="Белое", grape_varieties=("Мускат Белый",))

@@ -1,8 +1,8 @@
 import pytest
 
-from app.catalog import Wine
-from app.label_fields import FieldCandidate, RetrievalFields
-from app.ranking import MIN_MARGIN, TOTAL_WEIGHT, field_breakdown, field_distribution, rank
+from app.catalog.models import Wine
+from app.evidence import FieldCandidate, RetrievalFields
+from app.search.ranking import MIN_MARGIN, TOTAL_WEIGHT, field_breakdown, field_distribution, rank
 
 
 def wine(slug="rebus-2019", name="Ребус 2019", winery="Дивноморское", **overrides):
