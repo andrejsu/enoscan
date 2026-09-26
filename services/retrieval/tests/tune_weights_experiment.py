@@ -32,7 +32,7 @@ cfg = LabelConfig()
 
 raw = {}
 for fname, expected in FIXTURES.items():
-    img = cv2.imread(f"/app/tests/fixtures/{fname}")
+    img = cv2.imread(f"/app/tests/fixtures/green/{fname}")
     prepared = prepare_query(img, segmenter=None, config=cfg, fast=True)
     qvec = encoder.encode_one(prepared.visual)
     emb_scores = embeddings.scores(build.id, qvec, all_slugs)

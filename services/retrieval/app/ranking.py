@@ -32,6 +32,7 @@ The decision is the gap between the first and second wine (TZ: «отрыв
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from functools import lru_cache
 from math import exp
 
 from .catalog import Wine
@@ -71,6 +72,15 @@ OCR_TEMPERATURE = 0.06
 # already answers it wrongly.
 MIN_MARGIN = 0.03
 
+# A wine's share of the visual field (among wines the label does not
+# contradict) below which the visual match alone does not identify it
+# (_is_identified). A new Inkerman «Каберне» got 0.18 for the family's «Шато
+# Руж» from the shared label design, and the winery, grape and colour —
+# fields every Inkerman red shares — made up the margin. Real photos matched
+# on the visual match alone sat at 0.32-0.94 (2026-09-26, tests/fixtures/green);
+# the one below (0.15) also had its name read.
+VISUAL_IDENTIFY_MIN = 0.25
+
 # Only the visual match and the name can pin down one wine (_is_identified).
 # The rest (winery, grape, category, region, year, sweetness) are shared by many
 # wines: OCR reading only "Красное" must never match whichever red wine
@@ -98,7 +108,11 @@ STYLE_WORDS = "брют brut экстра extra резерв reserve riserva с�
 # contradicts leaves the race. A name contradiction is softer (OCR may have missed this
 # wine's words): the wine only drops below the rest and still counts as the
 # runner-up of any wine below it.
-HARD_CONTRADICTIONS = ("category", "year", "sweetness")
+HARD_CONTRADICTIONS = ("winery", "category", "year", "sweetness")
+
+# A winery word more wineries than this use («Винодельня», «Шато», «Крым»)
+# names no winery in particular: seen on a label it contradicts nobody.
+WINERY_WORD_MAX_WINERIES = 2
 
 
 @dataclass(frozen=True)
@@ -221,7 +235,7 @@ class LabelCheck:
     """One shortlisted wine checked against the label (verify_shortlist)."""
     slug: str
     read_words: tuple[str, ...]  # words of its catalog name the label shows, as the catalog spells them
-    kind: str | None = None  # "name" | "category" | "year" | "sweetness" when the label contradicts the wine
+    kind: str | None = None  # "name" | "winery" | "category" | "year" | "sweetness" when the label contradicts the wine
     reason: str | None = None  # human-readable, for the debug panel
     is_fully_read: bool = False  # the label shows every distinctive word of its name
 
@@ -235,7 +249,29 @@ def _catalog_words(wine: Wine, tokens: set[str]) -> tuple[str, ...]:
     return tuple(words)
 
 
-def verify_shortlist(shortlist: list[Wine], ocr_fields: RetrievalFields, ocr_text: str) -> tuple[LabelCheck, ...]:
+@lru_cache(maxsize=4)
+def _generic_winery_tokens(wineries_and_regions: frozenset[tuple[str, str]]) -> frozenset[str]:
+    """Winery words shared by more than WINERY_WORD_MAX_WINERIES wineries, and
+    region words («КУБАНЬ» is not «Кубань-Вино»)."""
+    wineries: dict[str, set[str]] = {}
+    regions: set[str] = set()
+    for winery, region in wineries_and_regions:
+        for token in _long_tokens(winery):
+            wineries.setdefault(token, set()).add(winery)
+        regions |= _long_tokens(region)
+    return frozenset({token for token, names in wineries.items() if len(names) > WINERY_WORD_MAX_WINERIES} | regions)
+
+
+def generic_winery_tokens(wines: list[Wine]) -> frozenset[str]:
+    return _generic_winery_tokens(frozenset((wine.winery.strip(), (wine.region or "").strip()) for wine in wines))
+
+
+def _shows(label: set[str], tokens: set[str]) -> bool:
+    return any(token_similarity(token, word) >= TOKEN_MATCH_SIMILARITY for token in tokens for word in label)
+
+
+def verify_shortlist(shortlist: list[Wine], ocr_fields: RetrievalFields, ocr_text: str,
+                     generic_winery: frozenset[str] = frozenset()) -> tuple[LabelCheck, ...]:
     """Check each shortlisted wine against what OCR read.
 
     A name contradicts a wine only when the label shows a long word of a
@@ -243,9 +279,16 @@ def verify_shortlist(shortlist: list[Wine], ocr_fields: RetrievalFields, ocr_tex
     speaks for this wine over that rival. Short or shared words (a line name,
     «Пет-Нат») never do: they fit every sibling equally. A category, year or
     sugar level contradicts only when OCR read exactly one and the wine has
-    another («РОЗОВОЕ ПОЛУСУХОЕ» against its «сухое» and «полусладкое» twins)."""
+    another («РОЗОВОЕ ПОЛУСУХОЕ» against its «сухое» and «полусладкое» twins).
+    A winery contradicts when the label shows a distinctive word of the winery
+    OCR read, and nothing of this wine's own winery or name: «ТАБИЯ … Пино
+    Нуар» is not Новый Свет's Pinot Noir. ``generic_winery`` are winery words
+    that name no winery in particular (generic_winery_tokens)."""
     names = {wine.slug: _name_tokens(wine) for wine in shortlist}
-    seen = _seen_tokens(_long_tokens(ocr_text), names)
+    label = _long_tokens(ocr_text)
+    seen = _seen_tokens(label, names)
+    read_winery = ocr_fields.winery[0].value.strip() if ocr_fields.winery else None
+    is_winery_shown = bool(read_winery) and _shows(label, _long_tokens(read_winery) - generic_winery)
     category, year = only_value(ocr_fields.category), only_value(ocr_fields.year)
     sweetness = only_value(ocr_fields.sweetness)
     checks = []
@@ -266,7 +309,11 @@ def verify_shortlist(shortlist: list[Wine], ocr_fields: RetrievalFields, ocr_tex
                 break
         else:
             wine_year = extract_year(wine.name)
-            if category and wine.category and wine.category.strip() != category:
+            if (is_winery_shown and wine.winery.strip() != read_winery and not seen[wine.slug]
+                    and not _shows(label, _long_tokens(wine.winery) - generic_winery)):
+                checks.append(LabelCheck(wine.slug, read_words, "winery",
+                                         f"на этикетке «{read_winery}», в каталоге «{wine.winery.strip()}»", fully))
+            elif category and wine.category and wine.category.strip() != category:
                 checks.append(LabelCheck(wine.slug, read_words, "category",
                                          f"на этикетке {category}, в каталоге {wine.category.strip()}", fully))
             elif year and wine_year is not None and str(wine_year) != year:
@@ -294,8 +341,9 @@ def rank(ocr_fields: RetrievalFields, visual_fields: RetrievalFields, wines: lis
     # outside the top: each block may put a wine forward, the label decides.
     named = {candidate.value for candidate in ocr_fields.name[:1]}
     shortlist += [wine for wine in wines if wine.name.strip() in named and wine not in shortlist]
+    generic_winery = generic_winery_tokens(wines)
     while True:
-        checks = verify_shortlist(shortlist, ocr_fields, ocr_text)
+        checks = verify_shortlist(shortlist, ocr_fields, ocr_text, generic_winery)
         slug, margin, rival = _decide(evidence, order, checks)
         # The runner-up the margin is measured against must face the label too.
         if rival is None or rival in {wine.slug for wine in shortlist} or len(shortlist) >= VERIFY_LIMIT:
@@ -308,22 +356,31 @@ def rank(ocr_fields: RetrievalFields, visual_fields: RetrievalFields, wines: lis
         # guess from further down the list.
         return RankingResult("not_found", None, score, margin, evidence, rejected, checks)
     is_identified = _is_identified(breakdowns[slug],
-                                   next((c for c in checks if c.slug == slug), None) if ocr_text.strip() else None)
+                                   next((c for c in checks if c.slug == slug), None) if ocr_text.strip() else None,
+                                   _visual_share(visual_fields, slug, rejected))
     if is_identified and margin >= min_margin:
         return RankingResult("matched", slug, score, margin, evidence, rejected, checks)
     return RankingResult("not_found", None, score, margin, evidence, rejected, checks)
 
 
-def _is_identified(terms: tuple[FieldContribution, ...], check: LabelCheck | None) -> bool:
-    """A visual match identifies a wine; OCR alone does only when the label
-    shows every distinctive word of its name. «Пино Нуар полусухое» of one
-    winery is every Pinot Noir label: read on a Табия bottle (not in the
-    catalog), it must not match Новый Свет's wine of that name. Without label
-    text (``check`` is None) there is nothing to check the name against."""
-    scores = {term.field: term.score for term in terms}
-    if scores.get("slug", 0) > 0:
+def _visual_share(visual_fields: RetrievalFields, slug: str, rejected: dict[str, str]) -> float:
+    """The wine's share of the visual field among wines the label does not
+    contradict: «Аврора 2024» next to a rejected «Аврора 2023» is the visual match."""
+    candidates = tuple(c for c in visual_fields.slug if c.value not in rejected)
+    return field_distribution(candidates, VISUAL_TEMPERATURE).get(slug, 0.0) if candidates else 0.0
+
+
+def _is_identified(terms: tuple[FieldContribution, ...], check: LabelCheck | None, visual: float) -> bool:
+    """A clear visual match (``visual`` — _visual_share) identifies a wine; a
+    faint one only together with its name. OCR alone does only when the label shows every distinctive word
+    of its name. «Пино Нуар полусухое» of one winery is every Pinot Noir
+    label: read on a Табия bottle (not in the catalog), it must not match
+    Новый Свет's wine of that name. Without label text (``check`` is None)
+    there is nothing to check the name against."""
+    name = next((term.score for term in terms if term.field == "name"), 0.0)
+    if visual >= VISUAL_IDENTIFY_MIN or (visual > 0 and name > 0):
         return True
-    return scores.get("name", 0) > 0 and (check is None or check.is_fully_read)
+    return name > 0 and (check is None or check.is_fully_read)
 
 
 def _decide(evidence: dict[str, float], order: list[str],

@@ -25,6 +25,24 @@ export interface ScanCandidate {
   wine?: WineCard
 }
 
+export const scanRecommendationFields = [
+  'name', 'winery', 'grape_varieties', 'category', 'sweetness', 'region', 'year',
+] as const
+
+export type ScanRecommendationField = (typeof scanRecommendationFields)[number]
+
+/** A catalog wine related to a photo that did not match: same winery, line or grape. */
+export interface ScanRecommendation {
+  slug: string
+  /** Ranking evidence, the same scale as ScanCandidate.score. */
+  score: number
+  wine: WineCard
+  sharedFields: readonly ScanRecommendationField[]
+  reason: string
+  /** What the label contradicts in this wine (another vintage or colour); null when nothing. */
+  difference: string | null
+}
+
 export interface ScanConfidence {
   kind: 'similarity' | 'calibrated_probability'
   top1Score: number
@@ -50,6 +68,8 @@ export interface ScanResponse {
   confidence: ScanConfidence
   timing: ScanTiming
   alternatives: readonly WineCard[]
+  /** Only when the scan did not match; absent from services that do not recommend. */
+  recommendations?: readonly ScanRecommendation[]
   version: ScanVersion
   guidance?: string
   /** Per-stage trace from the ranking service; absent when RANKING_DEBUG=false. */
@@ -113,7 +133,7 @@ export interface ScanDebugRetriever {
   }[]
 }
 
-export type ScanDebugContradiction = 'name' | 'category' | 'year' | 'sweetness'
+export type ScanDebugContradiction = 'name' | 'winery' | 'category' | 'year' | 'sweetness'
 
 /** Ranking's top wines checked against the label text before the decision (verify_shortlist). */
 export interface ScanDebugVerification {

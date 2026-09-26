@@ -257,3 +257,50 @@ def test_label_sugar_level_picks_the_one_of_identical_siblings():
     kinds = {check.slug: check.kind for check in result.checks}
     assert (kinds["dry"], kinds["semi-dry"], kinds["semi-sweet"]) == ("sweetness", None, "sweetness")
     assert result.status == "matched" and result.slug == "semi-dry"
+
+
+def test_a_faint_visual_share_plus_shared_fields_does_not_identify_a_wine():
+    # A new Inkerman «Каберне»: its label design is the family's, so the
+    # visual share spreads over the whole range, and winery, grape and colour
+    # fit the one Cabernet red of the catalog — without its name on the label.
+    target = wine("shato-ruzh", "Inkerman Шато Руж", "Инкерманский ЗМВ", category="Красное",
+                  grape_varieties=("Каберне Совиньон",))
+    family = [wine(f"sibling-{i}", f"Инкерман Сорт{i}", "Инкерманский ЗМВ", category="Красное",
+                   grape_varieties=("Саперави",)) for i in range(7)]
+    ocr_fields = RetrievalFields(winery=(FieldCandidate("Инкерманский ЗМВ", 1.0),),
+                                 grape_varieties=(FieldCandidate("Каберне Совиньон", 1.0),),
+                                 category=(FieldCandidate("Красное", 1.0),))
+    visual_fields = visual(*((item.slug, 0.46) for item in [target, *family]))
+    result = rank(ocr_fields, visual_fields, [target, *family], ocr_text="INKERMAN КАБЕРНЕ СУХОЕ КРАСНОЕ")
+    assert result.ranked(1)[0][0] == target.slug
+    assert result.status == "not_found"
+
+
+TABIYA_OCR = RetrievalFields(winery=(FieldCandidate("Табия", 0.39), FieldCandidate("Винодельня 78", 0.23)),
+                             sweetness=(FieldCandidate("полусухое", 1.0),))
+
+
+def test_a_winery_on_the_label_rejects_a_wine_of_another_winery():
+    # «ТАБИЯ ВИНОДЕЛЬНЯ Пино Нуар полусухое»: not Новый Свет's Pinot Noir, however alike the bottles.
+    novyy_svet = wine("ns-pinot", "Пино Нуар полусухое", "Новый Свет. Дом шампанских вин")
+    tabiya = wine("bukovinka", "Буковинка", "Табия")
+    result = rank(TABIYA_OCR, visual(("ns-pinot", 0.9), ("bukovinka", 0.5)), [novyy_svet, tabiya],
+                  ocr_text="ТАБИЯ ВИНОДЕЛЬНЯ Пино Нуар полусухое 2025")
+    assert result.rejected.keys() == {"ns-pinot"}
+    assert result.slug != "ns-pinot"
+
+
+def test_the_wine_own_name_or_winery_on_the_label_keeps_it_despite_another_winery_read():
+    # OCR's winery field may pick a neighbour's winery; the wine's own words on the label still speak for it.
+    anima = wine("anima", "Аристов Anima Millesimato", "Кубань-Вино")
+    ocr_fields = RetrievalFields(winery=(FieldCandidate("Табия", 0.4),))
+    result = rank(ocr_fields, visual(("anima", 0.9)), [anima, wine("bukovinka", "Буковинка", "Табия")],
+                  ocr_text="ТАБИЯ ANIMA MILLESIMATO")
+    assert "anima" not in result.rejected
+
+
+def test_a_winery_word_many_wineries_share_contradicts_nobody():
+    wines = [wine(f"w{i}", f"Сорт{i}", f"Винодельня Хозяйство{i}") for i in range(3)]
+    ocr_fields = RetrievalFields(winery=(FieldCandidate("Винодельня Хозяйство0", 0.3),))
+    result = rank(ocr_fields, visual(("w1", 0.9)), wines, ocr_text="СЕМЕЙНАЯ ВИНОДЕЛЬНЯ")
+    assert result.rejected == {}

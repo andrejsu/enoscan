@@ -102,12 +102,16 @@
   "100": "wines.get.ts",
   "101": "sommelier-contract.test.ts",
   "102": "vitest.config.ts",
+  "103": "main.py",
   "104": "__init__.py",
   "105": "recommend",
+  "106": "retriever.py",
+  "107": "sweetness.py",
   "108": "Issue",
   "109": "test_ocr_real.py",
   "110": "Phase 3: SIFT-сервис `retrieval` и `retrieval-index`",
   "111": "useWineScanner.ts",
   "112": "wine",
+  "113": ".encode",
   "114": "Phase 5: Web (Nuxt)"
 }

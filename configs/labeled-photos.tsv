@@ -1,11 +1,11 @@
 image_path	expected_slug
-../services/retrieval/tests/fixtures/abrau-dyurso-russkoe-igristoe-polusuhoe-rozovoe-pino-nuar-12.webp	abrau-dyurso-russkoe-igristoe-polusuhoe-rozovoe-pino-nuar-12
-../services/retrieval/tests/fixtures/balaklava-muskat-beloe-polusladkoe.webp	balaklava-muskat-beloe-polusladkoe
-../services/retrieval/tests/fixtures/perovskih_polusuhoe_krasnoe.webp	perovskih_polusuhoe_krasnoe
-../services/retrieval/tests/fixtures/yaiyla_кокур_hand.jpeg	yaiyla-winery-kokur-kokur-belyy-beloe-suhoe-13
-../services/retrieval/tests/fixtures/zakat-denisov-vajneri.webp	zakat-denisov-vajneri
-../services/retrieval/tests/fixtures/zhemchuzhnaya-9-aligote-czitron.webp	zhemchuzhnaya-9-aligote-czitron
+../services/retrieval/tests/fixtures/green/abrau-dyurso-russkoe-igristoe-polusuhoe-rozovoe-pino-nuar-12.webp	abrau-dyurso-russkoe-igristoe-polusuhoe-rozovoe-pino-nuar-12
+../services/retrieval/tests/fixtures/green/balaklava-muskat-beloe-polusladkoe.webp	balaklava-muskat-beloe-polusladkoe
+../services/retrieval/tests/fixtures/green/perovskih_polusuhoe_krasnoe.webp	perovskih_polusuhoe_krasnoe
+../services/retrieval/tests/fixtures/green/yaiyla_кокур_hand.jpeg	yaiyla-winery-kokur-kokur-belyy-beloe-suhoe-13
+../services/retrieval/tests/fixtures/green/zakat-denisov-vajneri.webp	zakat-denisov-vajneri
+../services/retrieval/tests/fixtures/green/zhemchuzhnaya-9-aligote-czitron.webp	zhemchuzhnaya-9-aligote-czitron
 ../data/eval/queries/02eef911.webp	massandra-muskatel-belyy-belye-sorta-vinograda-beloe-sladkoe-16
 ../data/eval/queries/019c68d0.jpg	
 ../data/eval/queries/096ca74e.jpg	
-../services/retrieval/tests/fixtures/aristov-anima-millesimato.jpg	aristov-anima-millesimato
+../services/retrieval/tests/fixtures/green/aristov-anima-millesimato.jpg	aristov-anima-millesimato

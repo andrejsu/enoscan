@@ -4,6 +4,12 @@
 
 OCR (RapidOCR) и объединение его результата с визуальным поиском больше не часть этого сервиса — они вынесены в отдельные сервисы: `ocr-retriever` (`app/ocr/main.py`) отдаёт per-поле кандидатов, `ranking` (`app/ranking_main.py`) комбинирует их с визуальными кандидатами `retriever` и резолвит slug. `ranking` — тот сервис, что реально стоит за продуктовым сканером (`apps/web`'s `/api/scans`, через `NUXT_RANKING_BASE_URL`); он же отдаёт оценочный `/v1/eval/predict` на порту 8080, чтобы top-1 оценки и сканера совпадал. `retrieval` (этот сервис, порт 8084) остаётся визуальным baseline для `scripts/eval_search.py`. См. `app/label_fields.py` и `app/ranking.py`.
 
+Swagger `ranking` — `http://127.0.0.1:8080/docs` (OpenAPI JSON — `/openapi.json`): оба маршрута, поле `image`, схемы ответов и ошибок. Схемы — `app/ranking_schemas.py`, они повторяют `ScanResponse` из `apps/web/shared/contracts`.
+
+Когда `ranking` не подтверждает совпадение, ответ `/v1/search` содержит `recommendations` — вина каталога той же винодельни, линейки (редкое слово названия на этикетке) или сорта вместе с ещё одним параметром, с причиной и расхождением с этикеткой (`app/recommendations.py`). На решение и score ранжирования они не влияют.
+
+Фото с известным ответом лежат в `tests/fixtures`: `green/` — вино есть в каталоге (имя файла — slug), `red/` — вина нет, `yellow/` — вина нет, но есть его винодельня или линейка. `tests/test_fixture_photos.py` прогоняет их через маршрут `ranking` этого рабочего дерева с живыми `ocr-retriever`, `retriever` и БД (без них тесты пропускаются): green должны совпасть, red — дать `not_found`, yellow — `not_found` с рекомендацией нужной винодельни.
+
 ## Запуск
 
 Корневой `docker compose up --build` сначала запускает `importer`, затем `retrieval-index`, затем поднимает API:

@@ -68,3 +68,23 @@ def test_eval_route_answers_unsure_top1_under_top1_policy():
 def test_eval_route_rejects_a_broken_file_and_reports_outages():
     assert scan(OCR, VISUAL, "/v1/eval/predict", image=b"not an image").status_code == 422
     assert scan(None, None, "/v1/eval/predict").status_code == 503
+
+
+def test_openapi_documents_the_upload_field_and_both_scan_responses():
+    spec = ranking_main.app.openapi()
+    for path in ("/v1/search", "/v1/eval/predict"):
+        operation = spec["paths"][path]["post"]
+        assert "multipart/form-data" in operation["requestBody"]["content"]
+        assert {"200", "415", "422", "503"} <= set(operation["responses"])
+    assert set(spec["components"]["schemas"]["EvaluationPrediction"]["properties"]) == {"slug"}
+    assert "recommendations" in spec["components"]["schemas"]["ScanResponse"]["properties"]
+
+
+def test_top1_policy_answers_only_a_wine_the_label_does_not_contradict():
+    from app.ranking import LabelCheck, RankingResult
+    checked = (LabelCheck("rebus", (), "sweetness", "на этикетке брют, в каталоге сухое"),)
+    result = RankingResult("not_found", None, 0.3, 0.0, {"rebus": 0.3, "kokur": 0.1}, {"rebus": "…"}, checked)
+    # «kokur» is first once rejected wines go last, but nobody checked it against the label.
+    assert ranking_main.evaluation_slug(result, "top1") == ""
+    passed = checked + (LabelCheck("kokur", ()),)
+    assert ranking_main.evaluation_slug(replace(result, checks=passed), "top1") == "kokur"

@@ -1,12 +1,12 @@
 # Graph Report - enoscan  (2026-09-26)
 
 ## Corpus Check
-- 179 files · ~623,570 words
+- 179 files · ~623,067 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1530 nodes · 2981 edges · 111 communities (99 shown, 12 thin omitted)
-- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 383 edges (avg confidence: 0.71)
+- 1523 nodes · 2955 edges · 115 communities (103 shown, 12 thin omitted)
+- Extraction: 87% EXTRACTED · 13% INFERRED · 0% AMBIGUOUS · INFERRED: 374 edges (avg confidence: 0.71)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
@@ -107,46 +107,50 @@
 - [[_COMMUNITY_zodiac-wine.test.ts|zodiac-wine.test.ts]]
 - [[_COMMUNITY_dev-entrypoint.sh|dev-entrypoint.sh]]
 - [[_COMMUNITY_dev-shell.sh|dev-shell.sh]]
+- [[_COMMUNITY_main.py|main.py]]
 - [[_COMMUNITY_recommend|recommend]]
+- [[_COMMUNITY_retriever.py|retriever.py]]
+- [[_COMMUNITY_sweetness.py|sweetness.py]]
 - [[_COMMUNITY_Issue|Issue]]
 - [[_COMMUNITY_test_ocr_real.py|test_ocr_real.py]]
 - [[_COMMUNITY_Phase 3 SIFT-сервис `retrieval` и `retrieval-index`|Phase 3: SIFT-сервис `retrieval` и `retrieval-index`]]
 - [[_COMMUNITY_useWineScanner.ts|useWineScanner.ts]]
 - [[_COMMUNITY_wine|wine]]
+- [[_COMMUNITY_.encode|.encode]]
 - [[_COMMUNITY_Phase 5 Web (Nuxt)|Phase 5: Web (Nuxt)]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `RetrievalFields` - 62 edges
-2. `Wine` - 58 edges
-3. `rank()` - 45 edges
-4. `FieldCandidate` - 44 edges
+1. `RetrievalFields` - 60 edges
+2. `Wine` - 57 edges
+3. `FieldCandidate` - 42 edges
+4. `rank()` - 42 edges
 5. `recommend()` - 25 edges
-6. `wine()` - 25 edges
-7. `FieldVocabulary` - 24 edges
+6. `FieldVocabulary` - 24 edges
+7. `wine()` - 22 edges
 8. `run_import()` - 21 edges
-9. `visual()` - 20 edges
-10. `EmbeddingStore` - 18 edges
+9. `EmbeddingStore` - 18 edges
+10. `resolve_mappings()` - 17 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `test_recommendations_follow_a_real_ranking_that_did_not_match()` --references--> `wines`  [EXTRACTED]
   services/retrieval/tests/test_recommendations.py → apps/web/server/utils/sommelier-ai.test.ts
 - `run_audit()` --calls--> `load_references()`  [INFERRED]
   scripts/audit_mapping.py → services/retrieval/app/catalog.py
+- `run_eval()` --calls--> `current_index_path()`  [INFERRED]
+  scripts/eval.py → services/retrieval/app/index_store.py
 - `scan()` --indirect_call--> `post_image()`  [INFERRED]
   services/retrieval/tests/test_ranking_main.py → scripts/eval_ranking.py
 - `main()` --calls--> `current_dataset_version()`  [INFERRED]
-  scripts/eval_search.py → services/retrieval/app/catalog.py
-- `main()` --calls--> `load_references()`  [INFERRED]
   scripts/eval_search.py → services/retrieval/app/catalog.py
 
 ## Import Cycles
 - None detected.
 
-## Communities (111 total, 12 thin omitted)
+## Communities (115 total, 12 thin omitted)
 
 ### Community 0 - "mapping.py"
-Cohesion: 0.09
-Nodes (51): CatalogParseResult, CatalogWine, clean(), parse_rows(), Path, read_catalog(), split_grapes(), _catalog_words() (+43 more)
+Cohesion: 0.13
+Nodes (38): CatalogWine, _catalog_words(), fuzzy_score(), latin_tokens(), Mapping, mark_suspicious(), media_stem(), normalize_key() (+30 more)
 
 ### Community 1 - "label_prep.py"
 Cohesion: 0.08
@@ -181,44 +185,44 @@ Cohesion: 0.06
 Nodes (34): dependencies, ai, @ai-sdk/anthropic, @ai-sdk/google, @ai-sdk/openai, @aws-sdk/client-s3, @fontsource/source-sans-3, @fontsource/source-serif-4 (+26 more)
 
 ### Community 9 - "main.py"
-Cohesion: 0.14
-Nodes (22): Candidate, SearchResult, decode_image(), decode_reference(), extract_features(), ImageFeatures, ndarray, _root_sift() (+14 more)
+Cohesion: 0.18
+Nodes (15): Candidate, SearchResult, Candidate, ndarray, SearchResult, SiftIndex, ProductResult, ndarray (+7 more)
 
 ### Community 11 - "catalog.py"
-Cohesion: 0.25
-Nodes (16): ArchiveReader, Issue, main(), archive_already_ingested(), ingest_archive(), latest_succeeded_version(), load_sources(), prepare_storage() (+8 more)
+Cohesion: 0.20
+Nodes (23): ArchiveReader, Issue, archive_already_ingested(), fingerprint_inputs(), ingest_archive(), latest_succeeded_version(), load_sources(), prepare_storage() (+15 more)
 
 ### Community 12 - "retriever_main.py"
 Cohesion: 0.22
 Nodes (13): catalog_row(), FakeArchive, MemoryStore, png(), Path, Settings, query(), test_full_import_then_noop() (+5 more)
 
 ### Community 13 - "index_store.py"
-Cohesion: 0.20
-Nodes (7): EmbeddingStore, Connection, ndarray, ndarray, test_missing_is_scoped_to_model(), test_nearest_and_scores_match_numpy(), unit()
+Cohesion: 0.47
+Nodes (5): populated(), ndarray, test_missing_is_scoped_to_model(), test_nearest_and_scores_match_numpy(), unit()
 
 ### Community 14 - "ocr_retriever.py"
-Cohesion: 0.24
-Nodes (7): IndexedReference, SearchResult, EncoderStub, NumpyEmbeddingStore, ndarray, SiftStub, test_combined_scores_match_full_embedding_scan()
+Cohesion: 0.16
+Nodes (19): Wine, token_similarity(), _ranked(), RankingResult, common_name_tokens(), _digits(), _long_tokens(), _own_name_tokens() (+11 more)
 
 ### Community 16 - "images.py"
-Cohesion: 0.19
-Nodes (16): Image, ArchiveMember, decode_and_preview(), DecodedImage, ImageDecodeError, ingest_image(), original_key(), preview_key() (+8 more)
+Cohesion: 0.16
+Nodes (21): Image, ArchiveMember, ArchiveStats, classify(), iter_originals(), Path, strapi_path_of(), decode_and_preview() (+13 more)
 
 ### Community 17 - "Wine"
-Cohesion: 0.15
-Nodes (20): client(), describe(), _photos(), Path, Real photos against the running stack: the ranking route of this working tree (a, scan(), test_catalog_wine_is_matched(), test_every_yellow_photo_has_an_expectation() (+12 more)
+Cohesion: 0.09
+Nodes (27): IndexedReference, SearchResult, client(), describe(), _photos(), Path, Real photos against the running stack: the ranking route of this working tree (a, scan() (+19 more)
 
 ### Community 18 - "ImageFeatures"
-Cohesion: 0.09
-Nodes (24): LabelConfig, Dinov2Encoder, ndarray, Path, Frozen DINOv2 global descriptor for wine-label instance retrieval.  Global embed, Read catalog art with transparent pixels composited onto white., read_embedding_image(), DINOv2 reference embeddings stored in PostgreSQL (pgvector).  Embeddings are key (+16 more)
+Cohesion: 0.10
+Nodes (22): LabelConfig, Dinov2Encoder, Path, Frozen DINOv2 global descriptor for wine-label instance retrieval.  Global embed, EmbeddingStore, Connection, ndarray, DINOv2 reference embeddings stored in PostgreSQL (pgvector).  Embeddings are key (+14 more)
 
 ### Community 19 - "ranking_main.py"
-Cohesion: 0.15
-Nodes (22): `matched` — вино найдено и в `wine` его карточка. `not_found` — уверенного     о, search(), image_data_url(), ocr_debug(), ocr_search_text(), _optional_number(), preprocessing_debug(), ndarray (+14 more)
+Cohesion: 0.10
+Nodes (29): decode_upload(), ndarray, UploadFile, read_image_upload(), UploadFile, search(), `matched` — вино найдено и в `wine` его карточка. `not_found` — уверенного     о, search() (+21 more)
 
 ### Community 20 - "OcrRetriever"
-Cohesion: 0.12
-Nodes (33): main(), run_eval(), main(), main(), Build the retriever's own index — separate object, separate process from app/bui, current_dataset_version(), load_references(), Reference (+25 more)
+Cohesion: 0.13
+Nodes (27): main(), Build the retriever's own index — separate object, separate process from app/bui, current_dataset_version(), current_index_path(), fetch_index(), find_build(), IndexBuild, IndexedImage (+19 more)
 
 ### Community 21 - "run.py"
 Cohesion: 0.18
@@ -229,20 +233,20 @@ Cohesion: 0.14
 Nodes (14): 10. `services/retrieval/app/config.py`, 11. Удалить `services/retrieval/app/catalog_browser.py`, 12. `compose.yaml`, 13. Тесты, 1. `services/retrieval/requirements.txt`, 2. `services/retrieval/app/storage.py`, 3. `services/retrieval/app/catalog.py`, 4. `services/retrieval/app/index_store.py` (+6 more)
 
 ### Community 23 - "EmbeddingStore"
-Cohesion: 0.18
-Nodes (12): decode_upload(), ndarray, UploadFile, read_image_upload(), product_search(), UploadFile, run_search(), UploadFile (+4 more)
+Cohesion: 0.20
+Nodes (15): main(), run_eval(), main(), load_references(), _optional(), Reference, decode_image(), decode_reference() (+7 more)
 
 ### Community 24 - "test_run.py"
-Cohesion: 0.10
-Nodes (29): BaseModel, fields_from_json(), Inverse of dataclasses.asdict(RetrievalFields) — how the OCR service     (app/oc, evaluation_predict(), evaluation_slug(), lifespan(), _post_image(), FastAPI (+21 more)
+Cohesion: 0.11
+Nodes (27): BaseModel, fields_from_json(), Inverse of dataclasses.asdict(RetrievalFields) — how the OCR service     (app/oc, evaluation_predict(), evaluation_slug(), lifespan(), _post_image(), FastAPI (+19 more)
 
 ### Community 25 - "label_normalize.py"
 Cohesion: 0.17
 Nodes (13): Pre-fetch the SAM segmentation model used by label_normalize's query path.  Segm, decode_reference_unchanged(), _fast_crop(), prepare_query(), prepare_reference_image(), PreparedQuery, ndarray, Bridge to scripts/label_prep.py: normalize both catalog art and query photos ont (+5 more)
 
 ### Community 26 - "config.py"
-Cohesion: 0.27
-Nodes (32): FieldCandidate, RetrievalFields, rank(), test_a_different_vintage_on_the_label_rejects_the_catalog_vintage(), test_a_faint_visual_share_plus_shared_fields_does_not_identify_a_wine(), test_a_winery_on_the_label_rejects_a_wine_of_another_winery(), test_a_winery_word_many_wineries_share_contradicts_nobody(), test_a_word_every_sibling_shares_rejects_nobody() (+24 more)
+Cohesion: 0.29
+Nodes (29): FieldCandidate, RetrievalFields, rank(), test_a_different_vintage_on_the_label_rejects_the_catalog_vintage(), test_a_faint_visual_share_plus_shared_fields_does_not_identify_a_wine(), test_a_word_every_sibling_shares_rejects_nobody(), test_correct_top1_matches_even_when_raw_ocr_scores_are_low(), test_every_block_only_adds_support() (+21 more)
 
 ### Community 27 - "index.vue"
 Cohesion: 0.13
@@ -273,8 +277,8 @@ Cohesion: 0.14
 Nodes (14): 10. `apps/web/server/utils/sommelier-catalog.ts`, 11. UI, 12. `compose.yaml` (`web`), 13. Тесты (vitest), 1. `apps/web/shared/contracts/index.ts`, 2. `apps/web/nuxt.config.ts`, 3. `apps/web/package.json`, 4. `apps/web/server/utils/catalog-db.ts` (+6 more)
 
 ### Community 34 - "storage.py"
-Cohesion: 0.29
-Nodes (10): load_database_url(), load_max_upload_bytes(), load_settings(), Settings, _eval_policy(), load_ranking_settings(), RankingSettings, Settings for the standalone ranking service (app/ranking_main.py).  Where to rea (+2 more)
+Cohesion: 0.23
+Nodes (13): load_database_url(), load_max_upload_bytes(), load_settings(), Settings, _eval_policy(), load_ranking_settings(), RankingSettings, Settings for the standalone ranking service (app/ranking_main.py).  Where to rea (+5 more)
 
 ### Community 35 - "scan-debug.ts"
 Cohesion: 0.20
@@ -305,8 +309,8 @@ Cohesion: 0.10
 Nodes (18): `.env` на сервере, SSH-ключ для GitHub Actions, Датасет, Деплой на VPS, Настройки GitHub, Однократная настройка сервера, Эксплуатация, Docker (+10 more)
 
 ### Community 42 - "config.py"
-Cohesion: 0.23
-Nodes (11): database_url_from_environment(), load_settings(), Settings, storage_from_environment(), StorageSettings, database_url(), migrations_dir(), Path (+3 more)
+Cohesion: 0.21
+Nodes (12): database_url_from_environment(), load_settings(), Settings, storage_from_environment(), StorageSettings, main(), database_url(), migrations_dir() (+4 more)
 
 ### Community 43 - "Interview Answers"
 Cohesion: 0.20
@@ -345,8 +349,8 @@ Cohesion: 0.36
 Nodes (6): main(), Path, read_manifest(), summarize(), test_manifest_rejects_capture_group_leakage(), test_unlabelled_manifest_is_not_unknown()
 
 ### Community 52 - "sweetness.py"
-Cohesion: 0.06
-Nodes (64): load_wines(), extract_label(), fold_homoglyphs(), load_engine(), OcrResult, OcrWord, ndarray, _to_cyrillic() (+56 more)
+Cohesion: 0.24
+Nodes (17): OcrWord, extract_abv_candidates(), extract_year_candidates(), _group_lines(), _line_abvs(), _line_candidates(), _line_years(), Years marked as a harvest win. Front labels usually print the vintage     bare ( (+9 more)
 
 ### Community 53 - "useSommelierChat.ts"
 Cohesion: 0.39
@@ -417,8 +421,8 @@ Cohesion: 0.40
 Nodes (4): Scripts, Датасет и окружение, Оценка поиска по фото, Сомелье
 
 ### Community 70 - "Phase 2: Importer"
-Cohesion: 0.09
-Nodes (35): _optional(), Wine, extract_year(), _actual_values(), _catalog_words(), _contributions(), _decide(), _distributions() (+27 more)
+Cohesion: 0.10
+Nodes (32): extract_year(), _actual_values(), _catalog_words(), _contributions(), _decide(), _distributions(), field_breakdown(), field_distribution() (+24 more)
 
 ### Community 71 - "Phase 4: Retriever на pgvector"
 Cohesion: 0.40
@@ -441,36 +445,48 @@ Cohesion: 0.60
 Nodes (3): acceptedScanTypes, getFirstScanFile(), validateScanFile()
 
 ### Community 77 - "fingerprint_inputs"
-Cohesion: 0.44
-Nodes (8): fingerprint_inputs(), archive_sha256(), DatasetFingerprint, file_sha256(), optional_file_sha256(), Path, Path, test_archive_hash_depends_on_volume_order()
+Cohesion: 0.30
+Nodes (13): CatalogParseResult, clean(), parse_rows(), Path, read_catalog(), split_grapes(), row(), test_cleans_values_and_splits_grapes() (+5 more)
 
 ### Community 78 - "scans.post.ts"
 Cohesion: 0.50
 Nodes (3): acceptedTypes, demoAlternative, demoWine
 
 ### Community 79 - "Phase 5: Web (Nuxt)"
-Cohesion: 0.52
-Nodes (6): ArchiveStats, classify(), iter_originals(), Path, strapi_path_of(), test_archive_member_classification()
+Cohesion: 0.27
+Nodes (17): FieldVocabulary, test_a_grape_word_alone_never_names_a_winery(), test_catalog_teaches_pairs_the_sound_rules_miss(), test_category_vocabulary_accepts_an_exact_single_word_category(), test_field_vocabulary_only_returns_real_catalog_values(), test_foreign_label_word_finds_the_catalog_category(), test_french_label_spelling_finds_the_russian_catalog_winery(), test_label_brand_stem_finds_the_adjectival_catalog_winery() (+9 more)
 
 ### Community 80 - "Retrieval service"
 Cohesion: 0.50
 Nodes (3): Retrieval service, Запуск, Хранилища
 
 ### Community 81 - "Testing Strategy"
-Cohesion: 0.12
-Nodes (24): Pattern, phonetic_key(), Collection, raw_tokens(), token_similarity(), tokenize(), FieldSearch, learn_aliases() (+16 more)
+Cohesion: 0.19
+Nodes (11): Pattern, phonetic_key(), Collection, raw_tokens(), tokenize(), FieldSearch, learn_aliases(), _phonetic_keys() (+3 more)
 
 ### Community 84 - "useWineScanner.ts"
 Cohesion: 0.16
-Nodes (22): attach_labels(), _f1(), main(), organizer_slug(), post_image(), Path, _ratio(), (HTTP status or None on timeout/network error, JSON body or None, ms). (+14 more)
+Nodes (23): attach_labels(), _f1(), main(), organizer_slug(), post_image(), Path, _ratio(), (HTTP status or None on timeout/network error, JSON body or None, ms). (+15 more)
 
 ### Community 87 - "Status (updated 2026-09-16)"
 Cohesion: 0.67
 Nodes (3): Findings that change later phases, Measured baseline (blocks the original Phase 2/3 gates), Status (updated 2026-09-16)
 
+### Community 103 - "main.py"
+Cohesion: 0.21
+Nodes (12): load_wines(), extract_label(), fold_homoglyphs(), load_engine(), ndarray, _to_cyrillic(), lifespan(), FastAPI (+4 more)
+
 ### Community 105 - "recommend"
+Cohesion: 0.28
+Nodes (18): _is_related(), Related catalog wines for a scan that did not match, best evidence first.      A, _reason(), recommend(), fields(), not_found(), test_a_name_word_many_wineries_use_ties_the_label_to_nothing(), test_a_wine_the_label_contradicts_stays_and_says_what_differs() (+10 more)
+
+### Community 106 - "retriever.py"
+Cohesion: 0.35
+Nodes (6): OcrResult, ocr_crop(), ocr_crop_box(), OcrRetriever, OcrTrace, ndarray
+
+### Community 107 - "sweetness.py"
 Cohesion: 0.23
-Nodes (20): _ranked(), RankingResult, Related catalog wines for a scan that did not match, best evidence first.      A, recommend(), Recommendation, test_top1_policy_answers_only_a_wine_the_label_does_not_contradict(), fields(), not_found() (+12 more)
+Nodes (10): catalog_sugar_level(), Sugar level of a wine («сухое», «полусладкое», «брют»…), from catalog text or a, Every sugar level the text names., The one sugar level the text names; None when it names none or two     that disa, The first source that names exactly one sugar level: name, then slug, then photo, sugar_level(), sugar_levels(), test_brut_levels_do_not_contradict_each_other() (+2 more)
 
 ### Community 108 - "Issue"
 Cohesion: 0.38
@@ -488,6 +504,10 @@ Nodes (5): Automated Verification:, Manual Verification:, Overview, Phase 3: SIF
 Cohesion: 0.39
 Nodes (3): candidate(), CatalogTest, wine()
 
+### Community 113 - ".encode"
+Cohesion: 0.50
+Nodes (3): ndarray, Read catalog art with transparent pixels composited onto white., read_embedding_image()
+
 ### Community 114 - "Phase 5: Web (Nuxt)"
 Cohesion: 0.40
 Nodes (5): Automated Verification:, Manual Verification:, Overview, Phase 5: Web (Nuxt), Success Criteria
@@ -500,17 +520,17 @@ Nodes (5): Automated Verification:, Manual Verification:, Overview, Phase 5: Web
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Wine` connect `Phase 2: Importer` to `main.py`, `recommend`, `ocr_retriever.py`, `wine`, `Testing Strategy`, `ImageFeatures`, `ranking_main.py`, `OcrRetriever`, `sweetness.py`, `test_run.py`, `config.py`?**
-  _High betweenness centrality (0.056) - this node is a cross-community bridge._
 - **Why does `test_recommendations_follow_a_real_ranking_that_did_not_match()` connect `recommend` to `config.py`, `chat.post.ts`?**
   _High betweenness centrality (0.050) - this node is a cross-community bridge._
 - **Why does `wines` connect `chat.post.ts` to `recommend`?**
   _High betweenness centrality (0.049) - this node is a cross-community bridge._
-- **Are the 39 inferred relationships involving `RetrievalFields` (e.g. with `FieldContribution` and `LabelCheck`) actually correct?**
-  _`RetrievalFields` has 39 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `Wine` connect `ocr_retriever.py` to `Phase 2: Importer`, `main.py`, `main.py`, `recommend`, `sweetness.py`, `Phase 5: Web (Nuxt)`, `wine`, `Testing Strategy`, `ImageFeatures`, `Wine`, `ranking_main.py`, `EmbeddingStore`, `test_run.py`, `config.py`?**
+  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+- **Are the 37 inferred relationships involving `RetrievalFields` (e.g. with `FieldContribution` and `LabelCheck`) actually correct?**
+  _`RetrievalFields` has 37 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 26 inferred relationships involving `Wine` (e.g. with `Candidate` and `IndexedReference`) actually correct?**
   _`Wine` has 26 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 31 inferred relationships involving `rank()` (e.g. with `test_patterned_label_reads_the_winery_but_winery_alone_never_matches()` and `test_readable_label_yields_the_wine_name()`) actually correct?**
-  _`rank()` has 31 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 29 inferred relationships involving `FieldCandidate` (e.g. with `FieldContribution` and `LabelCheck`) actually correct?**
-  _`FieldCandidate` has 29 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 27 inferred relationships involving `FieldCandidate` (e.g. with `FieldContribution` and `LabelCheck`) actually correct?**
+  _`FieldCandidate` has 27 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 28 inferred relationships involving `rank()` (e.g. with `test_patterned_label_reads_the_winery_but_winery_alone_never_matches()` and `test_readable_label_yields_the_wine_name()`) actually correct?**
+  _`rank()` has 28 INFERRED edges - model-reasoned connections that need verification._

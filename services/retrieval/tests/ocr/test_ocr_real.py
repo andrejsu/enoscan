@@ -12,7 +12,7 @@ from app.ranking import rank
 
 
 pytestmark = pytest.mark.skipif(find_spec("rapidocr") is None, reason="rapidocr is not installed")
-FIXTURES = Path(__file__).parents[1] / "fixtures"
+FIXTURES = Path(__file__).parents[1] / "fixtures" / "green"
 WINES = [
     Wine("balaklava-muskat-beloe-polusladkoe", "Балаклава Мускат белое полусладкое", "Золотая Балка",
          category="Белое", region="Крым", grape_varieties=("Мускат Белый",)),

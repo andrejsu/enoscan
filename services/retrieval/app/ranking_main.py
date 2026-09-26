@@ -24,6 +24,8 @@ from .common.upload import decode_upload, read_image_upload
 from .label_fields import FieldCandidate, RetrievalFields, fields_from_json
 from .ranking import RankingResult, rank
 from .ranking_config import load_ranking_settings
+from .ranking_schemas import UPLOAD_ERRORS, EvaluationPrediction, HealthResponse, ScanResponse
+from .recommendations import common_name_tokens, recommend
 from .scan_debug import (
     ocr_debug,
     ocr_search_text,
@@ -43,14 +45,16 @@ RESPONSE_LIMIT = 5
 settings = load_ranking_settings()
 http_client: httpx.AsyncClient | None = None
 wines_by_slug: dict[str, Wine] = {}
+common_tokens: frozenset[str] = frozenset()
 dataset_version = "unversioned"
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    global dataset_version, http_client, wines_by_slug
+    global common_tokens, dataset_version, http_client, wines_by_slug
     dataset_version = current_dataset_version(settings.database_url)
     wines_by_slug = {wine.slug: wine for wine in load_wines(settings.database_url)}
+    common_tokens = common_name_tokens(wines_by_slug.values())
     http_client = httpx.AsyncClient()
     yield
     await http_client.aclose()
@@ -58,10 +62,29 @@ async def lifespan(_: FastAPI):
     wines_by_slug = {}
 
 
-app = FastAPI(title="Vinolog ranking (standalone)", version="0.2.0", lifespan=lifespan)
+API_DESCRIPTION = """
+Сканер винных этикеток: по фотографии находит карточку вина в каталоге.
+
+Оба маршрута делают один и тот же проход — OCR и визуальный ретривер
+параллельно, затем ранжирование с проверкой по этикетке, — поэтому top-1
+у них всегда совпадает.
+
+- `POST /v1/eval/predict` — для скрипта оценки организатора
+  (`data/eval/participant_test.sh`): плоский `{"slug": "..."}`.
+- `POST /v1/search` — для продуктового сканера: статус, карточка, top-5,
+  отрыв top-1 от top-2, рекомендации, когда вино не найдено.
+
+Фото передаётся в multipart-поле `image`.
+"""
+
+app = FastAPI(title="Vinolog ranking", version="0.3.0", lifespan=lifespan, description=API_DESCRIPTION,
+              openapi_tags=[{"name": "scan", "description": "Поиск вина по фото этикетки."},
+                            {"name": "service", "description": "Состояние сервиса."}])
+
+IMAGE_FIELD = File(..., description="Фото этикетки: JPEG, PNG или WebP, до 10 МБ.")
 
 
-@app.get("/health")
+@app.get("/health", tags=["service"], response_model=HealthResponse, summary="Готовность сервиса")
 def health() -> dict[str, str]:
     return {"status": "ok" if http_client else "loading"}
 
@@ -125,16 +148,27 @@ async def _scan(image: UploadFile, content: bytes) -> Scan:
 
 
 def evaluation_slug(result: RankingResult, policy: str) -> str:
-    """Slug for the organizer's script; an empty string is recorded as null."""
+    """Slug for the organizer's script; an empty string is recorded as null.
+
+    Under `top1` the answer is the best wine the label was checked against and
+    does not contradict — never an unchecked one from below the rejected, and
+    nothing when the label contradicts every checked wine."""
     if result.status == "matched" and result.slug:
         return result.slug
     if policy == "top1" and result.score > 0:
-        return result.ranked(1)[0][0]
+        passed = {check.slug for check in result.checks if not check.kind}
+        if not result.checks:  # no label text: nothing to check, visual order decides
+            return result.ranked(1)[0][0]
+        return next((slug for slug, _ in result.ranked(len(result.evidence)) if slug in passed), "")
     return ""
 
 
-@app.post("/v1/search")
-async def search(image: UploadFile = File(...)) -> dict[str, object]:
+@app.post("/v1/search", tags=["scan"], response_model=ScanResponse, response_model_exclude_unset=True,
+          responses=UPLOAD_ERRORS, summary="Найти вино по фото (продуктовый ответ)")
+async def search(image: UploadFile = IMAGE_FIELD) -> dict[str, object]:
+    """`matched` — вино найдено и в `wine` его карточка. `not_found` — уверенного
+    ответа нет: `candidates` показывают лучших по score, `recommendations` —
+    вина той же винодельни или линейки, если этикетка на них указывает."""
     content = await read_image_upload(image, settings.max_upload_bytes)
     decoded = decode_upload(content)
     scan = await _scan(image, content)
@@ -145,6 +179,12 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
     wine_card = (wines_by_slug[result.slug].as_card()
                  if result.status == "matched" and result.slug else None)
     alternatives = [candidate["wine"] for candidate in candidates[1:4]]
+    recommendations = [
+        {"slug": item.slug, "score": item.score, "wine": wines_by_slug[item.slug].as_card(),
+         "sharedFields": list(item.shared_fields), "reason": item.reason, "difference": item.difference}
+        for item in recommend(result, scan.ocr_fields, wines_by_slug, ocr_text=ocr_search_text(scan.ocr),
+                              common_tokens=common_tokens)
+    ]
 
     guidance = None
     if result.status == "not_found":
@@ -160,6 +200,7 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
             "ocr": scan.ocr_ms, "visual": scan.visual_ms,
         }},
         "alternatives": alternatives,
+        "recommendations": recommendations,
         "version": {
             "model": "ranking-ocr-visual-v3",
             "catalog": dataset_version,
@@ -178,9 +219,14 @@ async def search(image: UploadFile = File(...)) -> dict[str, object]:
     }
 
 
-@app.post("/v1/eval/predict")
-async def evaluation_predict(image: UploadFile = File(...)) -> dict[str, str]:
-    """Strict `{"slug": "..."}` for the organizer's participant_test.sh."""
+@app.post("/v1/eval/predict", tags=["scan"], response_model=EvaluationPrediction, responses=UPLOAD_ERRORS,
+          summary="Top-1 slug для скрипта оценки")
+async def evaluation_predict(image: UploadFile = IMAGE_FIELD) -> dict[str, str]:
+    """Плоский `{"slug": "..."}` для `participant_test.sh` организатора.
+
+    При `RANKING_EVAL_POLICY=matched` (по умолчанию) неуверенный ответ — пустая
+    строка, скрипт записывает её как `null`; при `top1` всегда отдаётся лучшее
+    вино. Скрипт ждёт ответ не дольше 10 секунд."""
     content = await read_image_upload(image, settings.max_upload_bytes)
     decode_upload(content)  # same 4xx for a broken file as the product route
     scan = await _scan(image, content)

@@ -3746,7 +3746,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "scripts_eval",
-      "community": 20,
+      "community": 23,
       "norm_label": "eval.py"
     },
     {
@@ -3756,7 +3756,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "scripts_eval_run_eval",
-      "community": 20,
+      "community": 23,
       "norm_label": "run_eval()"
     },
     {
@@ -3766,7 +3766,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "scripts_eval_main",
-      "community": 20,
+      "community": 23,
       "norm_label": "main()"
     },
     {
@@ -4826,7 +4826,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_importer_importer_main",
-      "community": 11,
+      "community": 42,
       "norm_label": "__main__.py"
     },
     {
@@ -4836,7 +4836,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "services_importer_importer_main_main",
-      "community": 11,
+      "community": 42,
       "norm_label": "main()"
     },
     {
@@ -4846,7 +4846,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_importer_importer_archive",
-      "community": 79,
+      "community": 16,
       "norm_label": "archive.py"
     },
     {
@@ -4876,7 +4876,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "services_importer_importer_archive_archivestats",
-      "community": 79,
+      "community": 16,
       "norm_label": "archivestats"
     },
     {
@@ -4886,7 +4886,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "services_importer_importer_archive_strapi_path_of",
-      "community": 79,
+      "community": 16,
       "norm_label": "strapi_path_of()"
     },
     {
@@ -4896,7 +4896,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "services_importer_importer_archive_classify",
-      "community": 79,
+      "community": 16,
       "norm_label": "classify()"
     },
     {
@@ -4906,7 +4906,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "services_importer_importer_archive_iter_originals",
-      "community": 79,
+      "community": 16,
       "norm_label": "iter_originals()"
     },
     {
@@ -4916,7 +4916,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_importer_importer_archive_py_path",
-      "community": 79,
+      "community": 16,
       "norm_label": "path"
     },
     {
@@ -4926,7 +4926,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_importer_importer_catalog_csv",
-      "community": 0,
+      "community": 77,
       "norm_label": "catalog_csv.py"
     },
     {
@@ -4956,7 +4956,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "services_importer_importer_catalog_csv_catalogparseresult",
-      "community": 0,
+      "community": 77,
       "norm_label": "catalogparseresult"
     },
     {
@@ -4966,7 +4966,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "services_importer_importer_catalog_csv_clean",
-      "community": 0,
+      "community": 77,
       "norm_label": "clean()"
     },
     {
@@ -4976,7 +4976,7 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "services_importer_importer_catalog_csv_split_grapes",
-      "community": 0,
+      "community": 77,
       "norm_label": "split_grapes()"
     },
     {
@@ -4986,7 +4986,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "services_importer_importer_catalog_csv_parse_rows",
-      "community": 0,
+      "community": 77,
       "norm_label": "parse_rows()"
     },
     {
@@ -4996,7 +4996,7 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "services_importer_importer_catalog_csv_read_catalog",
-      "community": 0,
+      "community": 77,
       "norm_label": "read_catalog()"
     },
     {
@@ -5006,7 +5006,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_importer_importer_catalog_csv_py_path",
-      "community": 0,
+      "community": 77,
       "norm_label": "path"
     },
     {
@@ -5206,7 +5206,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "valueerror",
-      "community": 16,
+      "community": 84,
       "norm_label": "valueerror"
     },
     {
@@ -5536,7 +5536,7 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "services_importer_importer_run_fingerprint_inputs",
-      "community": 77,
+      "community": 11,
       "norm_label": "fingerprint_inputs()"
     },
     {
@@ -5776,7 +5776,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_importer_importer_versioning",
-      "community": 77,
+      "community": 11,
       "norm_label": "versioning.py"
     },
     {
@@ -5786,7 +5786,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "services_importer_importer_versioning_datasetfingerprint",
-      "community": 77,
+      "community": 11,
       "norm_label": "datasetfingerprint"
     },
     {
@@ -5796,7 +5796,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "services_importer_importer_versioning_datasetfingerprint_dataset_version",
-      "community": 23,
+      "community": 19,
       "norm_label": ".dataset_version()"
     },
     {
@@ -5806,7 +5806,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "services_importer_importer_versioning_file_sha256",
-      "community": 77,
+      "community": 11,
       "norm_label": "file_sha256()"
     },
     {
@@ -5816,7 +5816,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_importer_importer_versioning_py_path",
-      "community": 77,
+      "community": 11,
       "norm_label": "path"
     },
     {
@@ -5826,7 +5826,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "services_importer_importer_versioning_archive_sha256",
-      "community": 77,
+      "community": 11,
       "norm_label": "archive_sha256()"
     },
     {
@@ -5836,7 +5836,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "services_importer_importer_versioning_optional_file_sha256",
-      "community": 77,
+      "community": 11,
       "norm_label": "optional_file_sha256()"
     },
     {
@@ -5916,7 +5916,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_importer_tests_test_catalog_csv",
-      "community": 0,
+      "community": 77,
       "norm_label": "test_catalog_csv.py"
     },
     {
@@ -5926,7 +5926,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "services_importer_tests_test_catalog_csv_row",
-      "community": 0,
+      "community": 77,
       "norm_label": "row()"
     },
     {
@@ -5936,7 +5936,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "services_importer_tests_test_catalog_csv_test_cleans_values_and_splits_grapes",
-      "community": 0,
+      "community": 77,
       "norm_label": "test_cleans_values_and_splits_grapes()"
     },
     {
@@ -5946,7 +5946,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "services_importer_tests_test_catalog_csv_test_first_duplicate_wins_and_is_reported",
-      "community": 0,
+      "community": 77,
       "norm_label": "test_first_duplicate_wins_and_is_reported()"
     },
     {
@@ -5956,7 +5956,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "services_importer_tests_test_catalog_csv_test_identical_duplicates_are_marked_as_equal",
-      "community": 0,
+      "community": 77,
       "norm_label": "test_identical_duplicates_are_marked_as_equal()"
     },
     {
@@ -5966,7 +5966,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "services_importer_tests_test_catalog_csv_test_missing_slug_is_reported_and_skipped",
-      "community": 0,
+      "community": 77,
       "norm_label": "test_missing_slug_is_reported_and_skipped()"
     },
     {
@@ -5976,7 +5976,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "services_importer_tests_test_catalog_csv_test_header_whitespace_is_ignored",
-      "community": 0,
+      "community": 77,
       "norm_label": "test_header_whitespace_is_ignored()"
     },
     {
@@ -5986,7 +5986,7 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "services_importer_tests_test_catalog_csv_test_missing_column_fails",
-      "community": 0,
+      "community": 77,
       "norm_label": "test_missing_column_fails()"
     },
     {
@@ -6526,7 +6526,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "services_importer_tests_test_versioning_and_images_test_archive_hash_depends_on_volume_order",
-      "community": 77,
+      "community": 11,
       "norm_label": "test_archive_hash_depends_on_volume_order()"
     },
     {
@@ -6536,7 +6536,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_importer_tests_test_versioning_and_images_py_path",
-      "community": 77,
+      "community": 11,
       "norm_label": "path"
     },
     {
@@ -6576,7 +6576,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "services_importer_tests_test_versioning_and_images_test_archive_member_classification",
-      "community": 79,
+      "community": 16,
       "norm_label": "test_archive_member_classification()"
     },
     {
@@ -6606,7 +6606,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_build_index",
-      "community": 20,
+      "community": 23,
       "norm_label": "build_index.py"
     },
     {
@@ -6616,7 +6616,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "services_retrieval_app_build_index_main",
-      "community": 20,
+      "community": 23,
       "norm_label": "main()"
     },
     {
@@ -6656,7 +6656,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_catalog",
-      "community": 20,
+      "community": 23,
       "norm_label": "catalog.py"
     },
     {
@@ -6666,7 +6666,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "services_retrieval_app_catalog_wine",
-      "community": 70,
+      "community": 14,
       "norm_label": "wine"
     },
     {
@@ -6676,7 +6676,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "services_retrieval_app_catalog_wine_as_card",
-      "community": 70,
+      "community": 23,
       "norm_label": ".as_card()"
     },
     {
@@ -6686,7 +6686,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "services_retrieval_app_catalog_wine_field_values",
-      "community": 70,
+      "community": 14,
       "norm_label": ".field_values()"
     },
     {
@@ -6696,7 +6696,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "services_retrieval_app_catalog_wine_to_json",
-      "community": 70,
+      "community": 14,
       "norm_label": ".to_json()"
     },
     {
@@ -6716,7 +6716,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "services_retrieval_app_catalog_reference",
-      "community": 20,
+      "community": 23,
       "norm_label": "reference"
     },
     {
@@ -6726,7 +6726,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "services_retrieval_app_catalog_optional",
-      "community": 70,
+      "community": 23,
       "norm_label": "_optional()"
     },
     {
@@ -6746,7 +6746,7 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "services_retrieval_app_catalog_load_wines",
-      "community": 52,
+      "community": 103,
       "norm_label": "load_wines()"
     },
     {
@@ -6756,7 +6756,7 @@
       "source_location": "L123",
       "_origin": "ast",
       "id": "services_retrieval_app_catalog_load_references",
-      "community": 20,
+      "community": 23,
       "norm_label": "load_references()"
     },
     {
@@ -6816,7 +6816,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "services_retrieval_app_common_upload_read_image_upload",
-      "community": 23,
+      "community": 19,
       "norm_label": "read_image_upload()"
     },
     {
@@ -6826,7 +6826,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_common_upload_py_uploadfile",
-      "community": 23,
+      "community": 19,
       "norm_label": "uploadfile"
     },
     {
@@ -6836,7 +6836,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "services_retrieval_app_common_upload_decode_upload",
-      "community": 23,
+      "community": 19,
       "norm_label": "decode_upload()"
     },
     {
@@ -6846,7 +6846,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_common_upload_py_ndarray",
-      "community": 23,
+      "community": 19,
       "norm_label": "ndarray"
     },
     {
@@ -6976,7 +6976,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_read_embedding_image",
-      "community": 18,
+      "community": 113,
       "norm_label": "read_embedding_image()"
     },
     {
@@ -6986,7 +6986,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_py_ndarray",
-      "community": 18,
+      "community": 113,
       "norm_label": "ndarray"
     },
     {
@@ -7026,7 +7026,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_dinov2encoder_encode",
-      "community": 18,
+      "community": 113,
       "norm_label": ".encode()"
     },
     {
@@ -7036,7 +7036,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_dinov2encoder_encode_one",
-      "community": 18,
+      "community": 113,
       "norm_label": ".encode_one()"
     },
     {
@@ -7056,7 +7056,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_rationale_29",
-      "community": 18,
+      "community": 113,
       "norm_label": "read catalog art with transparent pixels composited onto white."
     },
     {
@@ -7076,7 +7076,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_store_embeddingstore",
-      "community": 13,
+      "community": 18,
       "norm_label": "embeddingstore"
     },
     {
@@ -7086,7 +7086,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_store_embeddingstore_init",
-      "community": 13,
+      "community": 18,
       "norm_label": ".__init__()"
     },
     {
@@ -7096,7 +7096,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_store_embeddingstore_connect",
-      "community": 13,
+      "community": 18,
       "norm_label": "._connect()"
     },
     {
@@ -7106,7 +7106,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_store_py_connection",
-      "community": 13,
+      "community": 18,
       "norm_label": "connection"
     },
     {
@@ -7116,7 +7116,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_store_embeddingstore_close",
-      "community": 13,
+      "community": 18,
       "norm_label": ".close()"
     },
     {
@@ -7126,7 +7126,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_store_embeddingstore_missing",
-      "community": 13,
+      "community": 18,
       "norm_label": ".missing()"
     },
     {
@@ -7136,7 +7136,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_store_embeddingstore_upsert_many",
-      "community": 13,
+      "community": 18,
       "norm_label": ".upsert_many()"
     },
     {
@@ -7146,7 +7146,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_store_py_ndarray",
-      "community": 13,
+      "community": 18,
       "norm_label": "ndarray"
     },
     {
@@ -7156,7 +7156,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_store_embeddingstore_nearest",
-      "community": 13,
+      "community": 18,
       "norm_label": ".nearest()"
     },
     {
@@ -7166,7 +7166,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "services_retrieval_app_embedding_store_embeddingstore_scores",
-      "community": 13,
+      "community": 18,
       "norm_label": ".scores()"
     },
     {
@@ -7186,7 +7186,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_image_features",
-      "community": 9,
+      "community": 23,
       "norm_label": "image_features.py"
     },
     {
@@ -7196,7 +7196,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "services_retrieval_app_image_features_imagefeatures",
-      "community": 9,
+      "community": 23,
       "norm_label": "imagefeatures"
     },
     {
@@ -7206,7 +7206,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "services_retrieval_app_image_features_decode_image",
-      "community": 9,
+      "community": 23,
       "norm_label": "decode_image()"
     },
     {
@@ -7216,7 +7216,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_image_features_py_ndarray",
-      "community": 9,
+      "community": 23,
       "norm_label": "ndarray"
     },
     {
@@ -7226,7 +7226,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "services_retrieval_app_image_features_decode_reference",
-      "community": 9,
+      "community": 23,
       "norm_label": "decode_reference()"
     },
     {
@@ -7236,7 +7236,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "services_retrieval_app_image_features_extract_features",
-      "community": 9,
+      "community": 23,
       "norm_label": "extract_features()"
     },
     {
@@ -7246,7 +7246,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "services_retrieval_app_image_features_root_sift",
-      "community": 9,
+      "community": 23,
       "norm_label": "_root_sift()"
     },
     {
@@ -7256,7 +7256,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_index",
-      "community": 9,
+      "community": 23,
       "norm_label": "index.py"
     },
     {
@@ -7266,7 +7266,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "services_retrieval_app_index_indexedreference",
-      "community": 20,
+      "community": 23,
       "norm_label": "indexedreference"
     },
     {
@@ -7326,7 +7326,7 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "services_retrieval_app_index_siftindex_load",
-      "community": 20,
+      "community": 23,
       "norm_label": ".load()"
     },
     {
@@ -7356,7 +7356,7 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "services_retrieval_app_index_save_index",
-      "community": 20,
+      "community": 23,
       "norm_label": "save_index()"
     },
     {
@@ -7686,7 +7686,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_main",
-      "community": 23,
+      "community": 20,
       "norm_label": "main.py"
     },
     {
@@ -7716,7 +7716,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "services_retrieval_app_main_health",
-      "community": 23,
+      "community": 20,
       "norm_label": "health()"
     },
     {
@@ -7726,7 +7726,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "services_retrieval_app_main_run_search",
-      "community": 23,
+      "community": 20,
       "norm_label": "run_search()"
     },
     {
@@ -7736,7 +7736,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "services_retrieval_app_main_product_search",
-      "community": 23,
+      "community": 20,
       "norm_label": "product_search()"
     },
     {
@@ -7746,7 +7746,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_main_py_uploadfile",
-      "community": 23,
+      "community": 20,
       "norm_label": "uploadfile"
     },
     {
@@ -7776,7 +7776,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_engine",
-      "community": 52,
+      "community": 103,
       "norm_label": "engine.py"
     },
     {
@@ -7796,7 +7796,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_engine_ocrresult",
-      "community": 52,
+      "community": 106,
       "norm_label": "ocrresult"
     },
     {
@@ -7806,7 +7806,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_engine_ocrresult_search_text",
-      "community": 52,
+      "community": 106,
       "norm_label": ".search_text()"
     },
     {
@@ -7816,7 +7816,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_engine_load_engine",
-      "community": 52,
+      "community": 103,
       "norm_label": "load_engine()"
     },
     {
@@ -7826,7 +7826,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_engine_extract_label",
-      "community": 52,
+      "community": 103,
       "norm_label": "extract_label()"
     },
     {
@@ -7836,7 +7836,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_engine_py_ndarray",
-      "community": 52,
+      "community": 103,
       "norm_label": "ndarray"
     },
     {
@@ -7846,7 +7846,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_engine_fold_homoglyphs",
-      "community": 52,
+      "community": 103,
       "norm_label": "fold_homoglyphs()"
     },
     {
@@ -7856,7 +7856,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_engine_to_cyrillic",
-      "community": 52,
+      "community": 103,
       "norm_label": "_to_cyrillic()"
     },
     {
@@ -7966,7 +7966,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_main",
-      "community": 52,
+      "community": 103,
       "norm_label": "main.py"
     },
     {
@@ -7976,7 +7976,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_main_lifespan",
-      "community": 52,
+      "community": 103,
       "norm_label": "lifespan()"
     },
     {
@@ -7986,7 +7986,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_main_py_fastapi",
-      "community": 52,
+      "community": 103,
       "norm_label": "fastapi"
     },
     {
@@ -7996,7 +7996,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_main_health",
-      "community": 52,
+      "community": 103,
       "norm_label": "health()"
     },
     {
@@ -8006,7 +8006,7 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_main_search",
-      "community": 23,
+      "community": 19,
       "norm_label": "search()"
     },
     {
@@ -8016,7 +8016,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_main_py_uploadfile",
-      "community": 23,
+      "community": 19,
       "norm_label": "uploadfile"
     },
     {
@@ -8026,7 +8026,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_retriever",
-      "community": 52,
+      "community": 106,
       "norm_label": "retriever.py"
     },
     {
@@ -8036,7 +8036,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_retriever_ocrtrace",
-      "community": 52,
+      "community": 106,
       "norm_label": "ocrtrace"
     },
     {
@@ -8046,7 +8046,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_retriever_ocr_crop_box",
-      "community": 52,
+      "community": 106,
       "norm_label": "ocr_crop_box()"
     },
     {
@@ -8056,7 +8056,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_retriever_py_ndarray",
-      "community": 52,
+      "community": 106,
       "norm_label": "ndarray"
     },
     {
@@ -8066,7 +8066,7 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_retriever_ocr_crop",
-      "community": 52,
+      "community": 106,
       "norm_label": "ocr_crop()"
     },
     {
@@ -8076,7 +8076,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_retriever_ocrretriever",
-      "community": 52,
+      "community": 106,
       "norm_label": "ocrretriever"
     },
     {
@@ -8086,7 +8086,7 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_retriever_ocrretriever_init",
-      "community": 52,
+      "community": 106,
       "norm_label": ".__init__()"
     },
     {
@@ -8096,7 +8096,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_retriever_ocrretriever_extract",
-      "community": 52,
+      "community": 106,
       "norm_label": ".extract()"
     },
     {
@@ -8106,7 +8106,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_retriever_ocrretriever_trace",
-      "community": 52,
+      "community": 106,
       "norm_label": ".trace()"
     },
     {
@@ -8116,7 +8116,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_retriever_ocrretriever_fields",
-      "community": 52,
+      "community": 106,
       "norm_label": "._fields()"
     },
     {
@@ -8176,7 +8176,7 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_tokens_token_similarity",
-      "community": 81,
+      "community": 14,
       "norm_label": "token_similarity()"
     },
     {
@@ -8296,7 +8296,7 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_vocabulary_fieldvocabulary",
-      "community": 52,
+      "community": 79,
       "norm_label": "fieldvocabulary"
     },
     {
@@ -8326,7 +8326,7 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "services_retrieval_app_ocr_vocabulary_fieldvocabulary_explained",
-      "community": 52,
+      "community": 79,
       "norm_label": ".explained()"
     },
     {
@@ -8353,37 +8353,37 @@
       "label": "RankingResult",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L119",
+      "source_location": "L114",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_rankingresult",
-      "community": 105,
+      "community": 14,
       "norm_label": "rankingresult"
     },
     {
       "label": ".ranked()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L128",
+      "source_location": "L123",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_rankingresult_ranked",
-      "community": 105,
+      "community": 14,
       "norm_label": ".ranked()"
     },
     {
       "label": "_ranked()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L132",
+      "source_location": "L127",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_ranked",
-      "community": 105,
+      "community": 14,
       "norm_label": "_ranked()"
     },
     {
       "label": "FieldContribution",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L141",
+      "source_location": "L136",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_fieldcontribution",
       "community": 70,
@@ -8393,7 +8393,7 @@
       "label": "_actual_values()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L147",
+      "source_location": "L142",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_actual_values",
       "community": 70,
@@ -8403,7 +8403,7 @@
       "label": "field_distribution()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L156",
+      "source_location": "L151",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_field_distribution",
       "community": 70,
@@ -8413,7 +8413,7 @@
       "label": "_distributions()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L167",
+      "source_location": "L162",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_distributions",
       "community": 70,
@@ -8423,7 +8423,7 @@
       "label": "_contributions()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L177",
+      "source_location": "L172",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_contributions",
       "community": 70,
@@ -8433,7 +8433,7 @@
       "label": "field_breakdown()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L190",
+      "source_location": "L185",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_field_breakdown",
       "community": 70,
@@ -8443,7 +8443,7 @@
       "label": "_score()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L197",
+      "source_location": "L192",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_score",
       "community": 70,
@@ -8453,7 +8453,7 @@
       "label": "_long_tokens()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L201",
+      "source_location": "L196",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_long_tokens",
       "community": 70,
@@ -8463,7 +8463,7 @@
       "label": "_name_tokens()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L208",
+      "source_location": "L203",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_name_tokens",
       "community": 70,
@@ -8473,7 +8473,7 @@
       "label": "_seen_tokens()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L214",
+      "source_location": "L209",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_seen_tokens",
       "community": 70,
@@ -8483,7 +8483,7 @@
       "label": "only_value()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L228",
+      "source_location": "L223",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_only_value",
       "community": 70,
@@ -8493,7 +8493,7 @@
       "label": "LabelCheck",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L234",
+      "source_location": "L229",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_labelcheck",
       "community": 70,
@@ -8503,37 +8503,17 @@
       "label": "_catalog_words()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L243",
+      "source_location": "L238",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_catalog_words",
       "community": 70,
       "norm_label": "_catalog_words()"
     },
     {
-      "label": "_generic_winery_tokens()",
-      "file_type": "code",
-      "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L253",
-      "_origin": "ast",
-      "id": "services_retrieval_app_ranking_generic_winery_tokens",
-      "community": 70,
-      "norm_label": "_generic_winery_tokens()"
-    },
-    {
-      "label": "_shows()",
-      "file_type": "code",
-      "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L269",
-      "_origin": "ast",
-      "id": "services_retrieval_app_ranking_shows",
-      "community": 70,
-      "norm_label": "_shows()"
-    },
-    {
       "label": "verify_shortlist()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L273",
+      "source_location": "L247",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_verify_shortlist",
       "community": 70,
@@ -8543,7 +8523,7 @@
       "label": "rank()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L330",
+      "source_location": "L292",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_rank",
       "community": 26,
@@ -8553,7 +8533,7 @@
       "label": "_visual_share()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L366",
+      "source_location": "L327",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_visual_share",
       "community": 70,
@@ -8563,7 +8543,7 @@
       "label": "_is_identified()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L373",
+      "source_location": "L334",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_is_identified",
       "community": 70,
@@ -8573,7 +8553,7 @@
       "label": "_decide()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L386",
+      "source_location": "L347",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_decide",
       "community": 70,
@@ -8593,9 +8573,9 @@
       "label": "Softmax over one field's candidates, relative to its own top-1.",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L157",
+      "source_location": "L152",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_157",
+      "id": "services_retrieval_app_ranking_rationale_152",
       "community": 70,
       "norm_label": "softmax over one field's candidates, relative to its own top-1."
     },
@@ -8603,9 +8583,9 @@
       "label": "Per-field terms of the wine's score, for fields that produced any     candidates",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L192",
+      "source_location": "L187",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_192",
+      "id": "services_retrieval_app_ranking_rationale_187",
       "community": 70,
       "norm_label": "per-field terms of the wine's score, for fields that produced any     candidates"
     },
@@ -8613,9 +8593,9 @@
       "label": "Words that tell this wine from its siblings: its name without its     winery (\u00ab\u041a",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L209",
+      "source_location": "L204",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_209",
+      "id": "services_retrieval_app_ranking_rationale_204",
       "community": 70,
       "norm_label": "words that tell this wine from its siblings: its name without its     winery (\u00ab\u043a"
     },
@@ -8623,9 +8603,9 @@
       "label": "Which name tokens of each shortlisted wine the label shows. A read word     supp",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L215",
+      "source_location": "L210",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_215",
+      "id": "services_retrieval_app_ranking_rationale_210",
       "community": 70,
       "norm_label": "which name tokens of each shortlisted wine the label shows. a read word     supp"
     },
@@ -8633,9 +8613,9 @@
       "label": "The field's value when OCR read exactly one, else None.",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L229",
+      "source_location": "L224",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_229",
+      "id": "services_retrieval_app_ranking_rationale_224",
       "community": 70,
       "norm_label": "the field's value when ocr read exactly one, else none."
     },
@@ -8643,9 +8623,9 @@
       "label": "One shortlisted wine checked against the label (verify_shortlist).",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L235",
+      "source_location": "L230",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_235",
+      "id": "services_retrieval_app_ranking_rationale_230",
       "community": 70,
       "norm_label": "one shortlisted wine checked against the label (verify_shortlist)."
     },
@@ -8653,29 +8633,19 @@
       "label": "The words of the wine's name that carry these tokens, in catalog spelling.",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L244",
+      "source_location": "L239",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_244",
+      "id": "services_retrieval_app_ranking_rationale_239",
       "community": 70,
       "norm_label": "the words of the wine's name that carry these tokens, in catalog spelling."
-    },
-    {
-      "label": "Winery words shared by more than WINERY_WORD_MAX_WINERIES wineries, and     regi",
-      "file_type": "rationale",
-      "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L254",
-      "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_254",
-      "community": 70,
-      "norm_label": "winery words shared by more than winery_word_max_wineries wineries, and     regi"
     },
     {
       "label": "Check each shortlisted wine against what OCR read.      A name contradicts a win",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L275",
+      "source_location": "L248",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_275",
+      "id": "services_retrieval_app_ranking_rationale_248",
       "community": 70,
       "norm_label": "check each shortlisted wine against what ocr read.      a name contradicts a win"
     },
@@ -8683,9 +8653,9 @@
       "label": "The wine's share of the visual field among wines the label does not     contradi",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L367",
+      "source_location": "L328",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_367",
+      "id": "services_retrieval_app_ranking_rationale_328",
       "community": 70,
       "norm_label": "the wine's share of the visual field among wines the label does not     contradi"
     },
@@ -8693,9 +8663,9 @@
       "label": "A clear visual match (``visual`` \u2014 _visual_share) identifies a wine; a     faint",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L374",
+      "source_location": "L335",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_374",
+      "id": "services_retrieval_app_ranking_rationale_335",
       "community": 70,
       "norm_label": "a clear visual match (``visual`` \u2014 _visual_share) identifies a wine; a     faint"
     },
@@ -8703,9 +8673,9 @@
       "label": "The best checked wine the label does not contradict, its margin, and the runner-",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L388",
+      "source_location": "L349",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_rationale_388",
+      "id": "services_retrieval_app_ranking_rationale_349",
       "community": 70,
       "norm_label": "the best checked wine the label does not contradict, its margin, and the runner-"
     },
@@ -8843,7 +8813,7 @@
       "label": "search()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L168",
+      "source_location": "L161",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_main_search",
       "community": 19,
@@ -8853,7 +8823,7 @@
       "label": "evaluation_predict()",
       "file_type": "code",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L224",
+      "source_location": "L217",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_main_evaluation_predict",
       "community": 24,
@@ -8890,22 +8860,22 @@
       "norm_label": "the one ocr + visual + ranking pass behind both the product and the     evaluati"
     },
     {
-      "label": "Slug for the organizer's script; an empty string is recorded as null.      Under",
+      "label": "Slug for the organizer's script; an empty string is recorded as null.",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking_main.py",
       "source_location": "L151",
       "_origin": "ast",
       "id": "services_retrieval_app_ranking_main_rationale_151",
       "community": 24,
-      "norm_label": "slug for the organizer's script; an empty string is recorded as null.      under"
+      "norm_label": "slug for the organizer's script; an empty string is recorded as null."
     },
     {
       "label": "`matched` \u2014 \u0432\u0438\u043d\u043e \u043d\u0430\u0439\u0434\u0435\u043d\u043e \u0438 \u0432 `wine` \u0435\u0433\u043e \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0430. `not_found` \u2014 \u0443\u0432\u0435\u0440\u0435\u043d\u043d\u043e\u0433\u043e     \u043e",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L169",
+      "source_location": "L162",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_main_rationale_169",
+      "id": "services_retrieval_app_ranking_main_rationale_162",
       "community": 19,
       "norm_label": "`matched` \u2014 \u0432\u0438\u043d\u043e \u043d\u0430\u0438\u0434\u0435\u043d\u043e \u0438 \u0432 `wine` \u0435\u0433\u043e \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0430. `not_found` \u2014 \u0443\u0432\u0435\u0440\u0435\u043d\u043d\u043e\u0433\u043e     \u043e"
     },
@@ -8913,9 +8883,9 @@
       "label": "\u041f\u043b\u043e\u0441\u043a\u0438\u0439 `{\"slug\": \"...\"}` \u0434\u043b\u044f `participant_test.sh` \u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0442\u043e\u0440\u0430.      \u041f\u0440\u0438 `RANK",
       "file_type": "rationale",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L225",
+      "source_location": "L218",
       "_origin": "ast",
-      "id": "services_retrieval_app_ranking_main_rationale_225",
+      "id": "services_retrieval_app_ranking_main_rationale_218",
       "community": 24,
       "norm_label": "\u043f\u043b\u043e\u0441\u043a\u0438\u0438 `{\"slug\": \"...\"}` \u0434\u043b\u044f `participant_test.sh` \u043e\u0440\u0433\u0430\u043d\u0438\u0437\u0430\u0442\u043e\u0440\u0430.      \u043f\u0440\u0438 `rank"
     },
@@ -9056,7 +9026,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations",
-      "community": 81,
+      "community": 14,
       "norm_label": "recommendations.py"
     },
     {
@@ -9066,7 +9036,7 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_recommendation",
-      "community": 105,
+      "community": 14,
       "norm_label": "recommendation"
     },
     {
@@ -9076,7 +9046,7 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_long_tokens",
-      "community": 81,
+      "community": 14,
       "norm_label": "_long_tokens()"
     },
     {
@@ -9086,7 +9056,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_own_name_tokens",
-      "community": 81,
+      "community": 14,
       "norm_label": "_own_name_tokens()"
     },
     {
@@ -9096,7 +9066,7 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_common_name_tokens",
-      "community": 24,
+      "community": 14,
       "norm_label": "common_name_tokens()"
     },
     {
@@ -9106,7 +9076,7 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_shown_words",
-      "community": 81,
+      "community": 14,
       "norm_label": "_shown_words()"
     },
     {
@@ -9116,7 +9086,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_top",
-      "community": 81,
+      "community": 14,
       "norm_label": "_top()"
     },
     {
@@ -9126,7 +9096,7 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_shared",
-      "community": 81,
+      "community": 14,
       "norm_label": "_shared()"
     },
     {
@@ -9136,7 +9106,7 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_digits",
-      "community": 81,
+      "community": 14,
       "norm_label": "_digits()"
     },
     {
@@ -9146,7 +9116,7 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_is_related",
-      "community": 81,
+      "community": 105,
       "norm_label": "_is_related()"
     },
     {
@@ -9156,7 +9126,7 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_reason",
-      "community": 81,
+      "community": 105,
       "norm_label": "_reason()"
     },
     {
@@ -9176,7 +9146,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_rationale_1",
-      "community": 81,
+      "community": 14,
       "norm_label": "catalog wines to suggest when a scan does not match (app/ranking.py).  a photo o"
     },
     {
@@ -9186,7 +9156,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_rationale_67",
-      "community": 81,
+      "community": 14,
       "norm_label": "words that name this wine and not its winery, style or grape:     \u00abpurity\u00bb of \u00abp"
     },
     {
@@ -9196,7 +9166,7 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_rationale_77",
-      "community": 24,
+      "community": 14,
       "norm_label": "words more than name_word_max_wineries wineries use in a wine or winery     name"
     },
     {
@@ -9206,7 +9176,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_rationale_87",
-      "community": 81,
+      "community": 14,
       "norm_label": "distinctive words of the wine's name, as the catalog spells them, that the label"
     },
     {
@@ -9216,7 +9186,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "services_retrieval_app_recommendations_rationale_105",
-      "community": 81,
+      "community": 14,
       "norm_label": "field -> the value the label and this wine have in common."
     },
     {
@@ -9316,7 +9286,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_retriever_config",
-      "community": 18,
+      "community": 34,
       "norm_label": "retriever_config.py"
     },
     {
@@ -9326,7 +9296,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "services_retrieval_app_retriever_config_retrieversettings",
-      "community": 18,
+      "community": 34,
       "norm_label": "retrieversettings"
     },
     {
@@ -9336,7 +9306,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "services_retrieval_app_retriever_config_load_retriever_settings",
-      "community": 18,
+      "community": 34,
       "norm_label": "load_retriever_settings()"
     },
     {
@@ -9346,7 +9316,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_retriever_config_rationale_1",
-      "community": 18,
+      "community": 34,
       "norm_label": "settings for the standalone retriever service (app/retriever_main.py).  delibera"
     },
     {
@@ -9386,7 +9356,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "services_retrieval_app_retriever_index_searchresult",
-      "community": 14,
+      "community": 17,
       "norm_label": "searchresult"
     },
     {
@@ -9456,7 +9426,7 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "services_retrieval_app_retriever_index_save_index",
-      "community": 20,
+      "community": 18,
       "norm_label": "save_index()"
     },
     {
@@ -9516,7 +9486,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "services_retrieval_app_retriever_main_wine_card_with_image",
-      "community": 23,
+      "community": 19,
       "norm_label": "_wine_card_with_image()"
     },
     {
@@ -9526,7 +9496,7 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "services_retrieval_app_retriever_main_search",
-      "community": 23,
+      "community": 19,
       "norm_label": "search()"
     },
     {
@@ -9536,7 +9506,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_app_retriever_main_py_uploadfile",
-      "community": 23,
+      "community": 19,
       "norm_label": "uploadfile"
     },
     {
@@ -9636,7 +9606,7 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "services_retrieval_app_scan_debug_ranking_debug",
-      "community": 19,
+      "community": 14,
       "norm_label": "ranking_debug()"
     },
     {
@@ -9646,7 +9616,7 @@
       "source_location": "L145",
       "_origin": "ast",
       "id": "services_retrieval_app_scan_debug_verification_debug",
-      "community": 19,
+      "community": 14,
       "norm_label": "verification_debug()"
     },
     {
@@ -9886,7 +9856,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_sweetness",
-      "community": 52,
+      "community": 107,
       "norm_label": "sweetness.py"
     },
     {
@@ -9896,7 +9866,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "services_retrieval_app_sweetness_sugar_levels",
-      "community": 52,
+      "community": 107,
       "norm_label": "sugar_levels()"
     },
     {
@@ -9906,7 +9876,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "services_retrieval_app_sweetness_sugar_level",
-      "community": 52,
+      "community": 107,
       "norm_label": "sugar_level()"
     },
     {
@@ -9916,7 +9886,7 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "services_retrieval_app_sweetness_catalog_sugar_level",
-      "community": 52,
+      "community": 107,
       "norm_label": "catalog_sugar_level()"
     },
     {
@@ -9926,7 +9896,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "services_retrieval_app_sweetness_contradicts",
-      "community": 52,
+      "community": 70,
       "norm_label": "contradicts()"
     },
     {
@@ -9936,7 +9906,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_app_sweetness_rationale_1",
-      "community": 52,
+      "community": 107,
       "norm_label": "sugar level of a wine (\u00ab\u0441\u0443\u0445\u043e\u0435\u00bb, \u00ab\u043f\u043e\u043b\u0443\u0441\u043b\u0430\u0434\u043a\u043e\u0435\u00bb, \u00ab\u0431\u0440\u044e\u0442\u00bb...), from catalog text or a"
     },
     {
@@ -9946,7 +9916,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "services_retrieval_app_sweetness_rationale_36",
-      "community": 52,
+      "community": 107,
       "norm_label": "every sugar level the text names."
     },
     {
@@ -9956,7 +9926,7 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "services_retrieval_app_sweetness_rationale_47",
-      "community": 52,
+      "community": 107,
       "norm_label": "the one sugar level the text names; none when it names none or two     that disa"
     },
     {
@@ -9966,7 +9936,7 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "services_retrieval_app_sweetness_rationale_56",
-      "community": 52,
+      "community": 107,
       "norm_label": "the first source that names exactly one sugar level: name, then slug, then photo"
     },
     {
@@ -9976,7 +9946,7 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "services_retrieval_app_sweetness_rationale_64",
-      "community": 52,
+      "community": 70,
       "norm_label": "different levels, except within the brut family: ocr may read \u00abbrut\u00bb of \u00abextra b"
     },
     {
@@ -10026,7 +9996,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_engine",
-      "community": 52,
+      "community": 103,
       "norm_label": "test_ocr_engine.py"
     },
     {
@@ -10036,7 +10006,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_engine_test_homoglyphs_fold_to_cyrillic",
-      "community": 52,
+      "community": 103,
       "norm_label": "test_homoglyphs_fold_to_cyrillic()"
     },
     {
@@ -10046,7 +10016,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_engine_engineresult",
-      "community": 52,
+      "community": 103,
       "norm_label": "engineresult"
     },
     {
@@ -10056,7 +10026,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_engine_test_engine_lines_become_words_with_bbox_and_percent_confidence",
-      "community": 52,
+      "community": 103,
       "norm_label": "test_engine_lines_become_words_with_bbox_and_percent_confidence()"
     },
     {
@@ -10066,7 +10036,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_engine_test_no_text_found_is_an_empty_result",
-      "community": 52,
+      "community": 103,
       "norm_label": "test_no_text_found_is_an_empty_result()"
     },
     {
@@ -10216,7 +10186,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_ocr_retriever.py"
     },
     {
@@ -10226,7 +10196,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_wine",
-      "community": 52,
+      "community": 79,
       "norm_label": "wine()"
     },
     {
@@ -10236,7 +10206,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_word",
-      "community": 52,
+      "community": 79,
       "norm_label": "word()"
     },
     {
@@ -10246,7 +10216,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_field_vocabulary_only_returns_real_catalog_values",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_field_vocabulary_only_returns_real_catalog_values()"
     },
     {
@@ -10256,7 +10226,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_category_vocabulary_accepts_an_exact_single_word_category",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_category_vocabulary_accepts_an_exact_single_word_category()"
     },
     {
@@ -10266,7 +10236,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_foreign_label_word_finds_the_catalog_category",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_foreign_label_word_finds_the_catalog_category()"
     },
     {
@@ -10276,7 +10246,7 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_one_coincidental_token_does_not_score_full_confidence_on_a_long_name",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_one_coincidental_token_does_not_score_full_confidence_on_a_long_name()"
     },
     {
@@ -10286,7 +10256,7 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_ocr_retriever_fills_text_fields_but_never_a_slug",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_ocr_retriever_fills_text_fields_but_never_a_slug()"
     },
     {
@@ -10296,7 +10266,7 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_label_brand_stem_finds_the_adjectival_catalog_winery",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_label_brand_stem_finds_the_adjectival_catalog_winery()"
     },
     {
@@ -10306,7 +10276,7 @@
       "source_location": "L85",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_short_stems_do_not_prefix_match",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_short_stems_do_not_prefix_match()"
     },
     {
@@ -10316,7 +10286,7 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_french_label_spelling_finds_the_russian_catalog_winery",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_french_label_spelling_finds_the_russian_catalog_winery()"
     },
     {
@@ -10326,7 +10296,7 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_winery_words_inside_a_name_are_not_name_evidence",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_winery_words_inside_a_name_are_not_name_evidence()"
     },
     {
@@ -10336,7 +10306,7 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_words_spent_on_a_confident_winery_are_not_reused_for_name_or_grape",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_words_spent_on_a_confident_winery_are_not_reused_for_name_or_grape()"
     },
     {
@@ -10356,7 +10326,7 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_catalog_teaches_pairs_the_sound_rules_miss",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_catalog_teaches_pairs_the_sound_rules_miss()"
     },
     {
@@ -10366,7 +10336,7 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_one_coincidence_is_not_an_alias",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_one_coincidence_is_not_an_alias()"
     },
     {
@@ -10376,7 +10346,7 @@
       "source_location": "L140",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_ocr_reads_the_middle_of_a_photo_and_falls_back_to_the_full_frame",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_ocr_reads_the_middle_of_a_photo_and_falls_back_to_the_full_frame()"
     },
     {
@@ -10386,7 +10356,7 @@
       "source_location": "L163",
       "_origin": "ast",
       "id": "services_retrieval_tests_ocr_test_ocr_retriever_test_a_grape_word_alone_never_names_a_winery",
-      "community": 52,
+      "community": 79,
       "norm_label": "test_a_grape_word_alone_never_names_a_winery()"
     },
     {
@@ -10496,7 +10466,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_embedding_store_populated",
-      "community": 20,
+      "community": 13,
       "norm_label": "populated()"
     },
     {
@@ -10960,36 +10930,6 @@
       "norm_label": "test_a_faint_visual_share_plus_shared_fields_does_not_identify_a_wine()"
     },
     {
-      "label": "test_a_winery_on_the_label_rejects_a_wine_of_another_winery()",
-      "file_type": "code",
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L283",
-      "_origin": "ast",
-      "id": "services_retrieval_tests_test_ranking_test_a_winery_on_the_label_rejects_a_wine_of_another_winery",
-      "community": 26,
-      "norm_label": "test_a_winery_on_the_label_rejects_a_wine_of_another_winery()"
-    },
-    {
-      "label": "test_the_wine_own_name_or_winery_on_the_label_keeps_it_despite_another_winery_read()",
-      "file_type": "code",
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L293",
-      "_origin": "ast",
-      "id": "services_retrieval_tests_test_ranking_test_the_wine_own_name_or_winery_on_the_label_keeps_it_despite_another_winery_read",
-      "community": 26,
-      "norm_label": "test_the_wine_own_name_or_winery_on_the_label_keeps_it_despite_another_winery_read()"
-    },
-    {
-      "label": "test_a_winery_word_many_wineries_share_contradicts_nobody()",
-      "file_type": "code",
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L302",
-      "_origin": "ast",
-      "id": "services_retrieval_tests_test_ranking_test_a_winery_word_many_wineries_share_contradicts_nobody",
-      "community": 26,
-      "norm_label": "test_a_winery_word_many_wineries_share_contradicts_nobody()"
-    },
-    {
       "label": "test_ranking_main.py",
       "file_type": "code",
       "source_file": "services/retrieval/tests/test_ranking_main.py",
@@ -11088,16 +11028,6 @@
       "id": "services_retrieval_tests_test_ranking_main_test_openapi_documents_the_upload_field_and_both_scan_responses",
       "community": 17,
       "norm_label": "test_openapi_documents_the_upload_field_and_both_scan_responses()"
-    },
-    {
-      "label": "test_top1_policy_answers_only_a_wine_the_label_does_not_contradict()",
-      "file_type": "code",
-      "source_file": "services/retrieval/tests/test_ranking_main.py",
-      "source_location": "L83",
-      "_origin": "ast",
-      "id": "services_retrieval_tests_test_ranking_main_test_top1_policy_answers_only_a_wine_the_label_does_not_contradict",
-      "community": 105,
-      "norm_label": "test_top1_policy_answers_only_a_wine_the_label_does_not_contradict()"
     },
     {
       "label": "test_recommendations.py",
@@ -11256,7 +11186,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever",
-      "community": 14,
+      "community": 17,
       "norm_label": "test_retriever.py"
     },
     {
@@ -11266,7 +11196,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_numpyembeddingstore",
-      "community": 14,
+      "community": 17,
       "norm_label": "numpyembeddingstore"
     },
     {
@@ -11276,7 +11206,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_numpyembeddingstore_init",
-      "community": 14,
+      "community": 17,
       "norm_label": ".__init__()"
     },
     {
@@ -11286,7 +11216,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_py_ndarray",
-      "community": 14,
+      "community": 17,
       "norm_label": "ndarray"
     },
     {
@@ -11296,7 +11226,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_numpyembeddingstore_nearest",
-      "community": 14,
+      "community": 17,
       "norm_label": ".nearest()"
     },
     {
@@ -11306,7 +11236,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_numpyembeddingstore_scores",
-      "community": 14,
+      "community": 17,
       "norm_label": ".scores()"
     },
     {
@@ -11316,7 +11246,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_siftstub",
-      "community": 14,
+      "community": 17,
       "norm_label": "siftstub"
     },
     {
@@ -11326,7 +11256,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_siftstub_init",
-      "community": 14,
+      "community": 17,
       "norm_label": ".__init__()"
     },
     {
@@ -11336,7 +11266,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "indexedreference",
-      "community": 14,
+      "community": 17,
       "norm_label": "indexedreference"
     },
     {
@@ -11346,7 +11276,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_siftstub_search",
-      "community": 14,
+      "community": 17,
       "norm_label": ".search()"
     },
     {
@@ -11356,7 +11286,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_encoderstub",
-      "community": 14,
+      "community": 17,
       "norm_label": "encoderstub"
     },
     {
@@ -11366,7 +11296,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_encoderstub_init",
-      "community": 14,
+      "community": 17,
       "norm_label": ".__init__()"
     },
     {
@@ -11376,7 +11306,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_encoderstub_encode_one",
-      "community": 14,
+      "community": 17,
       "norm_label": ".encode_one()"
     },
     {
@@ -11386,7 +11316,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_retriever_test_combined_scores_match_full_embedding_scan",
-      "community": 14,
+      "community": 17,
       "norm_label": "test_combined_scores_match_full_embedding_scan()"
     },
     {
@@ -11506,7 +11436,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_search_test_decode_applies_camera_exif_orientation",
-      "community": 9,
+      "community": 23,
       "norm_label": "test_decode_applies_camera_exif_orientation()"
     },
     {
@@ -11576,7 +11506,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_sweetness",
-      "community": 52,
+      "community": 107,
       "norm_label": "test_sweetness.py"
     },
     {
@@ -11586,7 +11516,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_sweetness_test_one_parser_reads_labels_slugs_and_photo_file_names",
-      "community": 52,
+      "community": 107,
       "norm_label": "test_one_parser_reads_labels_slugs_and_photo_file_names()"
     },
     {
@@ -11596,7 +11526,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_sweetness_test_catalog_level_takes_the_first_source_that_names_one",
-      "community": 52,
+      "community": 107,
       "norm_label": "test_catalog_level_takes_the_first_source_that_names_one()"
     },
     {
@@ -11606,7 +11536,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "services_retrieval_tests_test_sweetness_test_brut_levels_do_not_contradict_each_other",
-      "community": 52,
+      "community": 107,
       "norm_label": "test_brut_levels_do_not_contradict_each_other()"
     },
     {
@@ -26140,7 +26070,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L206",
+      "source_location": "L199",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_importer_importer_versioning_datasetfingerprint_dataset_version"
@@ -26271,6 +26201,28 @@
       "weight": 1.0,
       "source": "services_importer_tests_conftest",
       "target": "services_importer_tests_conftest_with_database",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/retrieval/tests/test_embedding_store.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "services_retrieval_tests_test_embedding_store",
+      "target": "services_importer_tests_conftest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "services/retrieval/tests/test_index_store.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "services_retrieval_tests_test_index_store",
+      "target": "services_importer_tests_conftest",
       "confidence_score": 1.0
     },
     {
@@ -28511,7 +28463,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L38",
+      "source_location": "L37",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_catalog",
@@ -28844,7 +28796,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L38",
+      "source_location": "L37",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_catalog_wine",
@@ -28855,7 +28807,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L147",
+      "source_location": "L142",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_actual_values",
       "target": "services_retrieval_app_catalog_wine",
@@ -28866,7 +28818,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L243",
+      "source_location": "L238",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_catalog_words",
       "target": "services_retrieval_app_catalog_wine",
@@ -28877,7 +28829,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L177",
+      "source_location": "L172",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_contributions",
       "target": "services_retrieval_app_catalog_wine",
@@ -28888,7 +28840,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L190",
+      "source_location": "L185",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_field_breakdown",
       "target": "services_retrieval_app_catalog_wine",
@@ -28898,28 +28850,17 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L38",
+      "source_location": "L37",
       "weight": 0.8,
       "source": "services_retrieval_app_ranking_fieldcontribution",
       "target": "services_retrieval_app_catalog_wine",
       "confidence_score": 0.5
     },
     {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L265",
-      "weight": 1.0,
-      "source": "services_retrieval_app_ranking_generic_winery_tokens",
-      "target": "services_retrieval_app_catalog_wine",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L38",
+      "source_location": "L37",
       "weight": 0.8,
       "source": "services_retrieval_app_ranking_labelcheck",
       "target": "services_retrieval_app_catalog_wine",
@@ -28951,7 +28892,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L208",
+      "source_location": "L203",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_name_tokens",
       "target": "services_retrieval_app_catalog_wine",
@@ -28962,7 +28903,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L330",
+      "source_location": "L292",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_catalog_wine",
@@ -28972,7 +28913,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L38",
+      "source_location": "L37",
       "weight": 0.8,
       "source": "services_retrieval_app_ranking_rankingresult",
       "target": "services_retrieval_app_catalog_wine",
@@ -28983,7 +28924,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L273",
+      "source_location": "L247",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_verify_shortlist",
       "target": "services_retrieval_app_catalog_wine",
@@ -29894,7 +29835,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L230",
+      "source_location": "L223",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_evaluation_predict",
       "target": "services_retrieval_app_common_upload_read_image_upload"
@@ -29905,7 +29846,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L172",
+      "source_location": "L165",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_retrieval_app_common_upload_read_image_upload"
@@ -30015,7 +29956,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L231",
+      "source_location": "L224",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_evaluation_predict",
       "target": "services_retrieval_app_common_upload_decode_upload"
@@ -30026,7 +29967,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L173",
+      "source_location": "L166",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_retrieval_app_common_upload_decode_upload"
@@ -32152,7 +32093,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_label_fields",
@@ -32361,7 +32302,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_label_fields_fieldcandidate",
@@ -32372,7 +32313,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L156",
+      "source_location": "L151",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_field_distribution",
       "target": "services_retrieval_app_label_fields_fieldcandidate",
@@ -32382,7 +32323,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 0.8,
       "source": "services_retrieval_app_ranking_fieldcontribution",
       "target": "services_retrieval_app_label_fields_fieldcandidate",
@@ -32392,7 +32333,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 0.8,
       "source": "services_retrieval_app_ranking_labelcheck",
       "target": "services_retrieval_app_label_fields_fieldcandidate",
@@ -32425,7 +32366,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L228",
+      "source_location": "L223",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_only_value",
       "target": "services_retrieval_app_label_fields_fieldcandidate",
@@ -32435,7 +32376,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 0.8,
       "source": "services_retrieval_app_ranking_rankingresult",
       "target": "services_retrieval_app_label_fields_fieldcandidate",
@@ -32461,17 +32402,6 @@
       "source_location": "L270",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_test_a_faint_visual_share_plus_shared_fields_does_not_identify_a_wine",
-      "target": "services_retrieval_app_label_fields_fieldcandidate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L304",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_a_winery_word_many_wineries_share_contradicts_nobody",
       "target": "services_retrieval_app_label_fields_fieldcandidate"
     },
     {
@@ -32645,17 +32575,6 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L296",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_the_wine_own_name_or_winery_on_the_label_keeps_it_despite_another_winery_read",
-      "target": "services_retrieval_app_label_fields_fieldcandidate"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "services/retrieval/tests/test_ranking.py",
       "source_location": "L147",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_test_tied_top_candidates_do_not_match",
@@ -32765,7 +32684,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_label_fields_retrievalfields",
@@ -32776,7 +32695,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L167",
+      "source_location": "L162",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_distributions",
       "target": "services_retrieval_app_label_fields_retrievalfields",
@@ -32787,7 +32706,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L190",
+      "source_location": "L185",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_field_breakdown",
       "target": "services_retrieval_app_label_fields_retrievalfields",
@@ -32797,7 +32716,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 0.8,
       "source": "services_retrieval_app_ranking_fieldcontribution",
       "target": "services_retrieval_app_label_fields_retrievalfields",
@@ -32807,7 +32726,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 0.8,
       "source": "services_retrieval_app_ranking_labelcheck",
       "target": "services_retrieval_app_label_fields_retrievalfields",
@@ -32840,7 +32759,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L330",
+      "source_location": "L292",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_label_fields_retrievalfields",
@@ -32850,7 +32769,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L39",
+      "source_location": "L38",
       "weight": 0.8,
       "source": "services_retrieval_app_ranking_rankingresult",
       "target": "services_retrieval_app_label_fields_retrievalfields",
@@ -32861,7 +32780,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L273",
+      "source_location": "L247",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_verify_shortlist",
       "target": "services_retrieval_app_label_fields_retrievalfields",
@@ -32872,7 +32791,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L366",
+      "source_location": "L327",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_visual_share",
       "target": "services_retrieval_app_label_fields_retrievalfields",
@@ -33029,17 +32948,6 @@
       "source_location": "L270",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_test_a_faint_visual_share_plus_shared_fields_does_not_identify_a_wine",
-      "target": "services_retrieval_app_label_fields_retrievalfields"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L304",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_a_winery_word_many_wineries_share_contradicts_nobody",
       "target": "services_retrieval_app_label_fields_retrievalfields"
     },
     {
@@ -33227,17 +33135,6 @@
       "source_location": "L228",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_test_the_name_ocr_read_is_checked_even_outside_the_visual_top",
-      "target": "services_retrieval_app_label_fields_retrievalfields"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L296",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_the_wine_own_name_or_winery_on_the_label_keeps_it_despite_another_winery_read",
       "target": "services_retrieval_app_label_fields_retrievalfields"
     },
     {
@@ -33932,7 +33829,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L40",
+      "source_location": "L39",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ocr_constants",
@@ -34475,7 +34372,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L41",
+      "source_location": "L40",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ocr_fields",
@@ -34497,7 +34394,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L41",
+      "source_location": "L40",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ocr_fields_extract_year",
@@ -34508,7 +34405,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L151",
+      "source_location": "L146",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_actual_values",
       "target": "services_retrieval_app_ocr_fields_extract_year",
@@ -34519,7 +34416,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L311",
+      "source_location": "L277",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_verify_shortlist",
       "target": "services_retrieval_app_ocr_fields_extract_year",
@@ -35293,7 +35190,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L42",
+      "source_location": "L41",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ocr_tokens",
@@ -35436,7 +35333,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L42",
+      "source_location": "L41",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ocr_tokens_tokenize",
@@ -35447,7 +35344,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L202",
+      "source_location": "L197",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_long_tokens",
       "target": "services_retrieval_app_ocr_tokens_tokenize",
@@ -35535,7 +35432,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L42",
+      "source_location": "L41",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ocr_tokens_token_similarity",
@@ -35546,20 +35443,9 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L221",
+      "source_location": "L216",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_seen_tokens",
-      "target": "services_retrieval_app_ocr_tokens_token_similarity",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L270",
-      "weight": 1.0,
-      "source": "services_retrieval_app_ranking_shows",
       "target": "services_retrieval_app_ocr_tokens_token_similarity",
       "confidence_score": 1.0
     },
@@ -36038,7 +35924,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L147",
+      "source_location": "L142",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_actual_values",
@@ -36048,7 +35934,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L243",
+      "source_location": "L238",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_catalog_words",
@@ -36058,7 +35944,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L177",
+      "source_location": "L172",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_contributions",
@@ -36068,7 +35954,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L386",
+      "source_location": "L347",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_decide",
@@ -36078,7 +35964,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L167",
+      "source_location": "L162",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_distributions",
@@ -36088,7 +35974,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L190",
+      "source_location": "L185",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_field_breakdown",
@@ -36098,7 +35984,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L156",
+      "source_location": "L151",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_field_distribution",
@@ -36108,7 +35994,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L141",
+      "source_location": "L136",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_fieldcontribution",
@@ -36118,17 +36004,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L265",
-      "weight": 1.0,
-      "source": "services_retrieval_app_ranking",
-      "target": "services_retrieval_app_ranking_generic_winery_tokens",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L373",
+      "source_location": "L334",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_is_identified",
@@ -36138,7 +36014,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L234",
+      "source_location": "L229",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_labelcheck",
@@ -36148,7 +36024,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L201",
+      "source_location": "L196",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_long_tokens",
@@ -36158,7 +36034,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L208",
+      "source_location": "L203",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_name_tokens",
@@ -36168,7 +36044,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L228",
+      "source_location": "L223",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_only_value",
@@ -36178,7 +36054,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L330",
+      "source_location": "L292",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_rank",
@@ -36188,7 +36064,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L132",
+      "source_location": "L127",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_ranked",
@@ -36198,7 +36074,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L119",
+      "source_location": "L114",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_rankingresult",
@@ -36208,7 +36084,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L197",
+      "source_location": "L192",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_score",
@@ -36218,7 +36094,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L214",
+      "source_location": "L209",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_seen_tokens",
@@ -36228,17 +36104,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L269",
-      "weight": 1.0,
-      "source": "services_retrieval_app_ranking",
-      "target": "services_retrieval_app_ranking_shows",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L273",
+      "source_location": "L247",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_verify_shortlist",
@@ -36248,7 +36114,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L366",
+      "source_location": "L327",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_ranking_visual_share",
@@ -36259,7 +36125,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L43",
+      "source_location": "L42",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_sweetness",
@@ -36270,7 +36136,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L43",
+      "source_location": "L42",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking",
       "target": "services_retrieval_app_sweetness_contradicts",
@@ -36411,7 +36277,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L330",
+      "source_location": "L292",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_ranking_rankingresult",
@@ -36421,7 +36287,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L128",
+      "source_location": "L123",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rankingresult",
       "target": "services_retrieval_app_ranking_rankingresult_ranked",
@@ -36497,17 +36363,6 @@
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
-      "source_file": "services/retrieval/tests/test_ranking_main.py",
-      "source_location": "L86",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_main_test_top1_policy_answers_only_a_wine_the_label_does_not_contradict",
-      "target": "services_retrieval_app_ranking_rankingresult"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
       "source_file": "services/retrieval/tests/test_recommendations.py",
       "source_location": "L24",
       "weight": 1.0,
@@ -36530,7 +36385,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L129",
+      "source_location": "L124",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rankingresult_ranked",
       "target": "services_retrieval_app_ranking_ranked",
@@ -36541,7 +36396,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L338",
+      "source_location": "L300",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_ranking_ranked",
@@ -36552,7 +36407,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L177",
+      "source_location": "L172",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_contributions",
       "target": "services_retrieval_app_ranking_fieldcontribution",
@@ -36563,7 +36418,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L190",
+      "source_location": "L185",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_field_breakdown",
       "target": "services_retrieval_app_ranking_fieldcontribution",
@@ -36574,7 +36429,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L373",
+      "source_location": "L334",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_is_identified",
       "target": "services_retrieval_app_ranking_fieldcontribution",
@@ -36585,7 +36440,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L197",
+      "source_location": "L192",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_score",
       "target": "services_retrieval_app_ranking_fieldcontribution",
@@ -36596,7 +36451,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L180",
+      "source_location": "L175",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_contributions",
       "target": "services_retrieval_app_ranking_actual_values",
@@ -36607,7 +36462,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L173",
+      "source_location": "L168",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_distributions",
       "target": "services_retrieval_app_ranking_field_distribution",
@@ -36617,9 +36472,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L157",
+      "source_location": "L152",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_157",
+      "source": "services_retrieval_app_ranking_rationale_152",
       "target": "services_retrieval_app_ranking_field_distribution",
       "confidence_score": 1.0
     },
@@ -36628,7 +36483,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L370",
+      "source_location": "L331",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_visual_share",
       "target": "services_retrieval_app_ranking_field_distribution",
@@ -36650,7 +36505,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L194",
+      "source_location": "L189",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_field_breakdown",
       "target": "services_retrieval_app_ranking_distributions",
@@ -36661,7 +36516,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L332",
+      "source_location": "L294",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_ranking_distributions",
@@ -36672,7 +36527,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L194",
+      "source_location": "L189",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_field_breakdown",
       "target": "services_retrieval_app_ranking_contributions",
@@ -36683,7 +36538,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L333",
+      "source_location": "L295",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_ranking_contributions",
@@ -36693,9 +36548,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L192",
+      "source_location": "L187",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_192",
+      "source": "services_retrieval_app_ranking_rationale_187",
       "target": "services_retrieval_app_ranking_field_breakdown",
       "confidence_score": 1.0
     },
@@ -36737,7 +36592,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L334",
+      "source_location": "L296",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_ranking_score",
@@ -36748,7 +36603,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L247",
+      "source_location": "L242",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_catalog_words",
       "target": "services_retrieval_app_ranking_long_tokens",
@@ -36759,18 +36614,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L259",
-      "weight": 1.0,
-      "source": "services_retrieval_app_ranking_generic_winery_tokens",
-      "target": "services_retrieval_app_ranking_long_tokens",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L211",
+      "source_location": "L206",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_name_tokens",
       "target": "services_retrieval_app_ranking_long_tokens",
@@ -36781,7 +36625,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L288",
+      "source_location": "L257",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_verify_shortlist",
       "target": "services_retrieval_app_ranking_long_tokens",
@@ -36791,9 +36635,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L209",
+      "source_location": "L204",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_209",
+      "source": "services_retrieval_app_ranking_rationale_204",
       "target": "services_retrieval_app_ranking_name_tokens",
       "confidence_score": 1.0
     },
@@ -36802,7 +36646,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L287",
+      "source_location": "L256",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_verify_shortlist",
       "target": "services_retrieval_app_ranking_name_tokens",
@@ -36812,9 +36656,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L215",
+      "source_location": "L210",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_215",
+      "source": "services_retrieval_app_ranking_rationale_210",
       "target": "services_retrieval_app_ranking_seen_tokens",
       "confidence_score": 1.0
     },
@@ -36823,7 +36667,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L289",
+      "source_location": "L257",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_verify_shortlist",
       "target": "services_retrieval_app_ranking_seen_tokens",
@@ -36833,9 +36677,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L229",
+      "source_location": "L224",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_229",
+      "source": "services_retrieval_app_ranking_rationale_224",
       "target": "services_retrieval_app_ranking_only_value",
       "confidence_score": 1.0
     },
@@ -36844,7 +36688,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L292",
+      "source_location": "L258",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_verify_shortlist",
       "target": "services_retrieval_app_ranking_only_value",
@@ -36877,7 +36721,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L386",
+      "source_location": "L347",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_decide",
       "target": "services_retrieval_app_ranking_labelcheck",
@@ -36888,7 +36732,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L373",
+      "source_location": "L334",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_is_identified",
       "target": "services_retrieval_app_ranking_labelcheck",
@@ -36898,9 +36742,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L235",
+      "source_location": "L230",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_235",
+      "source": "services_retrieval_app_ranking_rationale_230",
       "target": "services_retrieval_app_ranking_labelcheck",
       "confidence_score": 1.0
     },
@@ -36909,30 +36753,19 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L273",
+      "source_location": "L247",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_verify_shortlist",
       "target": "services_retrieval_app_ranking_labelcheck",
       "confidence_score": 1.0
     },
     {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "services/retrieval/tests/test_ranking_main.py",
-      "source_location": "L85",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_main_test_top1_policy_answers_only_a_wine_the_label_does_not_contradict",
-      "target": "services_retrieval_app_ranking_labelcheck"
-    },
-    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L244",
+      "source_location": "L239",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_244",
+      "source": "services_retrieval_app_ranking_rationale_239",
       "target": "services_retrieval_app_ranking_catalog_words",
       "confidence_score": 1.0
     },
@@ -36941,39 +36774,18 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L296",
+      "source_location": "L262",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_verify_shortlist",
       "target": "services_retrieval_app_ranking_catalog_words",
       "confidence_score": 1.0
     },
     {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L254",
-      "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_254",
-      "target": "services_retrieval_app_ranking_generic_winery_tokens",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L291",
-      "weight": 1.0,
-      "source": "services_retrieval_app_ranking_verify_shortlist",
-      "target": "services_retrieval_app_ranking_shows",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L346",
+      "source_location": "L307",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_ranking_verify_shortlist",
@@ -36983,9 +36795,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L275",
+      "source_location": "L248",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_275",
+      "source": "services_retrieval_app_ranking_rationale_248",
       "target": "services_retrieval_app_ranking_verify_shortlist",
       "confidence_score": 1.0
     },
@@ -36994,7 +36806,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L322",
+      "source_location": "L284",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_verify_shortlist",
       "target": "services_retrieval_app_sweetness_contradicts",
@@ -37027,7 +36839,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L347",
+      "source_location": "L308",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_ranking_decide",
@@ -37038,7 +36850,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L358",
+      "source_location": "L319",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_ranking_is_identified",
@@ -37049,7 +36861,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L360",
+      "source_location": "L321",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_rank",
       "target": "services_retrieval_app_ranking_visual_share",
@@ -37097,28 +36909,6 @@
       "source_location": "L274",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_test_a_faint_visual_share_plus_shared_fields_does_not_identify_a_wine",
-      "target": "services_retrieval_app_ranking_rank"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L287",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_a_winery_on_the_label_rejects_a_wine_of_another_winery",
-      "target": "services_retrieval_app_ranking_rank"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L305",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_a_winery_word_many_wineries_share_contradicts_nobody",
       "target": "services_retrieval_app_ranking_rank"
     },
     {
@@ -37314,17 +37104,6 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L297",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_the_wine_own_name_or_winery_on_the_label_keeps_it_despite_another_winery_read",
-      "target": "services_retrieval_app_ranking_rank"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "services/retrieval/tests/test_ranking.py",
       "source_location": "L148",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_test_tied_top_candidates_do_not_match",
@@ -37400,9 +37179,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L367",
+      "source_location": "L328",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_367",
+      "source": "services_retrieval_app_ranking_rationale_328",
       "target": "services_retrieval_app_ranking_visual_share",
       "confidence_score": 1.0
     },
@@ -37410,9 +37189,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L374",
+      "source_location": "L335",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_374",
+      "source": "services_retrieval_app_ranking_rationale_335",
       "target": "services_retrieval_app_ranking_is_identified",
       "confidence_score": 1.0
     },
@@ -37420,9 +37199,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking.py",
-      "source_location": "L388",
+      "source_location": "L349",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_rationale_388",
+      "source": "services_retrieval_app_ranking_rationale_349",
       "target": "services_retrieval_app_ranking_decide",
       "confidence_score": 1.0
     },
@@ -37514,7 +37293,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L224",
+      "source_location": "L217",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main",
       "target": "services_retrieval_app_ranking_main_evaluation_predict",
@@ -37585,7 +37364,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L168",
+      "source_location": "L161",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main",
       "target": "services_retrieval_app_ranking_main_search",
@@ -37865,7 +37644,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L224",
+      "source_location": "L217",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_evaluation_predict",
       "target": "services_retrieval_app_ranking_main_py_uploadfile",
@@ -37876,7 +37655,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L168",
+      "source_location": "L161",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_retrieval_app_ranking_main_py_uploadfile",
@@ -37887,7 +37666,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L233",
+      "source_location": "L226",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_evaluation_predict",
       "target": "services_retrieval_app_ranking_main_evaluation_slug",
@@ -37907,9 +37686,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L169",
+      "source_location": "L162",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_main_rationale_169",
+      "source": "services_retrieval_app_ranking_main_rationale_162",
       "target": "services_retrieval_app_ranking_main_search",
       "confidence_score": 1.0
     },
@@ -37919,7 +37698,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L185",
+      "source_location": "L178",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_retrieval_app_recommendations_recommend"
@@ -37930,7 +37709,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L212",
+      "source_location": "L205",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_retrieval_app_scan_debug_ocr_debug"
@@ -37941,7 +37720,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L185",
+      "source_location": "L178",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_retrieval_app_scan_debug_ocr_search_text"
@@ -37952,7 +37731,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L211",
+      "source_location": "L204",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_retrieval_app_scan_debug_preprocessing_debug"
@@ -37963,7 +37742,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L215",
+      "source_location": "L208",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_retrieval_app_scan_debug_ranking_debug"
@@ -37974,7 +37753,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L213",
+      "source_location": "L206",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_retrieval_app_scan_debug_retriever_debug"
@@ -37985,7 +37764,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L214",
+      "source_location": "L207",
       "weight": 1.0,
       "source": "services_retrieval_app_ranking_main_search",
       "target": "services_retrieval_app_scan_debug_verification_debug"
@@ -37994,9 +37773,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/app/ranking_main.py",
-      "source_location": "L225",
+      "source_location": "L218",
       "weight": 1.0,
-      "source": "services_retrieval_app_ranking_main_rationale_225",
+      "source": "services_retrieval_app_ranking_main_rationale_218",
       "target": "services_retrieval_app_ranking_main_evaluation_predict",
       "confidence_score": 1.0
     },
@@ -40231,28 +40010,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_embedding_store.py",
-      "source_location": "L7",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_embedding_store",
-      "target": "services_retrieval_tests_conftest",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_index_store.py",
-      "source_location": "L6",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_index_store",
-      "target": "services_retrieval_tests_conftest",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -41397,26 +41154,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L283",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking",
-      "target": "services_retrieval_tests_test_ranking_test_a_winery_on_the_label_rejects_a_wine_of_another_winery",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L302",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking",
-      "target": "services_retrieval_tests_test_ranking_test_a_winery_word_many_wineries_share_contradicts_nobody",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_ranking.py",
       "source_location": "L183",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking",
@@ -41597,16 +41334,6 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L293",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking",
-      "target": "services_retrieval_tests_test_ranking_test_the_wine_own_name_or_winery_on_the_label_keeps_it_despite_another_winery_read",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_ranking.py",
       "source_location": "L145",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking",
@@ -41682,28 +41409,6 @@
       "source_location": "L266",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_test_a_faint_visual_share_plus_shared_fields_does_not_identify_a_wine",
-      "target": "services_retrieval_tests_test_ranking_wine",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L285",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_a_winery_on_the_label_rejects_a_wine_of_another_winery",
-      "target": "services_retrieval_tests_test_ranking_wine",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L303",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_a_winery_word_many_wineries_share_contradicts_nobody",
       "target": "services_retrieval_tests_test_ranking_wine",
       "confidence_score": 1.0
     },
@@ -41877,17 +41582,6 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L295",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_the_wine_own_name_or_winery_on_the_label_keeps_it_despite_another_winery_read",
-      "target": "services_retrieval_tests_test_ranking_wine",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_ranking.py",
       "source_location": "L146",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_test_tied_top_candidates_do_not_match",
@@ -41935,28 +41629,6 @@
       "source_location": "L273",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_test_a_faint_visual_share_plus_shared_fields_does_not_identify_a_wine",
-      "target": "services_retrieval_tests_test_ranking_visual",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L287",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_a_winery_on_the_label_rejects_a_wine_of_another_winery",
-      "target": "services_retrieval_tests_test_ranking_visual",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L305",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_a_winery_word_many_wineries_share_contradicts_nobody",
       "target": "services_retrieval_tests_test_ranking_visual",
       "confidence_score": 1.0
     },
@@ -42086,17 +41758,6 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "services/retrieval/tests/test_ranking.py",
-      "source_location": "L297",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_test_the_wine_own_name_or_winery_on_the_label_keeps_it_despite_another_winery_read",
-      "target": "services_retrieval_tests_test_ranking_visual",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_ranking.py",
       "source_location": "L47",
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_test_visual_only_evidence_can_match_without_any_ocr_text",
@@ -42191,16 +41852,6 @@
       "weight": 1.0,
       "source": "services_retrieval_tests_test_ranking_main",
       "target": "services_retrieval_tests_test_ranking_main_test_openapi_documents_the_upload_field_and_both_scan_responses",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "services/retrieval/tests/test_ranking_main.py",
-      "source_location": "L83",
-      "weight": 1.0,
-      "source": "services_retrieval_tests_test_ranking_main",
-      "target": "services_retrieval_tests_test_ranking_main_test_top1_policy_answers_only_a_wine_the_label_does_not_contradict",
       "confidence_score": 1.0
     },
     {
