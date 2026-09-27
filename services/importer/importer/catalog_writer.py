@@ -17,7 +17,7 @@ from .overrides import Override, apply_overrides
 def load_sources(connection: psycopg.Connection, archive_sha: str) -> list[SourceImage]:
     rows = connection.execute(
         """
-        SELECT s.strapi_path, s.filename, s.image_sha256, i.size_bytes
+        SELECT s.strapi_path, s.filename, s.image_sha256, i.size_bytes, i.width, i.height
         FROM image_sources s
         JOIN images i ON i.sha256 = s.image_sha256
         WHERE s.archive_sha256 = %s

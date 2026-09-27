@@ -18,6 +18,10 @@ Swagger `ranking` — `http://127.0.0.1:8080/docs` (OpenAPI JSON — `/openapi.j
 - `baseline/` — сервис `retrieval`: визуальный SIFT baseline для `scripts/eval.py` и `scripts/eval_search.py`.
 - `catalog/` — модель вина и чтение каталога из PostgreSQL; `label_text/` — токены, сахар и год этикетки, общие для OCR и ранжирования; `evidence.py` — кандидаты полей между сервисами; `sift_index.py`, `index_store.py`, `storage.py` — SIFT-индекс и его хранение.
 
+## Нормализация запроса
+
+`retriever` приводит фото к виду эталона в `app/visual/preprocessing.py` (мост к `scripts/label_prep.py`). По умолчанию (`QUERY_SAM=false`) это фиксированный кроп `FAST_CROP_BOX` и `label_prep.normalize_visual`: уменьшение до 512 px, затем лёгкий шумодав, без OCR-ветки — 10–80 мс вместо ~450 мс у полного `normalize`. Эталоны по-прежнему нормализуются полным `normalize`, поэтому индекс и `EMBEDDING_MODEL` не менялись. Замер визуального top-1/top-5 на 54 реальных фото (8 размеченных + 46 ответов `matched` полного сканера, 2026-09-27): быстрый путь даёт те же ранги, что и прежний; более высокий, центральный, полнокадровый и двухвидовой кропы не лучше; SAM (`QUERY_SAM=true`) хуже (top-5 0.41 против 0.59), стоит ~6 с и ~4 ГБ памяти на запрос. Если SAM включён и не нашёл этикетку, ответ идёт через фиксированный кроп с предупреждением `sam_failed` (`sam_skipped` — SAM не запрашивался).
+
 ## Запуск
 
 Корневой `docker compose up --build` сначала запускает `importer`, затем `retrieval-index`, затем поднимает API:

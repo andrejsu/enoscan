@@ -35,6 +35,16 @@ class SourceImage:
     filename: str
     image_sha256: str
     size_bytes: int
+    width: int = 0
+    height: int = 0
+
+
+def is_portrait(item: SourceImage) -> bool:
+    """A catalog photo is a bottle shot, taller than wide. Strapi keeps every
+    upload of a generic name (Screenshot_9.webp) as its own hashed file, and
+    next to the bottle those are festival banners, vineyards and table scenes —
+    wide, and often heavier than the bottle itself."""
+    return item.height > item.width
 
 
 @dataclass(frozen=True)
@@ -116,7 +126,7 @@ def resolve_mappings(wines: list[CatalogWine], sources: list[SourceImage]) -> li
             unresolved.append(wine)
             continue
 
-        selected = max(matches, key=lambda item: (item.size_bytes, item.strapi_path))
+        selected = max(matches, key=lambda item: (is_portrait(item), item.size_bytes, item.strapi_path))
         used.add(selected.image_sha256)
         mappings.append(Mapping(
             slug=wine.slug,

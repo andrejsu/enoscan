@@ -20,8 +20,9 @@ def wine(slug: str = "pino-nuar-2025", **overrides: object) -> CatalogWine:
     return CatalogWine(**values)
 
 
-def source(filename: str, sha: str, size: int = 100) -> SourceImage:
-    return SourceImage(strapi_path=filename, filename=filename, image_sha256=sha, size_bytes=size)
+def source(filename: str, sha: str, size: int = 100, width: int = 0, height: int = 0) -> SourceImage:
+    return SourceImage(strapi_path=filename, filename=filename, image_sha256=sha, size_bytes=size,
+                       width=width, height=height)
 
 
 def test_media_stem_removes_strapi_hash() -> None:
@@ -39,6 +40,36 @@ def test_prefers_image_filename_and_largest_file() -> None:
     ])
 
     assert [(m.image_sha256, m.mapping_kind) for m in result] == [("large", "image_filename")]
+
+
+def test_generic_filename_collision_prefers_the_bottle_shot() -> None:
+    # Strapi archive: four uploads named Screenshot_9.webp; three are event banners.
+    result = resolve_mappings([wine(source_image_filename="Screenshot_9.webp")], [
+        source("Screenshot_9_384533e54c.webp", "banner", 78910, 905, 585),
+        source("Screenshot_9_4bd676918f.webp", "fair", 47932, 976, 487),
+        source("Screenshot_9_78adaf4455.webp", "bottle", 6312, 232, 465),
+    ])
+
+    assert result[0].image_sha256 == "bottle"
+
+
+def test_portrait_uploads_keep_preferring_the_largest_file() -> None:
+    # A padded packshot is barely portrait; a narrower rival must not win on shape alone.
+    result = resolve_mappings([wine(source_image_filename="merlo.webp")], [
+        source("merlo_89592556f7.webp", "narrow", 20000, 196, 604),
+        source("merlo_d6c03313e4.webp", "padded", 90000, 1058, 1323),
+    ])
+
+    assert result[0].image_sha256 == "padded"
+
+
+def test_same_shape_uploads_still_prefer_the_largest_file() -> None:
+    result = resolve_mappings([wine(source_image_filename="Screenshot_19.webp")], [
+        source("Screenshot_19_14834413ce.webp", "small", 5972, 278, 564),
+        source("Screenshot_19_081d41ebac.webp", "large", 8260, 278, 564),
+    ])
+
+    assert result[0].image_sha256 == "large"
 
 
 def test_falls_back_to_slug() -> None:

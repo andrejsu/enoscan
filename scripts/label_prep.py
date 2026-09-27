@@ -472,6 +472,28 @@ def _resize(img, scale, max_up):
     return img, 1.0
 
 
+def normalize_visual(flat: np.ndarray, cfg: Config) -> tuple[np.ndarray, dict]:
+    """Только цветная ветка для поиска: сначала уменьшение до visual_size, потом
+    шумодав по шуму уже уменьшенного кадра. На кропе с 12-Мп телефона это ~20 мс
+    вместо ~450 мс у normalize(): там шумодав идёт в родном разрешении и строится
+    OCR-ветка, которую визуальный поиск выбрасывает. INTER_AREA сам усредняет
+    шум, поэтому метрики поиска совпадают (замер на 54 реальных фото). Окна
+    шумодава 5/11 вместо 7/21: ~60 мс вместо ~400 мс на шумном кадре при тех же
+    рангах; без шумодава ранги тоже те же, но отрыв top-1 чуть меньше."""
+    s = cfg.visual_size / max(flat.shape[:2])
+    visual, _ = _resize(flat, s, cfg.max_upscale)
+    gray = cv2.cvtColor(visual, cv2.COLOR_BGR2GRAY)
+    sigma = noise_sigma(gray)
+    info = {"label_px": [int(flat.shape[1]), int(flat.shape[0])],
+            "noise_sigma": round(sigma, 2), "sharpness": round(sharpness(gray), 1),
+            "glare_frac": round(float(glare_mask(visual).mean()), 3)}
+    if sigma > cfg.denoise_min_sigma:
+        h = float(min(0.6 * sigma, 8.0))
+        visual = cv2.fastNlMeansDenoisingColored(visual, None, h, h, 5, 11)
+        info["denoised"] = True
+    return visual, info
+
+
 def normalize(flat: np.ndarray, cfg: Config) -> tuple[np.ndarray, np.ndarray, dict]:
     gray0 = cv2.cvtColor(flat, cv2.COLOR_BGR2GRAY)
     sigma = noise_sigma(gray0)
@@ -538,7 +560,10 @@ def debug_geometry(img, g: Geometry):
     return vis
 
 
-def process(img: np.ndarray, cfg: Config, roi=None, mask=None, segmenter: Segmenter | None = None):
+def process(img: np.ndarray, cfg: Config, roi=None, mask=None, segmenter: Segmenter | None = None,
+            debug_images: bool = True):
+    """debug_images=False — без отладочных кадров в полном разрешении (сервис их не
+    показывает, а на 12-Мп фото это лишние сотни мегабайт и сотни миллисекунд)."""
     warns: list[str] = []
     debug: dict[str, np.ndarray] = {}
 
@@ -551,7 +576,8 @@ def process(img: np.ndarray, cfg: Config, roi=None, mask=None, segmenter: Segmen
         warns.append(f"маска этикетки непрямоугольная (заполнение {st['fill']:.0%}) — проверьте 1_segmentation")
     if st["border"]:
         warns.append("этикетка касается края кадра — часть может быть обрезана")
-    debug["1_segmentation"] = debug_segmentation(img, label, bottle)
+    if debug_images:
+        debug["1_segmentation"] = debug_segmentation(img, label, bottle)
 
     g = estimate_geometry(label, bottle, cfg)
     if g.info.get("stretch_capped") and g.info["edge_stretch_full"] > 1.5 * cfg.max_stretch:
@@ -559,10 +585,12 @@ def process(img: np.ndarray, cfg: Config, roi=None, mask=None, segmenter: Segmen
                      "текст там останется немного сжатым")
     if g.radius_source == "fallback" and g.cylinder:
         warns.append("силуэт бутылки не найден, радиус оценён грубо — развёртка может растягивать края")
-    debug["2_geometry"] = debug_geometry(img, g)
+    if debug_images:
+        debug["2_geometry"] = debug_geometry(img, g)
 
     flat = resample(img, g)
-    debug["3_flat_native"] = flat
+    if debug_images:
+        debug["3_flat_native"] = flat
     if flat.shape[0] < cfg.min_label_height:
         warns.append(f"этикетка всего {flat.shape[0]} px по высоте — мелкий текст не восстановить, снимайте ближе")
 

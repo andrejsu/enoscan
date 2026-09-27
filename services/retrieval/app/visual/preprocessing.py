@@ -11,8 +11,9 @@ Two paths, because they see very different input:
     cluttered background. label_prep.py's SAM segmentation and cylinder-unwarp
     were built for exactly this, but at ~8-12s/photo it blows a real search
     budget (measured end-to-end target: ~3s). ``QUERY_SAM=false`` (the
-    default as of 2026-09-22) uses the ``fast=True`` center-crop path instead;
-    SAM stays available as an opt-in slow-but-thorough mode.
+    default as of 2026-09-22) uses the ``fast=True`` fixed-crop path instead.
+    SAM stays opt-in, but on 54 real photos (2026-09-27) it ranked the right
+    wine lower than the fixed crop — see the retrieval README.
 """
 
 from __future__ import annotations
@@ -56,34 +57,52 @@ class PreparedQuery:
     crop_box: tuple[float, float, float, float] | None = None
 
 
+FAST_CROP_BOX = (0.05, 0.30, 0.95, 0.95)
+# SAM works on a 1024 px copy anyway; a full 12 MP phone frame only makes the
+# full-resolution mask decode and the unwrap remap cost ~4 GB and seconds more.
+# The visual output is 512 px, so 1600 px leaves the unwrap enough detail.
+SAM_INPUT_SIDE = 1600
+# Geometry fits on a degenerate mask fail in several ways (empty contour,
+# singular polyfit, too-small remap); any of them means "SAM found no usable label".
+SAM_FAILURES = (RuntimeError, ValueError, np.linalg.LinAlgError, cv2.error)
+
+
 def prepare_query(image: np.ndarray, *, segmenter: "Segmenter | None" = None,
                   config: Config | None = None, fast: bool = False) -> PreparedQuery:
     """Normalize a live query photo. ``fast=True`` (or a segmentation failure)
-    falls back to a cheap center-crop instead of raising, so a query that
-    defeats SAM still gets *some* answer through raw-image evidence."""
+    falls back to a cheap fixed crop instead of raising, so a query that
+    defeats SAM still gets *some* answer through raw-image evidence.
+    Warnings: ``sam_skipped`` — SAM was not asked for; ``sam_failed`` — it
+    was, found no usable label, and the fixed crop answered instead."""
     config = config or Config()
+    warning = "sam_skipped"
     if not fast and segmenter is not None:
         try:
-            visual, _, meta, _ = label_prep.process(image, config, segmenter=segmenter)
+            visual, _, meta, _ = label_prep.process(_limit_side(image, SAM_INPUT_SIDE), config,
+                                                    segmenter=segmenter, debug_images=False)
             return PreparedQuery(visual, used_sam=True, warnings=meta["warnings"], info=meta["normalize"])
-        except RuntimeError:
-            pass
+        except SAM_FAILURES:
+            warning = "sam_failed"
     visual, info = _fast_crop(image, config)
-    return PreparedQuery(visual, used_sam=False, warnings=["sam_skipped"], info=info, crop_box=FAST_CROP_BOX)
+    return PreparedQuery(visual, used_sam=False, warnings=[warning], info=info, crop_box=FAST_CROP_BOX)
 
 
-FAST_CROP_BOX = (0.05, 0.30, 0.95, 0.95)
+def _limit_side(image: np.ndarray, side: int) -> np.ndarray:
+    scale = side / max(image.shape[:2])
+    if scale >= 1:
+        return image
+    return cv2.resize(image, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
 
 
 def _fast_crop(image: np.ndarray, config: Config) -> tuple[np.ndarray, dict]:
     """No-SAM fallback: bottles are usually held upright with the label in the
     lower-middle third of the frame. Crude but cheap; only used when SAM is
-    disabled, unavailable, or fails to find a label."""
+    disabled, unavailable, or fails to find a label. Taller, centered, full-frame
+    and two-view variants of this box measured no better on 54 real photos."""
     height, width = image.shape[:2]
     left, top, right, bottom = FAST_CROP_BOX
     crop = image[int(top * height):int(bottom * height), int(left * width):int(right * width)]
-    visual, _, info = label_prep.normalize(crop, config)
-    return visual, info
+    return label_prep.normalize_visual(crop, config)
 
 
 def reference_label_mask(image: np.ndarray) -> np.ndarray | None:
@@ -131,7 +150,7 @@ def prepare_reference_image(source: np.ndarray, *, config: Config | None = None)
     else:
         image = source[:, :, :3] if source.ndim == 3 else cv2.cvtColor(source, cv2.COLOR_GRAY2BGR)
     if mask is not None:
-        visual, _, _, _ = label_prep.process(image, config, mask=mask)
+        visual, _, _, _ = label_prep.process(image, config, mask=mask, debug_images=False)
         return visual
     height, width = image.shape[:2]
     if has_alpha:

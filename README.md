@@ -185,6 +185,9 @@ Compose закрывает путь от фото до карточки и оф�
 ```bash
 unzip -q -o data/dataset/eval.zip -d data/eval -x '__MACOSX/*'
 python3 scripts/eval_ranking.py --out reports/eval/labeled.json
+# 78 реальных фото из data/Реальные фото (48 вин каталога, 30 вне его), без дублей фикстур;
+# разметка ручная по этикетке и данным карточки, не таблица организатора:
+python3 scripts/eval_ranking.py --labels configs/labeled-real-photos.tsv --out reports/eval/real-photos.json
 # или оценить выход официального скрипта, сопоставив фото по SHA-256:
 python3 scripts/eval_ranking.py --predictions predictions.jsonl --out reports/eval/official.json
 ```

@@ -5,7 +5,7 @@ import hashlib
 from pathlib import Path
 
 
-MAPPING_ALGO_VERSION = "mapping-v2"
+MAPPING_ALGO_VERSION = "mapping-v3"
 PREVIEW_VERSION = "webp-400x600-q80-v1"
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
 
