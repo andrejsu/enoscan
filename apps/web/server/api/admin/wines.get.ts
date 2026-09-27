@@ -1,8 +1,14 @@
 import type { CatalogAdminResponse } from '#shared/contracts'
+import { isFeatureEnabled } from '#shared/utils/feature-flags'
 
 export default defineEventHandler(async (event): Promise<CatalogAdminResponse> => {
-  const query = parseAdminQuery(getQuery(event))
   const config = useRuntimeConfig()
+
+  if (!isFeatureEnabled(config.public.catalogEnabled)) {
+    throw createError({ statusCode: 404, message: 'Страница не найдена.' })
+  }
+
+  const query = parseAdminQuery(getQuery(event))
 
   let response: CatalogAdminResponse | null
   try {

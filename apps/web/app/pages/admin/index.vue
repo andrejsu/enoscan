@@ -2,6 +2,8 @@
 import type { CatalogAdminResponse, CatalogAdminWine, CatalogImageStatus } from '#shared/contracts'
 import { Database, ImageOff, Images, Search, SearchX, TriangleAlert, Wine } from '@lucide/vue'
 
+definePageMeta({ middleware: 'catalog-enabled' })
+
 const draftSearch = ref('')
 const appliedSearch = ref('')
 const imageStatus = ref<CatalogImageStatus>('all')

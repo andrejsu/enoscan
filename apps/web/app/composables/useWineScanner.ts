@@ -51,15 +51,26 @@ export function useWineScanner() {
         body,
       })
 
-      state.value = { status: 'success', previewUrl, response }
+      if (isStillScanning(file)) {
+        state.value = { status: 'success', previewUrl, response }
+      }
     }
     catch {
+      if (!isStillScanning(file)) {
+        return
+      }
       state.value = {
         status: 'error',
         previewUrl,
         message: 'Не удалось обработать фото. Проверьте соединение и попробуйте ещё раз.',
       }
     }
+  }
+
+  // A reset while the request is in flight (header «Сканер») starts over;
+  // the late answer must not bring the old result back.
+  function isStillScanning(file: File) {
+    return state.value.status === 'processing' && state.value.file === file
   }
 
   function reset() {

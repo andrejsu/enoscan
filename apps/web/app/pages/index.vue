@@ -2,6 +2,12 @@
 import { Clock3, ShieldCheck, Sparkles } from '@lucide/vue'
 
 const scanner = useWineScanner()
+const scannerReset = useScannerReset()
+
+watch(scannerReset.requests, () => {
+  scanner.reset()
+  window.scrollTo({ top: 0 })
+})
 
 const panelStatus = computed(() => scanner.state.value.status === 'success'
   ? 'success'

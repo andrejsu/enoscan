@@ -22,6 +22,7 @@ export default defineNuxtConfig({
     public: {
       scanMode: process.env.NUXT_PUBLIC_SCAN_MODE || 'mock',
       astroEnabled: isFeatureEnabled(process.env.NUXT_PUBLIC_ASTRO_ENABLED),
+      catalogEnabled: isFeatureEnabled(process.env.NUXT_PUBLIC_CATALOG_ENABLED),
       sommelierMode: process.env.NUXT_PUBLIC_SOMMELIER_MODE || 'mock',
       yandexMapsApiKey: process.env.NUXT_PUBLIC_YANDEX_MAPS_API_KEY || '',
     },
