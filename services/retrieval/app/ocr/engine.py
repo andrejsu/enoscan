@@ -11,8 +11,12 @@ from .constants import HOMOGLYPH_MIN_LETTERS, SEARCH_TEXT_MIN_CONFIDENCE
 
 ENGINE_NAME = "rapidocr-3.9 PP-OCRv5 cyrillic"
 
-_LATIN_TO_CYRILLIC = str.maketrans("ABCEHKMOPTXYaceopxy", "АВСЕНКМОРТХУасеорху")
+_LATIN_TO_CYRILLIC = str.maketrans("ABCEHKMOPTXYaceopxyu", "АВСЕНКМОРТХУасеорхуи")
+# The Cyrillic recognizer sometimes emits Greek letters: «ΟΛΕΓ» is «ОЛЕГ».
+_GREEK_TO_CYRILLIC = str.maketrans("ΑΒΓΔΕΖΗΚΛΜΟΠΡΤΥΦΧαγδεικλμοπρτυφχ", "АВГДЕЗНКЛМОПРТУФХагдеиклмопртуфх")
 _HOMOGLYPHS = frozenset("ABCEHKMOPTXY")
+_MIXED_HOMOGLYPHS = _HOMOGLYPHS | frozenset("aceopxyu")
+_DIGIT_LETTERS = str.maketrans("63", "бз")
 _CYRILLIC = re.compile(r"[Ѐ-ӿ]")
 _THREE_NEXT_TO_LETTER = re.compile(r"(?<=[^\W\d_])3|3(?=[^\W\d_])")
 
@@ -58,14 +62,22 @@ def extract_label(image: np.ndarray) -> OcrResult:
 
 def fold_homoglyphs(text: str) -> str:
     folded = []
-    for token in text.split():
+    for token in text.translate(_GREEK_TO_CYRILLIC).split():
         if _CYRILLIC.search(token):
             folded.append(_to_cyrillic(token))
             continue
         folded.append(token)
         letters = [c for c in token if c.isalpha()]
-        if len(letters) >= HOMOGLYPH_MIN_LETTERS and token.isupper() and set(letters) <= _HOMOGLYPHS:
+        if len(letters) < HOMOGLYPH_MIN_LETTERS:
+            continue
+        if token.isupper() and set(letters) <= _HOMOGLYPHS:
             folded.append(_to_cyrillic(token))
+        elif token.isupper() and "U" in token:
+            # Serif capitals: «UUA UALLIS» is «UVA VALLIS».
+            folded.append(token.replace("U", "V"))
+        elif any(c in "63" for c in token) and set(letters) <= _MIXED_HOMOGLYPHS:
+            # «Py6uH» is «Рубин» with a б read as 6.
+            folded.append(token.translate(_LATIN_TO_CYRILLIC).translate(_DIGIT_LETTERS))
     return " ".join(folded)
 
 

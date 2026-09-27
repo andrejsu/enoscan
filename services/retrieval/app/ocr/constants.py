@@ -22,10 +22,12 @@ CATEGORY_SYNONYMS = {
     **dict.fromkeys(("rose", "roze", "rosato", "rosado", "blush"), "Розовое"),
     **dict.fromkeys(("blanc", "bianco", "blanco", "white", "weiss", "byanko"), "Белое"),
     **dict.fromkeys(("rouge", "rosso", "tinto", "red", "rot", "ruzh"), "Красное"),
-    "orange": "Оранжевое",
+    **dict.fromkeys(("orange", "oranzh"), "Оранжевое"),
 }
 
 CLOSED_VOCABULARY_FIELDS = ("name", "winery", "grape_varieties", "category", "region")
 WINERY_SHARED_FIELDS = ("name", "grape_varieties")
 WINERY_SPENDS_WORDS_AT = 0.5
+# Once the winery is read, other wineries' names count for this share of their score.
+OTHER_WINERY_NAME_FACTOR = 0.5
 RANKING_CANDIDATES = 50

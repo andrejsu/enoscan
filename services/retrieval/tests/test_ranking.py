@@ -16,6 +16,10 @@ def visual(*pairs):
     return RetrievalFields(slug=tuple(FieldCandidate(slug, score) for slug, score in pairs))
 
 
+# As in the catalog, many wineries make a «Пино Нуар»: its short words tell no wine apart.
+OTHER_PINOTS = [wine(f"pinot-{i}", "Пино Нуар", f"Хозяйство{i}") for i in range(3)]
+
+
 def test_required_fields_alone_can_match():
     target = wine()
     other = wine("other", "Кокур 2020", "Табия")
@@ -216,10 +220,20 @@ def test_the_name_ocr_read_is_checked_even_outside_the_visual_top():
 def test_ocr_alone_needs_the_distinctive_words_of_the_name_on_the_label():
     generic, named = wine("novyy-svet", "Пино Нуар полусухое", "Новый Свет"), wine("muskatel", "Мускатель белый")
     ocr_fields = RetrievalFields(name=(FieldCandidate(generic.name, 0.63),))
-    result = rank(ocr_fields, RetrievalFields(), [generic, named], ocr_text="ТАБИЯ ВИНОДЕЛЬНЯ Пино Нуар полусухое 2025")
+    result = rank(ocr_fields, RetrievalFields(), [generic, named, *OTHER_PINOTS],
+                  ocr_text="ТАБИЯ ВИНОДЕЛЬНЯ Пино Нуар полусухое 2025")
     assert result.ranked(1)[0][0] == "novyy-svet" and result.status == "not_found"
     ocr_fields = RetrievalFields(name=(FieldCandidate(named.name, 0.6),))
     assert rank(ocr_fields, RetrievalFields(), [generic, named], ocr_text="МУСКАТЕЛЬ БЕЛЫЙ").slug == "muskatel"
+
+
+def test_a_short_name_only_its_winery_uses_is_read_in_full():
+    # «ТАБИЯ … ОЛЕГ»: one short word, but no other winery names a wine «Олег».
+    oleg = wine("oleg", "Олег", "Табия", grape_varieties=("Олег",))
+    ocr_fields = RetrievalFields(name=(FieldCandidate("Олег", 1.0),), winery=(FieldCandidate("Табия", 0.5),))
+    result = rank(ocr_fields, RetrievalFields(), [oleg, wine("bukovinka", "Буковинка", "Табия"), *OTHER_PINOTS],
+                  ocr_text="ТАБИЯ ВИНОДЕЛЬНЯ 2025 ОЛЕГ БЕЛОЕ СУХОЕ")
+    assert result.status == "matched" and result.slug == "oleg"
 
 
 def test_label_sugar_level_picks_the_one_of_identical_siblings():
@@ -260,9 +274,9 @@ def test_a_winery_on_the_label_rejects_a_wine_of_another_winery():
     # «ТАБИЯ ВИНОДЕЛЬНЯ Пино Нуар полусухое»: not Новый Свет's Pinot Noir, however alike the bottles.
     novyy_svet = wine("ns-pinot", "Пино Нуар полусухое", "Новый Свет. Дом шампанских вин")
     tabiya = wine("bukovinka", "Буковинка", "Табия")
-    result = rank(TABIYA_OCR, visual(("ns-pinot", 0.9), ("bukovinka", 0.5)), [novyy_svet, tabiya],
+    result = rank(TABIYA_OCR, visual(("ns-pinot", 0.9), ("bukovinka", 0.5)), [novyy_svet, tabiya, *OTHER_PINOTS],
                   ocr_text="ТАБИЯ ВИНОДЕЛЬНЯ Пино Нуар полусухое 2025")
-    assert result.rejected.keys() == {"ns-pinot"}
+    assert "ns-pinot" in result.rejected and "bukovinka" not in result.rejected
     assert result.slug != "ns-pinot"
 
 
@@ -280,3 +294,32 @@ def test_a_winery_word_many_wineries_share_contradicts_nobody():
     ocr_fields = RetrievalFields(winery=(FieldCandidate("Винодельня Хозяйство0", 0.3),))
     result = rank(ocr_fields, visual(("w1", 0.9)), wines, ocr_text="СЕМЕЙНАЯ ВИНОДЕЛЬНЯ")
     assert result.rejected == {}
+
+
+def test_a_grape_the_label_spells_out_rejects_a_leader_of_another_grape():
+    # «EXTRA BRUT PINOT GRIS»: not the catalog's Muscat brut, whatever the bottle looks like.
+    muscat = wine("muscat-brut", "Khrustaleva 76 muscat, брют, белое", "AYA", grape_varieties=("Мускат",))
+    ocr_fields = RetrievalFields(grape_varieties=(FieldCandidate("Пино Гри", 1.0),))
+    result = rank(ocr_fields, visual(("muscat-brut", 0.9)), [muscat, *OTHER_PINOTS], ocr_text="EXTRA BRUT PINOT GRIS 2025")
+    assert result.rejected.get("muscat-brut", "").startswith("на этикетке Пино Гри")
+    assert result.status == "not_found"
+
+
+def test_a_grape_contradiction_never_clears_a_rival_out_of_the_margin():
+    # «VELVET SEASON MUSCAT»: the Riesling sibling is wrong, but still keeps the Muscat from being certain.
+    muscat = wine("vs-muscat", "Velvet Season", "Фанагория", grape_varieties=("Мускат Оттонель",))
+    riesling = wine("vs-riesling", "Velvet Season", "Фанагория", grape_varieties=("Рислинг",))
+    ocr_fields = RetrievalFields(name=(FieldCandidate("Velvet Season", 1.0),),
+                                 grape_varieties=(FieldCandidate("Мускат", 1.0),))
+    result = rank(ocr_fields, visual(("vs-muscat", 0.5), ("vs-riesling", 0.5)), [muscat, riesling],
+                  ocr_text="LATE HARVEST VELVET SEASON MUSCAT")
+    assert result.rejected.keys() == {"vs-riesling"} and result.status == "not_found"
+
+
+def test_orange_on_the_label_rules_out_a_rose_but_not_a_white():
+    rose = wine("alveus-rose", "Alveus Ultra Cuvee. Брют розовое", "Фанагория", category="Розовое")
+    white = wine("orange-white", "Ркацители Оранж", "Другая", category="Белое")
+    ocr_fields = RetrievalFields(category=(FieldCandidate("Оранжевое", 1.0),))
+    result = rank(ocr_fields, visual(("alveus-rose", 0.6), ("orange-white", 0.3)), [rose, white],
+                  ocr_text="ALVEUS УЛЬТРА КЮВЕ ОРАНЖ БРЮТ")
+    assert "alveus-rose" in result.rejected and "orange-white" not in result.rejected

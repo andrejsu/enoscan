@@ -38,7 +38,7 @@ from math import exp
 from ..catalog.models import Wine
 from ..evidence import FieldCandidate, RetrievalFields
 from ..label_text.vintage import extract_year
-from .verification import LabelCheck, generic_winery_tokens, verify_shortlist
+from .verification import LabelCheck, common_short_name_tokens, generic_winery_tokens, verify_shortlist
 
 
 FIELD_WEIGHTS = {
@@ -58,7 +58,12 @@ CONFIRMING_FIELDS = ("year",)
 VERIFY_SHORTLIST = 3
 VERIFY_LIMIT = 8
 
+# A grape the label spells out rejects a wine, but only as a leader: «VELVET
+# SEASON MUSCAT» must not make Velvet Season Мускат Оттонель certain just
+# because the Riesling sibling is out — the photographed Muscat may be neither.
 HARD_CONTRADICTIONS = ("winery", "category", "year", "sweetness")
+# Rejects a wine that outscores the winner, never clears a rival out of the margin.
+LEADER_ONLY_CONTRADICTIONS = ("grape",)
 
 
 @dataclass(frozen=True)
@@ -152,8 +157,9 @@ def rank(ocr_fields: RetrievalFields, visual_fields: RetrievalFields, wines: lis
     named = {candidate.value for candidate in ocr_fields.name[:1]}
     shortlist += [wine for wine in wines if wine.name.strip() in named and wine not in shortlist]
     generic_winery = generic_winery_tokens(wines)
+    common_short = common_short_name_tokens(wines)
     while True:
-        checks = verify_shortlist(shortlist, ocr_fields, ocr_text, generic_winery)
+        checks = verify_shortlist(shortlist, ocr_fields, ocr_text, generic_winery, common_short)
         slug, margin, rival = _decide(evidence, order, checks)
         if rival is None or rival in {wine.slug for wine in shortlist} or len(shortlist) >= VERIFY_LIMIT:
             break
@@ -209,6 +215,8 @@ def _decide(evidence: dict[str, float], order: list[str],
         check = by_slug.get(slug)
         if check is None or not check.kind:
             return False
+        if check.kind in LEADER_ONLY_CONTRADICTIONS:
+            return evidence[slug] > score
         return evidence[slug] > score or check.kind in HARD_CONTRADICTIONS or fully_named
 
     rival = next((slug for slug in order if slug != winner and not is_out(slug)), None)

@@ -12,10 +12,16 @@ import unicodedata
 
 
 MIN_TOKEN_LENGTH = 3
-STOP_WORDS = frozenset({
+WINERY_STOP_WORDS = frozenset({
     "beloe", "butylka", "etiketka", "igristoe", "krasnoe", "rozovoe", "suhoe",
     "vino", "wine", "winery",
 })
+# Every label prints these; «СЕМЕЙНАЯ ВИНОДЕЛЬНЯ АРАТТИ» must not vote for
+# «Винодельня Ведерниковъ Пет-Нат», the only catalog names with the word. The
+# winery search keeps them (WINERY_STOP_WORDS): 132 wineries share «винодельня»,
+# so it weighs next to nothing there, and «Семейная винодельня Литавщуков» must
+# stay a winery of its own rather than read as «Литавщук».
+STOP_WORDS = WINERY_STOP_WORDS | {"vinodelnya", "semeynaya", "territorii", "rossiyskoy", "federatsii"}
 
 FUZZY_MIN_LENGTH = 5
 FUZZY_MAX_LENGTH_GAP = 2
@@ -34,6 +40,11 @@ _CYRILLIC_TO_LATIN = str.maketrans({
     "э": "e", "ю": "yu", "я": "ya",
 })
 _PHONETIC_RULES = tuple((re.compile(pattern), replacement) for pattern, replacement in (
+    # Silent endings and Italian «gi»: Pinot Gris / Пино Гри, Blancs / Блан,
+    # Syrah / Сира, Grigio / Гриджио, Sangiovese / Санджовезе, Orange / Оранж,
+    # Viognier / Вионье, Meunier / Менье, Brut / Брют.
+    (r"(?<=ri)s$", ""), (r"(?<=nc)s$", ""), (r"(?<=[aeiou])h$", ""), (r"gi(?=[aou])", "dzh"), (r"ge$", "zh"),
+    (r"ier$", "e"), (r"eu", "e"), (r"(?<=[^aeiou])yu", "u"),
     (r"eau", "o"), (r"ch", "sh"), (r"oi", "ua"), (r"ou", "u"), (r"au", "o"), (r"ai", "e"), (r"gn", "n"),
     (r"ie", "i"), (r"ay$", "e"), (r"(?<=n)c$", ""), (r"(?<=[eo])[tdx]$", ""),
     (r"(?<=[aeiou])s(?=[aeiou])", "z"), (r"c(?=[eiy])", "s"), (r"c", "k"), (r"q", "k"), (r"w", "v"),

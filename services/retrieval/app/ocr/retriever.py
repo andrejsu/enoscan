@@ -16,6 +16,7 @@ from .constants import (
     RANKING_CANDIDATES,
     WINERY_SHARED_FIELDS,
     WINERY_SPENDS_WORDS_AT,
+    OTHER_WINERY_NAME_FACTOR,
 )
 from .engine import OcrResult, extract_label
 from .fields import extract_abv_candidates, extract_year_candidates
@@ -46,6 +47,23 @@ def ocr_crop(image: np.ndarray) -> np.ndarray:
     return image[int(top * height):int(bottom * height), int(left * width):int(right * width)]
 
 
+def winery_first_names(own: tuple[FieldCandidate, ...],
+                       catalog: tuple[FieldCandidate, ...]) -> tuple[FieldCandidate, ...]:
+    """Name candidates once OCR has read the winery: the best of its own names
+    scores 1.0 (they compete only with each other), the rest of the catalog at
+    OTHER_WINERY_NAME_FACTOR. «ДЕНИСОВ … Совинон» is Denisov's «Совиньон Блан»
+    before it is «AGORA Совиньон», which spells the read word out in full."""
+    best: dict[str, float] = {}
+    top = max((candidate.score for candidate in own), default=0.0)
+    for candidate in own:
+        best[candidate.value] = round(candidate.score / top, 4)
+    for candidate in catalog:
+        score = round(candidate.score * OTHER_WINERY_NAME_FACTOR, 4)
+        best[candidate.value] = max(best.get(candidate.value, 0.0), score)
+    ranked = sorted(best.items(), key=lambda item: (-item[1], item[0]))[:RANKING_CANDIDATES]
+    return tuple(FieldCandidate(value, score) for value, score in ranked)
+
+
 class OcrRetriever:
     def __init__(self, vocabulary: FieldVocabulary) -> None:
         self.vocabulary = vocabulary
@@ -69,6 +87,10 @@ class OcrRetriever:
         fields = {field: self.vocabulary.top(field, text, limit=RANKING_CANDIDATES,
                                              ignore=spent if field in WINERY_SHARED_FIELDS else ())
                   for field in CLOSED_VOCABULARY_FIELDS if field != "winery"}
+        if spent:
+            fields["name"] = winery_first_names(
+                self.vocabulary.winery_names(winery[0].value, text, limit=RANKING_CANDIDATES, ignore=spent),
+                fields["name"])
         sweetness = sugar_level(text)
         return RetrievalFields(**fields, winery=winery,
                                year=extract_year_candidates(label.words),

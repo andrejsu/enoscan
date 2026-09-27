@@ -12,6 +12,7 @@ from ..label_text.tokens import (
     MIN_TOKEN_LENGTH,
     STOP_WORDS,
     TOKEN_MATCH_SIMILARITY,
+    WINERY_STOP_WORDS,
     phonetic_key,
     raw_tokens,
     token_similarity,
@@ -130,10 +131,16 @@ class FieldVocabulary:
         winery_tokens: dict[str, set[str]] = {}
         for wine in wines:
             winery_tokens.setdefault(wine.name.strip(), set()).update(tokenize(wine.winery, aliases=self.aliases))
+        self._known = known
+        self._winery_tokens = winery_tokens
+        self._names_by_winery: dict[str, set[str]] = defaultdict(set)
+        for wine in wines:
+            self._names_by_winery[wine.winery.strip()].add(wine.name.strip())
+        self._winery_name_searches: dict[str, FieldSearch] = {}
         self._searches = {
             field: FieldSearch(
                 {value for wine in wines for value in wine.field_values(field)},
-                stop_words=() if field == "category" else STOP_WORDS,
+                stop_words=() if field == "category" else WINERY_STOP_WORDS if field == "winery" else STOP_WORDS,
                 allow_single_token=field == "category",
                 exclude=winery_tokens if field == "name" else None,
                 aliases=self.aliases,
@@ -150,3 +157,15 @@ class FieldVocabulary:
 
     def explained(self, field: str, text: str, value: str) -> set[str]:
         return self._searches[field].explained(text, value)
+
+    def winery_names(self, winery: str, text: str, *, limit: int = MAX_CANDIDATES,
+                     ignore: Collection[str] = ()) -> tuple[FieldCandidate, ...]:
+        """Names among one winery's wines. «РОЗЕ» or «ОЛЕГ» is one word shared
+        with dozens of catalog names, so the catalog-wide search drops it; on
+        a ТАБИЯ label it names exactly one wine."""
+        winery = winery.strip()
+        if winery not in self._winery_name_searches:
+            self._winery_name_searches[winery] = FieldSearch(
+                self._names_by_winery.get(winery, set()), allow_single_token=True,
+                exclude=self._winery_tokens, aliases=self.aliases, known=self._known)
+        return self._winery_name_searches[winery].top(text, limit=limit, ignore=ignore)

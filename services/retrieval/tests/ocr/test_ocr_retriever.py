@@ -3,7 +3,8 @@ from unittest.mock import patch
 import numpy as np
 
 from app.catalog.models import Wine
-from app.label_text.tokens import tokenize
+from app.evidence import FieldCandidate
+from app.label_text.tokens import TOKEN_MATCH_SIMILARITY, token_similarity, tokenize
 from app.ocr.engine import OcrResult, OcrWord
 from app.ocr.retriever import OcrRetriever
 from app.ocr.vocabulary import FieldVocabulary, learn_aliases
@@ -167,3 +168,32 @@ def test_a_grape_word_alone_never_names_a_winery():
     vocabulary = FieldVocabulary(wines)
     assert vocabulary.top("winery", "ЖЕМЧУЖНАЯ ПИНО НУАР РОЗОВОЕ") == ()
     assert vocabulary.top("winery", "CHATEAU PINOT")[0].value == "Шато Пино"
+
+
+def test_latin_grape_spellings_read_as_the_catalog_russian_names():
+    for latin, russian in (("Pinot Gris", "Пино Гри"), ("Syrah", "Сира"), ("Pinot Grigio", "Пино Гриджио"),
+                           ("Viognier", "Вионье"), ("Orange", "Оранж"), ("Brut", "Брют"), ("Sangiovese", "Санджовезе")):
+        read, catalog = tokenize(latin), tokenize(russian)
+        assert all(any(token_similarity(r, c) >= TOKEN_MATCH_SIMILARITY for c in catalog) for r in read), latin
+        assert len(read) == len(catalog), latin
+
+
+def test_winery_words_on_the_label_do_not_vote_for_a_name_that_contains_them():
+    wines = [wine("vedernikov", "Винодельня Ведерниковъ Пет-Нат Розе", "Ведерниковъ"),
+             wine("aratti", "Каберне Совиньон 2021", "АРАТТИ")] + \
+            [wine(f"decoy-{name}", f"Вино {name}", name) for name in _DECOY_WINERIES]
+    names = FieldVocabulary(wines).top("name", "СЕМЕЙНАЯ ВИНОДЕЛЬНЯ АРАТТИ 2021")
+    assert all(candidate.value != "Винодельня Ведерниковъ Пет-Нат Розе" for candidate in names)
+
+
+def test_a_read_winery_puts_its_own_short_name_first():
+    # «ТАБИЯ … РОЗЕ»: «Розе» is a name at many wineries, but one wine at Табия.
+    wines = [wine("roze", "Розе", "Табия"), wine("oleg", "Олег", "Табия"),
+             *(wine(f"rose-{i}", "Розе", f"Хозяйство{i}") for i in range(4)),
+             *(wine(f"decoy-{name}", f"Вино {name}", name) for name in _DECOY_WINERIES if name != "Табия")]
+    retriever = OcrRetriever(FieldVocabulary(wines))
+    label = OcrResult((word("ТАБИЯ ВИНОДЕЛЬНЯ 2024"), word("РОЗЕ РОЗОВОЕ СУХОЕ", line=(1, 1, 2))))
+    with patch("app.ocr.retriever.extract_label", return_value=label):
+        fields = retriever.trace(np.zeros((10, 10, 3), dtype=np.uint8)).fields
+    assert fields.winery[0].value == "Табия"
+    assert fields.name[0] == FieldCandidate("Розе", 1.0)

@@ -11,9 +11,12 @@ from app.ocr.engine import OcrWord, extract_label, fold_homoglyphs
     ("ДЕHИCOB", "ДЕНИСОВ"),
     ("3АKAT", "ЗАКАТ"),
     ("3AKAT", "3AKAT ЗАКАТ"),
-    ("KOKUR", "KOKUR"),
+    ("KOKUR", "KOKUR KOKVR"),
     ("Урожай 2023г", "Урожай 2023г"),
     ("Merlot", "Merlot"),
+    ("ΟΛΕΓ", "ОЛЕГ"),
+    ("Py6uH", "Py6uH РубиН"),
+    ("UALLIS", "UALLIS VALLIS"),
 ])
 def test_homoglyphs_fold_to_cyrillic(text, expected):
     assert fold_homoglyphs(text) == expected
