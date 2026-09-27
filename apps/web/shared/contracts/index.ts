@@ -1,6 +1,7 @@
 export const scanStatuses = ['matched', 'uncertain', 'not_found'] as const
 
 export * from './sommelier'
+export * from './tour-route'
 
 export type ScanStatus = (typeof scanStatuses)[number]
 

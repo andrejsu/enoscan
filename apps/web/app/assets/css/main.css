@@ -26,11 +26,21 @@
   --color-attention-surface: #fff8e5;
   --color-attention-ink: #6b4c13;
   --color-attention-line: rgb(170 133 80 / 45%);
+  --color-tour-plum: #321b2a;
+  --color-tour-ochre: #e4ad6a;
+  --color-tour-ochre-light: #ffd69c;
+  --color-tour-ochre-dark: #805524;
+  --color-tour-sand: #fbf6ed;
+  --color-tour-line: #e4dbd1;
+  --color-tour-map-line: #c9b9aa;
+  --color-tour-muted-on-dark: #d9cbd3;
+  --color-on-tour-dark: #fffaf4;
   --color-overlay: rgb(14 16 13 / 94%);
   --color-overlay-control: rgb(255 255 255 / 14%);
   --color-on-overlay: #fffefa;
   --shadow-paper: 0 18px 50px rgb(75 50 43 / 9%), 0 2px 10px rgb(75 50 43 / 4%);
   --shadow-lifted: 0 24px 70px rgb(104 64 56 / 14%);
+  --shadow-tour-hero: 0 34px 90px rgb(49 27 42 / 20%);
   --font-body: 'Source Sans 3', sans-serif;
   --font-display: 'Source Serif 4', serif;
   --radius-sm: 14px;
@@ -262,6 +272,10 @@ h2 {
   font-weight: 600;
   -webkit-tap-highlight-color: transparent;
   transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.site-nav__link--desktop-only {
+  display: none;
 }
 
 .site-nav__icon {
@@ -3175,6 +3189,10 @@ h2 {
     gap: 8px;
     padding: 0;
     border-radius: var(--radius-pill);
+  }
+
+  .site-nav__link--desktop-only {
+    display: flex;
   }
 
   .site-nav__icon {

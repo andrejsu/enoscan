@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Bookmark, Database, ScanLine, Sparkles, Wine } from '@lucide/vue'
+import { Bookmark, Database, Map, ScanLine, Sparkles, Wine } from '@lucide/vue'
 import { isFeatureEnabled } from '#shared/utils/feature-flags'
 
 const config = useRuntimeConfig()
@@ -10,6 +10,7 @@ const navItems = computed(() => [
   { to: '/', icon: ScanLine, ariaLabel: 'Сканер', label: 'Сканер', shortLabel: 'Сканер', isVisible: true },
   { to: '/pairings', icon: Bookmark, ariaLabel: 'Мои сочетания', label: 'Мои сочетания', shortLabel: 'Сочетания', isVisible: true },
   { to: '/sommelier', icon: Wine, ariaLabel: 'Цифровой сомелье', label: 'Сомелье', shortLabel: 'Сомелье', isVisible: isSommelierEnabled.value },
+  { to: '/tours', icon: Map, ariaLabel: 'Винные туры', label: 'Винные туры', shortLabel: 'Туры', isVisible: true },
   { to: '/astro-sommelier', icon: Sparkles, ariaLabel: 'Астро-сомелье', label: 'Астро-сомелье', shortLabel: 'Астро', isVisible: isAstroEnabled.value },
   { to: '/admin', icon: Database, ariaLabel: 'Каталог', label: 'Каталог', shortLabel: 'Каталог', isVisible: true },
 ].filter(item => item.isVisible))
@@ -35,6 +36,7 @@ const navItems = computed(() => [
           v-for="item in navItems"
           :key="item.to"
           class="site-nav__link"
+          :class="{ 'site-nav__link--desktop-only': item.to === '/admin' }"
           :to="item.to"
           :aria-label="item.ariaLabel"
         >
