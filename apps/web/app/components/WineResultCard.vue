@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { ScanResponse, WineCard } from '#shared/contracts'
 import { matchScanWineToZodiac } from '#shared/contracts'
-import { ArrowRight, ChevronLeft, CircleAlert, Grape, Info, MapPin, Palette, RotateCcw, Sparkles, Tags, ThermometerSun, Utensils } from '@lucide/vue'
+import { BookmarkPlus, ChevronLeft, CircleAlert, Grape, Info, MapPin, Palette, RotateCcw, Sparkles, Tags, ThermometerSun } from '@lucide/vue'
 import { isFeatureEnabled } from '#shared/utils/feature-flags'
+import { detectPairingTastes, pairingLocation } from '~/utils/pairings'
 import { visibleRecommendations } from '~/utils/scan-recommendations'
 
 const props = defineProps<{
@@ -33,11 +34,11 @@ function handleSelectionCleared() {
 const config = useRuntimeConfig()
 const isAstroEnabled = computed(() => isFeatureEnabled(config.public.astroEnabled))
 
-const pairingQuery = computed(() => ({
-  slug: displayedWine.value?.slug,
-  name: displayedWine.value?.name,
-  producer: displayedWine.value?.producer,
-}))
+const pairingTo = computed(() => displayedWine.value
+  ? pairingLocation(displayedWine.value, {
+      tastes: detectPairingTastes(displayedWine.value.category, displayedWine.value.description),
+    })
+  : '/pairings/new')
 
 const zodiacMatch = computed(() => matchScanWineToZodiac(props.result))
 </script>
@@ -115,10 +116,9 @@ const zodiacMatch = computed(() => matchScanWineToZodiac(props.result))
         </dl>
 
         <div class="wine-card__actions">
-          <NuxtLink class="button button--primary" :to="{ path: '/pairings/new', query: pairingQuery }">
-            <Utensils :size="19" aria-hidden="true" />
-            Подобрать к ужину
-            <ArrowRight :size="18" aria-hidden="true" />
+          <NuxtLink class="button button--primary" :to="pairingTo">
+            <BookmarkPlus :size="19" aria-hidden="true" />
+            В сочетания
           </NuxtLink>
           <button
             v-if="isRecommendationSelected"

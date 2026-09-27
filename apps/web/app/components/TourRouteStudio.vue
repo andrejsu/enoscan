@@ -2,11 +2,11 @@
 import {
   CalendarDays,
   LoaderCircle,
+  MessageCircle,
   RotateCcw,
   Route,
   Send,
-  SlidersHorizontal,
-  Sparkles,
+  Trash2,
   WalletCards,
 } from '@lucide/vue'
 import type { WineTour, WineTourFormat, WineTourRegion } from '#shared/tours/catalog'
@@ -116,7 +116,6 @@ function resetFilters() {
   <section class="route-studio" aria-labelledby="route-studio-title">
     <header class="route-studio__heading">
       <div>
-        <p class="eyebrow">Карта винного юга</p>
         <h1 id="route-studio-title">Винные маршруты</h1>
       </div>
       <p>
@@ -126,11 +125,8 @@ function resetFilters() {
 
     <section class="route-filters" aria-labelledby="route-filters-title">
       <div class="route-filters__title">
-        <SlidersHorizontal :size="19" aria-hidden="true" />
-        <div>
-          <strong id="route-filters-title">Фильтры карты</strong>
-          <span aria-live="polite">{{ resultLabel }}</span>
-        </div>
+        <strong id="route-filters-title">Фильтры карты</strong>
+        <span aria-live="polite">{{ resultLabel }}</span>
       </div>
 
       <label>
@@ -186,18 +182,20 @@ function resetFilters() {
 
       <section class="route-assistant" aria-label="ИИ-ассистент винных маршрутов">
         <header class="route-assistant__header">
-          <div class="route-assistant__avatar" aria-hidden="true"><Sparkles :size="20" /></div>
+          <MessageCircle :size="22" aria-hidden="true" />
           <div>
-            <strong>Проводник по терруарам</strong>
-            <span><i /> {{ assistant.isMock.value ? 'Демо-ИИ' : 'Live ИИ' }}</span>
+            <h2>Проводник по терруарам</h2>
+            <span>{{ assistant.isMock.value ? 'Демо-режим' : 'ИИ-ассистент' }}</span>
           </div>
           <button
             v-if="assistant.messages.value.length"
+            class="icon-button"
             type="button"
             aria-label="Очистить диалог и маршрут"
+            title="Очистить диалог и маршрут"
             @click="assistant.clear"
           >
-            <RotateCcw :size="18" aria-hidden="true" />
+            <Trash2 :size="19" aria-hidden="true" />
           </button>
         </header>
 
@@ -300,20 +298,8 @@ function resetFilters() {
   margin-bottom: 24px;
 }
 
-.route-studio__heading .eyebrow {
-  margin-bottom: 6px;
-  color: var(--color-wine);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-}
-
 .route-studio__heading h1 {
   margin: 0;
-  font-size: clamp(2.7rem, 7vw, 5.5rem);
-  line-height: .94;
-  letter-spacing: -.055em;
 }
 
 .route-studio__heading > p {
@@ -330,75 +316,80 @@ function resetFilters() {
   grid-template-columns: minmax(180px, 1fr) repeat(3, minmax(150px, .72fr)) auto;
   align-items: end;
   gap: 12px;
-  padding: 14px;
+  padding: 16px 20px;
   margin-bottom: 16px;
-  border: 1px solid var(--color-tour-line);
-  border-radius: var(--radius-md);
-  background: rgb(255 255 255 / 88%);
+  border: 1px solid rgb(143 61 66 / 12%);
+  border-radius: 24px;
+  background: var(--color-paper);
   box-shadow: var(--shadow-paper);
 }
 
 .route-filters__title {
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--color-wine);
-}
-
-.route-filters__title > div {
   min-width: 0;
+  min-height: 44px;
   display: grid;
+  align-content: center;
 }
 
 .route-filters__title strong {
   color: var(--color-ink);
-  font-size: 14px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.25;
 }
 
 .route-filters__title span {
   color: var(--color-muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .route-filters label {
   min-width: 0;
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 
 .route-filters label > span {
   color: var(--color-muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .route-filters select {
   width: 100%;
-  min-height: 46px;
-  padding: 9px 34px 9px 11px;
-  border: 1px solid var(--color-tour-line);
-  border-radius: var(--radius-sm);
+  min-height: 44px;
+  padding: 9px 34px 9px 12px;
+  border: 1px solid var(--color-chip-line);
+  border-radius: 12px;
   color: var(--color-ink);
   background-color: var(--color-paper);
   cursor: pointer;
+  transition: border-color 0.3s ease-in;
+}
+
+.route-filters select:hover {
+  border-color: var(--color-wine);
 }
 
 .route-filters__reset {
-  min-height: 46px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 9px 13px;
-  border: 1px solid var(--color-tour-line);
-  border-radius: var(--radius-sm);
-  color: var(--color-wine-dark);
-  background: var(--color-soft-wine);
-  font-weight: 700;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--color-wine);
+  background: transparent;
+  font-weight: 600;
   cursor: pointer;
+  transition: color 0.3s ease-in;
+}
+
+.route-filters__reset:hover {
+  color: var(--color-wine-hover);
 }
 
 .route-filters__empty {
@@ -417,9 +408,9 @@ function resetFilters() {
 .route-filters__empty button {
   min-height: 44px;
   border: 0;
-  color: var(--color-wine-dark);
+  color: var(--color-wine);
   background: transparent;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -442,70 +433,41 @@ function resetFilters() {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--color-tour-line);
+  border: 1px solid rgb(143 61 66 / 12%);
   border-radius: var(--radius-lg);
   background: var(--color-paper);
   box-shadow: var(--shadow-paper);
 }
 
+/* Как шапка чата сомелье. */
 .route-assistant__header {
-  min-height: 74px;
+  min-height: 64px;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-tour-line);
+  gap: 10px;
+  padding: 10px 16px 10px 20px;
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-wine);
 }
 
-.route-assistant__avatar {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--color-tour-plum);
-  background: var(--color-tour-ochre-light);
-}
-
-.route-assistant__header > div:nth-child(2) {
+.route-assistant__header > div {
   min-width: 0;
   display: grid;
 }
 
-.route-assistant__header strong {
+.route-assistant__header h2 {
+  margin: 0;
   overflow: hidden;
-  font-size: 14px;
+  color: var(--color-ink);
+  font-size: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .route-assistant__header span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   color: var(--color-muted);
-  font-size: 11px;
-}
-
-.route-assistant__header i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--color-green);
-  box-shadow: 0 0 0 4px rgb(123 135 88 / 12%);
-}
-
-.route-assistant__header > button {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  color: var(--color-muted);
-  background: var(--color-tour-sand);
-  cursor: pointer;
+  font-size: 13px;
 }
 
 .route-assistant__messages {
@@ -518,29 +480,30 @@ function resetFilters() {
   overflow-y: auto;
 }
 
+/* Пузыри как в чате сомелье: ответ — светлый, вопрос пользователя — зелёный. */
 .route-message {
   max-width: 88%;
-  padding: 11px 13px;
-  border-radius: 16px;
+  padding: 12px 15px;
+  border: 1px solid rgb(84 89 95 / 16%);
+  border-radius: var(--radius-sm);
 }
 
 .route-message p {
   margin: 0;
-  font-size: 14px;
-  line-height: 1.45;
+  font-size: 15px;
+  line-height: 1.5;
 }
 
 .route-message--assistant {
   align-self: flex-start;
-  border-bottom-left-radius: 5px;
-  background: var(--color-tour-sand);
+  background: var(--color-canvas);
 }
 
 .route-message--user {
   align-self: flex-end;
-  border-bottom-right-radius: 5px;
-  color: var(--color-paper);
-  background: var(--color-tour-plum);
+  border-color: rgb(98 145 64 / 24%);
+  color: var(--color-green-dark);
+  background: var(--color-soft-green);
 }
 
 .route-message--loading {
@@ -550,37 +513,47 @@ function resetFilters() {
   color: var(--color-muted);
 }
 
+/* Чипы как подсказки сомелье; ::after добирает область касания до 44px. */
 .route-assistant__suggestions {
-  display: grid;
-  gap: 7px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   padding: 0 18px 18px;
 }
 
 .route-assistant__suggestions button {
-  min-height: 44px;
-  padding: 9px 12px;
-  border: 1px solid var(--color-tour-line);
-  border-radius: var(--radius-sm);
-  color: var(--color-muted);
+  position: relative;
+  min-height: 32px;
+  max-width: 100%;
+  padding: 5px 12px;
+  border: 1px solid var(--color-chip-line);
+  border-radius: 16px;
+  color: var(--color-wine);
   background: var(--color-paper);
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
   text-align: left;
   cursor: pointer;
-  transition: color 160ms ease, border-color 160ms ease, background 160ms ease;
+  transition: border-color 0.3s ease-in;
+}
+
+.route-assistant__suggestions button::after {
+  content: '';
+  position: absolute;
+  inset: -6px 0;
 }
 
 .route-assistant__suggestions button:hover {
   border-color: var(--color-wine);
-  color: var(--color-wine-dark);
-  background: var(--color-soft-wine);
 }
 
 .route-summary {
   margin: 0 18px 18px;
   padding: 16px;
-  border: 1px solid var(--color-tour-line);
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-md);
-  background: var(--color-tour-sand);
+  background: var(--color-scanner-surface);
 }
 
 .route-summary__title {
@@ -595,25 +568,20 @@ function resetFilters() {
 }
 
 .route-summary__title span {
-  color: var(--color-wine);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
+  color: var(--color-muted);
+  font-size: 13px;
 }
 
 .route-summary h2 {
   margin: 2px 0 0;
   color: var(--color-ink);
-  font-family: var(--font-display);
-  font-size: 21px;
-  line-height: 1.05;
+  font-size: 22px;
 }
 
 .route-summary > p {
   margin: 12px 0;
   color: var(--color-muted);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .route-summary__facts {
@@ -628,12 +596,13 @@ function resetFilters() {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 9px;
-  border-radius: var(--radius-pill);
-  color: var(--color-green-dark);
-  background: var(--color-soft-green);
-  font-size: 11px;
-  font-weight: 700;
+  padding: 5px 12px;
+  border: 1px solid var(--color-chip-line);
+  border-radius: 16px;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .route-summary ol {
@@ -651,12 +620,17 @@ function resetFilters() {
   grid-template-columns: 30px 1fr;
   align-items: center;
   gap: 9px;
-  padding: 7px 9px;
-  border: 1px solid var(--color-tour-line);
+  padding: 7px 10px;
+  border: 1px solid var(--color-chip-line);
   border-radius: 12px;
   background: var(--color-paper);
   text-align: left;
   cursor: pointer;
+  transition: border-color 0.3s ease-in;
+}
+
+.route-summary li button:hover {
+  border-color: var(--color-wine);
 }
 
 .route-summary li button > span:first-child {
@@ -667,8 +641,8 @@ function resetFilters() {
   border-radius: 50%;
   color: var(--color-paper);
   background: var(--color-wine);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .route-summary li button > span:last-child {
@@ -679,7 +653,7 @@ function resetFilters() {
 .route-summary li small {
   overflow: hidden;
   color: var(--color-muted);
-  font-size: 11px;
+  font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -692,7 +666,7 @@ function resetFilters() {
   padding: 10px 18px;
   color: var(--color-wine-dark);
   background: var(--color-soft-wine);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .route-assistant__error button {
@@ -700,7 +674,7 @@ function resetFilters() {
   border: 0;
   color: var(--color-wine);
   background: transparent;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -712,21 +686,25 @@ function resetFilters() {
   gap: 8px;
   padding: 14px 16px;
   margin-top: auto;
-  border-top: 1px solid var(--color-tour-line);
+  border-top: 1px solid var(--color-line);
 }
 
 .route-assistant__form textarea {
   width: 100%;
   min-height: 52px;
   max-height: 120px;
-  resize: vertical;
+  resize: none;
   padding: 12px 13px;
-  border: 1px solid var(--color-tour-line);
-  border-radius: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-sm);
   color: var(--color-ink);
-  background: var(--color-canvas);
+  background: var(--color-paper);
   font-size: 16px;
   line-height: 1.35;
+}
+
+.route-assistant__form textarea:focus {
+  border-color: var(--color-green);
 }
 
 .route-assistant__form button {
@@ -734,11 +712,16 @@ function resetFilters() {
   height: 48px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--color-wine);
+  border: 0;
   border-radius: 50%;
   color: var(--color-paper);
   background: var(--color-wine);
   cursor: pointer;
+  transition: background-color 0.3s ease-in;
+}
+
+.route-assistant__form button:hover:not(:disabled) {
+  background: var(--color-wine-hover);
 }
 
 .route-assistant__form button:disabled,
@@ -751,7 +734,7 @@ function resetFilters() {
   padding: 0 18px 14px;
   margin: 0;
   color: var(--color-muted);
-  font-size: 10px;
+  font-size: 12px;
   text-align: center;
 }
 
@@ -789,10 +772,6 @@ function resetFilters() {
 }
 
 @media (max-width: 680px) {
-  .route-studio__heading h1 {
-    font-size: 48px;
-  }
-
   .route-studio__heading > p {
     font-size: 15px;
   }

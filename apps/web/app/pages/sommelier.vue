@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { MessageCircle, RefreshCw, Send, ShieldCheck, Trash2, Wine } from '@lucide/vue'
+import { MessageCircle, RefreshCw, Send, Trash2, Wine } from '@lucide/vue'
+import { extractPairingSubject } from '~/utils/pairings'
 
 definePageMeta({ middleware: 'sommelier-enabled' })
 
 const config = useRuntimeConfig()
 const { clear, errorMessage, isSubmitting, messages, retry, send } = useSommelierChat()
 const draft = ref('')
-const conversationEnd = useTemplateRef<HTMLElement>('conversationEnd')
+const messageList = useTemplateRef<HTMLElement>('messageList')
 const suggestions = [
   'Подбери вино к запечённой рыбе',
   'Что выбрать для праздничного аперитива?',
@@ -14,10 +15,16 @@ const suggestions = [
 ]
 const isMock = computed(() => config.public.sommelierMode === 'mock')
 
+// Прокручиваем только ленту, а не страницу: последний вопрос встаёт наверх, ответ читается под ним.
 watch(() => messages.value.length, async () => {
   await nextTick()
+  const list = messageList.value
+  const questions = list?.querySelectorAll<HTMLElement>('.sommelier-message--user')
+  const latest = questions?.[questions.length - 1]
+  if (!list || !latest) return
+
   const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-  conversationEnd.value?.scrollIntoView({ behavior, block: 'nearest' })
+  list.scrollTo({ top: latest.offsetTop - 12, behavior })
 })
 
 async function handleSubmit() {
@@ -27,24 +34,34 @@ async function handleSubmit() {
   await send(content)
 }
 
+// Узкое окно с мышью: колесо листает ленту подсказок вбок, пока она не упрётся в край.
+function handleSuggestionsWheel(event: WheelEvent) {
+  const row = event.currentTarget as HTMLElement
+  // На десктопе подсказки переносятся по строкам, лента не прокручивается — колесо остаётся за страницей.
+  const canScroll = getComputedStyle(row).overflowX !== 'visible' && row.scrollWidth > row.clientWidth
+  if (!canScroll || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return
+
+  const isAtEdge = event.deltaY > 0
+    ? row.scrollLeft + row.clientWidth >= row.scrollWidth - 1
+    : row.scrollLeft <= 0
+  if (isAtEdge) return
+
+  event.preventDefault()
+  row.scrollLeft += event.deltaY
+}
+
 function handleSuggestion(suggestion: string) {
   if (!isSubmitting.value) void send(suggestion)
 }
 </script>
 
 <template>
-  <div class="page-container sommelier-page">
+  <div class="page-container sommelier-page" :class="{ 'sommelier-page--active': messages.length }">
     <aside class="sommelier-intro">
-      <p class="eyebrow">Подбор из каталога</p>
       <h1>Цифровой сомелье</h1>
       <p>Вино к блюду, событию и вашему вкусу — только из российского каталога.</p>
 
-      <div class="sommelier-trust">
-        <ShieldCheck :size="22" aria-hidden="true" />
-        <p>Рекомендации привязаны к карточкам каталога. Медицинских советов здесь нет.</p>
-      </div>
-
-      <div class="sommelier-suggestions" aria-label="Быстрые темы">
+      <div class="sommelier-suggestions" aria-label="Быстрые темы" @wheel="handleSuggestionsWheel">
         <button
           v-for="suggestion in suggestions"
           :key="suggestion"
@@ -79,7 +96,7 @@ function handleSuggestion(suggestion: string) {
         Демо-режим: ответы воспроизводятся без обращения к AI и живому каталогу.
       </p>
 
-      <div class="sommelier-messages" aria-live="polite" aria-relevant="additions">
+      <div ref="messageList" class="sommelier-messages" aria-live="polite" aria-relevant="additions">
         <div v-if="!messages.length" class="sommelier-empty">
           <Wine :size="38" aria-hidden="true" />
           <h2>С чего начнём?</h2>
@@ -87,7 +104,7 @@ function handleSuggestion(suggestion: string) {
         </div>
 
         <article
-          v-for="message in messages"
+          v-for="(message, index) in messages"
           :key="message.id"
           class="sommelier-message"
           :class="`sommelier-message--${message.role}`"
@@ -101,6 +118,8 @@ function handleSuggestion(suggestion: string) {
               v-for="wine in message.recommendations"
               :key="wine.slug"
               :wine="wine"
+              :pairing="extractPairingSubject(messages[index - 1]?.content ?? '')"
+              :reply="message.content"
             />
           </div>
         </article>
@@ -114,7 +133,6 @@ function handleSuggestion(suggestion: string) {
           <p>{{ errorMessage }}</p>
           <button class="button button--secondary" type="button" @click="retry">Повторить</button>
         </div>
-        <div ref="conversationEnd" aria-hidden="true" />
       </div>
 
       <form class="sommelier-composer" @submit.prevent="handleSubmit">
@@ -128,7 +146,7 @@ function handleSuggestion(suggestion: string) {
           :disabled="isSubmitting"
           @keydown.enter.exact.prevent="handleSubmit"
         />
-        <button class="button button--primary" type="submit" :disabled="isSubmitting || !draft.trim()">
+        <button class="button button--primary" type="submit" aria-label="Отправить" :disabled="isSubmitting || !draft.trim()">
           <Send :size="18" aria-hidden="true" />
           <span>Отправить</span>
         </button>

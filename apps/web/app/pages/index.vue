@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { Clock3, ShieldCheck, Sparkles } from '@lucide/vue'
-
 const scanner = useWineScanner()
 const scannerReset = useScannerReset()
 
@@ -50,30 +48,6 @@ const response = computed(() => scanner.state.value.status === 'success'
           :total-ms="response.timing.totalMs"
         />
       </template>
-
-      <section class="trust-strip" aria-label="Как работает сервис">
-        <article>
-          <ShieldCheck :size="23" aria-hidden="true" />
-          <div>
-            <strong>Ищем конкретную позицию</strong>
-            <span>Учитываем год, серию и детали этикетки</span>
-          </div>
-        </article>
-        <article>
-          <Clock3 :size="23" aria-hidden="true" />
-          <div>
-            <strong>Цель — до 3 секунд</strong>
-            <span>Полное время измеряется от загрузки до ответа</span>
-          </div>
-        </article>
-        <article>
-          <Sparkles :size="23" aria-hidden="true" />
-          <div>
-            <strong>Без ложной уверенности</strong>
-            <span>Попросим переснять, если данных недостаточно</span>
-          </div>
-        </article>
-      </section>
     </div>
   </div>
 </template>

@@ -90,7 +90,6 @@ function handleRemove() {
       </div>
 
       <div class="tour-dialog__content">
-        <p class="tour-dialog__eyebrow">Планировщик поездки</p>
         <h2 :id="`tour-dialog-title-${tour.id}`">{{ tour.title }}</h2>
         <p class="tour-dialog__lead">{{ tour.summary }}</p>
 
@@ -271,37 +270,25 @@ function handleRemove() {
 }
 
 .tour-dialog__media-copy span {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .tour-dialog__media-copy p {
-  margin: 8px 0 0;
+  margin: 4px 0 0;
   font-family: var(--font-display);
   font-size: 30px;
-  line-height: 1.05;
+  font-weight: 500;
+  line-height: 1.25;
 }
 
 .tour-dialog__content {
   padding: clamp(32px, 5vw, 64px);
 }
 
-.tour-dialog__eyebrow {
-  margin-bottom: 14px;
-  color: var(--color-wine);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-}
-
 .tour-dialog h2 {
   margin: 0;
-  font-size: clamp(2.1rem, 6vw, 4.25rem);
-  line-height: .98;
-  letter-spacing: -.055em;
+  font-size: clamp(32px, 4vw, 42px);
 }
 
 .tour-dialog__lead {
@@ -318,17 +305,19 @@ function handleRemove() {
   gap: 8px;
 }
 
+/* Чипы как на vino-svoe.ru. */
 .tour-dialog__included span {
-  min-height: 38px;
+  min-height: 32px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 11px;
-  border-radius: var(--radius-pill);
-  color: var(--color-green-dark);
-  background: var(--color-soft-green);
-  font-size: 13px;
-  font-weight: 700;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--color-chip-line);
+  border-radius: 16px;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .tour-dialog__source {
@@ -338,12 +327,16 @@ function handleRemove() {
   justify-content: space-between;
   gap: 16px;
   padding: 9px 12px;
-  margin-top: 14px;
-  border: 1px solid var(--color-tour-line);
-  border-radius: var(--radius-sm);
-  color: var(--color-wine-dark);
+  margin-top: 16px;
+  border-radius: 12px;
+  color: var(--color-wine);
   background: var(--color-soft-wine);
-  font-weight: 700;
+  font-weight: 600;
+  transition: background-color 0.3s ease-in;
+}
+
+.tour-dialog__source:hover {
+  background: var(--color-soft-wine-hover);
 }
 
 .tour-dialog__source span {
@@ -353,7 +346,7 @@ function handleRemove() {
 
 .tour-dialog__source small {
   color: var(--color-muted);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 400;
 }
 
@@ -366,7 +359,8 @@ function handleRemove() {
   margin: 0;
   font-family: var(--font-display);
   font-size: 24px;
-  line-height: 1.1;
+  font-weight: 500;
+  line-height: 1.25;
 }
 
 .tour-dialog__program ol {
@@ -390,21 +384,22 @@ function handleRemove() {
   bottom: 0;
   left: 25px;
   width: 1px;
-  background: var(--color-tour-line);
+  background: var(--color-line);
 }
 
 .tour-dialog__program time {
   z-index: 1;
   width: 52px;
-  min-height: 30px;
+  height: 30px;
+  align-self: start;
   display: grid;
   place-items: center;
-  border: 1px solid var(--color-tour-line);
-  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-chip-line);
+  border-radius: 16px;
   background: var(--color-paper);
   color: var(--color-wine);
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .tour-dialog__program strong {
@@ -419,9 +414,8 @@ function handleRemove() {
 
 .tour-dialog__planner {
   padding: 24px;
-  border: 1px solid var(--color-tour-line);
-  border-radius: var(--radius-md);
-  background: var(--color-tour-sand);
+  border-radius: 24px;
+  background: var(--color-scanner-surface);
 }
 
 .tour-dialog__planner-heading,
@@ -471,10 +465,15 @@ function handleRemove() {
   display: grid;
   align-content: center;
   padding: 10px 12px;
-  border: 1px solid var(--color-tour-line);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-chip-line);
+  border-radius: 12px;
   background: var(--color-paper);
-  transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  cursor: pointer;
+  transition: border-color 0.3s ease-in, background-color 0.3s ease-in;
+}
+
+.tour-dialog__dates label:hover > span {
+  border-color: var(--color-wine);
 }
 
 .tour-dialog__dates input:checked + span {
@@ -524,8 +523,9 @@ function handleRemove() {
   height: 44px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--color-tour-line);
+  border: 1px solid var(--color-chip-line);
   border-radius: 50%;
+  color: var(--color-wine);
   background: var(--color-paper);
   cursor: pointer;
 }
@@ -537,7 +537,7 @@ function handleRemove() {
 
 .tour-dialog__stepper output {
   text-align: center;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .tour-dialog__save {
@@ -549,12 +549,18 @@ function handleRemove() {
   gap: 9px;
   margin-top: 10px;
   padding: 12px 18px;
-  border: 1px solid var(--color-wine);
-  border-radius: var(--radius-pill);
+  border: 0;
+  border-radius: 12px;
   color: var(--color-paper);
   background: var(--color-wine);
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.3s ease-in;
+}
+
+.tour-dialog__save:hover {
+  background: var(--color-wine-hover);
 }
 
 .tour-dialog__note {
@@ -573,8 +579,9 @@ function handleRemove() {
   width: 100%;
   margin-top: 4px;
   border: 0;
-  color: var(--color-muted);
+  color: var(--color-wine);
   background: transparent;
+  font-weight: 600;
   cursor: pointer;
 }
 

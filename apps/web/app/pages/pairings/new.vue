@@ -1,36 +1,38 @@
 <script setup lang="ts">
-import type { SavedPairing } from '#shared/contracts'
-import { BookmarkCheck, ChevronLeft } from '@lucide/vue'
+import type { PairingTaste } from '#shared/contracts'
+import { pairingTastes } from '#shared/contracts'
+import { BookmarkCheck, ChevronLeft, Grape, ScanLine } from '@lucide/vue'
+import { parsePairingTastes, restorePairingWine } from '~/utils/pairings'
 
 const route = useRoute()
 const router = useRouter()
 const { save } = useSavedPairings()
 
-const wine = computed(() => ({
-  slug: typeof route.query.slug === 'string' ? route.query.slug : 'demo-wine',
-  name: typeof route.query.name === 'string' ? route.query.name : 'Выбранное вино',
-  producer: typeof route.query.producer === 'string' ? route.query.producer : 'Производитель',
-}))
+// Сочетание всегда привязано к вину из каталога: без него форме нечего сохранять.
+const wine = computed(() => restorePairingWine(route.query))
+const wineMeta = computed(() => [wine.value?.year, wine.value?.color, wine.value?.region].filter(Boolean).join(' · '))
 
-const dish = ref('Стейк или запечённое мясо')
-const preference = ref<SavedPairing['preference']>('richer')
+const pairing = ref(typeof route.query.pairing === 'string' ? route.query.pairing.slice(0, 120) : '')
+const tastes = ref<PairingTaste[]>(parsePairingTastes(route.query.tastes))
 const isSaved = ref(false)
 
-const verdict = computed(() => preference.value === 'richer'
-  ? 'Хорошее сочетание: насыщенность блюда поддерживает структуру вина.'
-  : 'Подойдёт, если выбрать более лёгкий соус и умеренную подачу.')
+function handleBack() {
+  if (window.history.state?.back) {
+    router.back()
+  }
+  else {
+    void router.push('/')
+  }
+}
 
 async function handleSave() {
-  const id = typeof crypto !== 'undefined' && 'randomUUID' in crypto
-    ? crypto.randomUUID()
-    : String(Date.now())
+  if (!wine.value) return
 
   save({
-    id,
+    id: crypto.randomUUID(),
     wine: wine.value,
-    dish: dish.value,
-    preference: preference.value,
-    verdict: verdict.value,
+    pairing: pairing.value,
+    tastes: pairingTastes.filter(taste => tastes.value.includes(taste)),
     savedAt: new Date().toISOString(),
   })
   isSaved.value = true
@@ -41,52 +43,64 @@ async function handleSave() {
 
 <template>
   <div class="page-container secondary-page pairing-page">
-    <NuxtLink class="back-link" to="/">
+    <button class="back-link" type="button" @click="handleBack">
       <ChevronLeft :size="18" aria-hidden="true" />
-      К найденному вину
-    </NuxtLink>
+      Назад
+    </button>
 
-    <header class="page-heading">
-      <p class="eyebrow">Подойдёт ли к моему ужину</p>
-      <h1>{{ wine.name }}</h1>
-      <p>{{ wine.producer }}</p>
-    </header>
-
-    <form class="pairing-form" @submit.prevent="handleSave">
-      <fieldset>
-        <legend>Что будет на ужин?</legend>
-        <label class="field">
-          <span>Блюдо</span>
-          <input v-model.trim="dish" type="text" maxlength="120" required>
-        </label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Какой вкус хочется сегодня?</legend>
-        <div class="choice-grid">
-          <label :class="{ 'choice--selected': preference === 'softer' }">
-            <input v-model="preference" type="radio" value="softer">
-            <strong>Помягче</strong>
-            <span>Деликатный вкус и лёгкая подача</span>
-          </label>
-          <label :class="{ 'choice--selected': preference === 'richer' }">
-            <input v-model="preference" type="radio" value="richer">
-            <strong>Понасыщеннее</strong>
-            <span>Выраженный вкус и плотная текстура</span>
-          </label>
+    <template v-if="wine">
+      <header class="pairing-wine">
+        <div class="pairing-wine__media">
+          <img v-if="wine.imagePreviewUrl" :src="wine.imagePreviewUrl" :alt="`Бутылка ${wine.name}`">
+          <Grape v-else :size="32" aria-hidden="true" />
         </div>
-      </fieldset>
+        <div>
+          <h1>{{ wine.name }}</h1>
+          <p v-if="wine.producer">{{ wine.producer }}</p>
+          <p v-if="wineMeta" class="pairing-wine__meta">{{ wineMeta }}</p>
+        </div>
+      </header>
 
-      <section class="pairing-verdict" aria-live="polite">
-        <p class="eyebrow">Предварительный ответ</p>
-        <h2>{{ verdict }}</h2>
-        <p>Демо использует простое правило. Реальные гастросочетания будут рассчитаны по полям каталога.</p>
-      </section>
+      <form class="pairing-form" @submit.prevent="handleSave">
+        <label class="field">
+          <span>С чем сочетается</span>
+          <input
+            v-model.trim="pairing"
+            type="text"
+            maxlength="120"
+            placeholder="Например: к запечённой рыбе, к сырам, для аперитива"
+          >
+        </label>
 
-      <button class="button button--primary button--wide" type="submit" :disabled="isSaved">
-        <BookmarkCheck :size="20" aria-hidden="true" />
-        Сохранить сочетание
-      </button>
-    </form>
+        <fieldset>
+          <legend>Вкусы</legend>
+          <div class="taste-chips">
+            <label
+              v-for="taste in pairingTastes"
+              :key="taste"
+              class="taste-chip"
+              :class="{ 'taste-chip--selected': tastes.includes(taste) }"
+            >
+              <input v-model="tastes" class="sr-only" type="checkbox" :value="taste">
+              {{ taste }}
+            </label>
+          </div>
+        </fieldset>
+
+        <button class="button button--primary button--wide" type="submit" :disabled="isSaved">
+          <BookmarkCheck :size="20" aria-hidden="true" />
+          Сохранить в сочетания
+        </button>
+      </form>
+    </template>
+
+    <section v-else class="saved-empty">
+      <h1>Вино не выбрано</h1>
+      <p>Найдите вино сканером, у сомелье или в астро-сомелье и нажмите «В сочетания».</p>
+      <NuxtLink class="button button--primary" to="/">
+        <ScanLine :size="19" aria-hidden="true" />
+        Открыть сканер
+      </NuxtLink>
+    </section>
   </div>
 </template>

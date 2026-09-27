@@ -1,8 +1,20 @@
 <script setup lang="ts">
 import type { WineCard } from '#shared/contracts'
-import { ArrowRight, Grape } from '@lucide/vue'
+import { BookmarkPlus, Grape } from '@lucide/vue'
+import { detectPairingTastes, pairingLocation } from '~/utils/pairings'
 
-defineProps<{ wine: WineCard }>()
+const props = defineProps<{
+  wine: WineCard
+  /** «к запечённой рыбе» из вопроса пользователя. */
+  pairing?: string
+  /** Ответ сомелье, в котором вино рекомендовано: из него берутся вкусы. */
+  reply?: string
+}>()
+
+const pairingTo = computed(() => pairingLocation(props.wine, {
+  pairing: props.pairing,
+  tastes: detectPairingTastes(props.reply, props.wine.category, props.wine.description),
+}))
 </script>
 
 <template>
@@ -22,11 +34,8 @@ defineProps<{ wine: WineCard }>()
       <p>{{ wine.producer }}</p>
       <h3>{{ wine.name }}</h3>
       <span>{{ [wine.color, wine.region].filter(Boolean).join(' · ') }}</span>
-      <NuxtLink
-        class="sommelier-wine__link"
-        :to="{ path: '/pairings/new', query: { slug: wine.slug, name: wine.name, producer: wine.producer } }"
-      >
-        К ужину <ArrowRight :size="16" aria-hidden="true" />
+      <NuxtLink class="sommelier-wine__link" :to="pairingTo">
+        <BookmarkPlus :size="16" aria-hidden="true" /> В сочетания
       </NuxtLink>
     </div>
   </article>

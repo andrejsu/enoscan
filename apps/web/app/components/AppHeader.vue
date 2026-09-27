@@ -1,25 +1,41 @@
 <script setup lang="ts">
-import { Bookmark, Database, Map, ScanLine, Sparkles, Wine } from '@lucide/vue'
+import { Menu, X } from '@lucide/vue'
 import { isFeatureEnabled } from '#shared/utils/feature-flags'
 import { isScannerRestart } from '~/utils/scanner-nav'
 
 const config = useRuntimeConfig()
 const route = useRoute()
 const scannerReset = useScannerReset()
+const isMenuOpen = ref(false)
 const isAstroEnabled = computed(() => isFeatureEnabled(config.public.astroEnabled))
 const isSommelierEnabled = computed(() => config.public.sommelierMode !== 'off')
 const isCatalogEnabled = computed(() => isFeatureEnabled(config.public.catalogEnabled))
 
 const navItems = computed(() => [
-  { to: '/', icon: ScanLine, ariaLabel: 'Сканер', label: 'Сканер', shortLabel: 'Сканер', isVisible: true },
-  { to: '/pairings', icon: Bookmark, ariaLabel: 'Мои сочетания', label: 'Мои сочетания', shortLabel: 'Сочетания', isVisible: true },
-  { to: '/sommelier', icon: Wine, ariaLabel: 'Цифровой сомелье', label: 'Сомелье', shortLabel: 'Сомелье', isVisible: isSommelierEnabled.value },
-  { to: '/tours', icon: Map, ariaLabel: 'Винные туры', label: 'Винные туры', shortLabel: 'Туры', isVisible: true },
-  { to: '/astro-sommelier', icon: Sparkles, ariaLabel: 'Астро-сомелье', label: 'Астро-сомелье', shortLabel: 'Астро', isVisible: isAstroEnabled.value },
-  { to: '/admin', icon: Database, ariaLabel: 'Каталог', label: 'Каталог', shortLabel: 'Каталог', isVisible: isCatalogEnabled.value },
+  { to: '/', label: 'Сканер', isVisible: true },
+  { to: '/pairings', label: 'Мои сочетания', isVisible: true },
+  { to: '/sommelier', label: 'Сомелье', isVisible: isSommelierEnabled.value },
+  { to: '/tours', label: 'Винные туры', isVisible: true },
+  { to: '/astro-sommelier', label: 'Астро-сомелье', isVisible: isAstroEnabled.value },
+  { to: '/admin', label: 'Каталог', isVisible: isCatalogEnabled.value },
 ].filter(item => item.isVisible))
+// Каталог — инструмент разработчиков, в мобильное меню не выводим.
+const mobileNavItems = computed(() => navItems.value.filter(item => item.to !== '/admin'))
+
+watch(isMenuOpen, (isOpen) => {
+  document.body.classList.toggle('is-scroll-locked', isOpen)
+})
+
+watch(() => route.path, () => {
+  isMenuOpen.value = false
+})
+
+onBeforeUnmount(() => {
+  document.body.classList.remove('is-scroll-locked')
+})
 
 function handleNavClick(to: string) {
+  isMenuOpen.value = false
   if (isScannerRestart(to, route.path)) {
     scannerReset.request()
   }
@@ -27,36 +43,61 @@ function handleNavClick(to: string) {
 </script>
 
 <template>
-  <header class="site-header">
-    <div class="page-container site-header__inner">
-      <NuxtLink
-        class="brand"
-        to="/"
-        aria-label="Сканер российских вин — на главную"
-        @click="handleNavClick('/')"
-      >
-        <span class="brand__mark" aria-hidden="true">СВ</span>
-        <span class="brand__text">
-          <strong>Своё вино</strong>
-          <small>сканер этикеток</small>
-        </span>
-      </NuxtLink>
+  <header class="site-header" @keydown.esc="isMenuOpen = false">
+    <div class="page-container">
+      <div class="site-header__bar" :class="{ 'site-header__bar--open': isMenuOpen }">
+        <div class="site-header__top">
+          <NuxtLink
+            class="brand"
+            to="/"
+            aria-label="Своё Вино — на главную"
+            @click="handleNavClick('/')"
+          >
+            <img src="/svg/svoe-vino-logo.svg" width="160" height="40" alt="">
+          </NuxtLink>
 
-      <nav class="site-nav" aria-label="Основная навигация">
-        <NuxtLink
-          v-for="item in navItems"
-          :key="item.to"
-          class="site-nav__link"
-          :class="{ 'site-nav__link--desktop-only': item.to === '/admin' }"
-          :to="item.to"
-          :aria-label="item.ariaLabel"
-          @click="handleNavClick(item.to)"
+          <nav class="site-nav" aria-label="Основная навигация">
+            <NuxtLink
+              v-for="item in navItems"
+              :key="item.to"
+              class="site-nav__link"
+              :to="item.to"
+              @click="handleNavClick(item.to)"
+            >
+              {{ item.label }}
+            </NuxtLink>
+          </nav>
+
+          <button
+            class="site-header__menu-button"
+            type="button"
+            :aria-label="isMenuOpen ? 'Закрыть меню' : 'Открыть меню'"
+            :aria-expanded="isMenuOpen"
+            aria-controls="mobile-nav"
+            @click="isMenuOpen = !isMenuOpen"
+          >
+            <X v-if="isMenuOpen" :size="24" aria-hidden="true" />
+            <Menu v-else :size="24" aria-hidden="true" />
+          </button>
+        </div>
+
+        <nav
+          v-if="isMenuOpen"
+          id="mobile-nav"
+          class="mobile-nav"
+          aria-label="Меню"
         >
-          <component :is="item.icon" class="site-nav__icon" :size="20" aria-hidden="true" />
-          <span class="site-nav__label site-nav__label--short" aria-hidden="true">{{ item.shortLabel }}</span>
-          <span class="site-nav__label site-nav__label--full" aria-hidden="true">{{ item.label }}</span>
-        </NuxtLink>
-      </nav>
+          <NuxtLink
+            v-for="item in mobileNavItems"
+            :key="item.to"
+            class="mobile-nav__link"
+            :to="item.to"
+            @click="handleNavClick(item.to)"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </nav>
+      </div>
     </div>
   </header>
 </template>

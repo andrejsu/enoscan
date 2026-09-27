@@ -164,6 +164,8 @@ async function initializeMap() {
     }, {
       suppressMapOpenBlock: true,
       yandexMapDisablePoiInteractivity: true,
+      // Контейнер может поменять ширину после инициализации (шрифты, сетка) — без этого карта рисуется куском.
+      autoFitToViewport: 'always',
     })
     mapState.value = 'ready'
     renderMap()
@@ -241,7 +243,7 @@ onBeforeUnmount(() => map?.destroy())
 .route-map {
   min-width: 0;
   overflow: hidden;
-  border: 1px solid var(--color-tour-map-line);
+  border: 1px solid rgb(143 61 66 / 12%);
   border-radius: var(--radius-lg);
   background: var(--color-paper);
   box-shadow: var(--shadow-paper);
@@ -253,9 +255,9 @@ onBeforeUnmount(() => map?.destroy())
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 13px 18px 13px 20px;
-  border-bottom: 1px solid var(--color-tour-map-line);
-  background: rgb(255 255 255 / 92%);
+  padding: 12px 16px 12px 20px;
+  border-bottom: 1px solid var(--color-line);
+  background: var(--color-paper);
 }
 
 .route-map__toolbar > div {
@@ -265,51 +267,48 @@ onBeforeUnmount(() => map?.destroy())
 
 .route-map__toolbar span {
   color: var(--color-muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
+  font-size: 13px;
 }
 
 .route-map__toolbar strong {
   overflow-wrap: anywhere;
   font-family: var(--font-display);
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: 1.25;
 }
 
 .route-map__toolbar small {
-  color: var(--color-wine-dark);
-  font-size: 12px;
-  font-weight: 700;
+  color: var(--color-wine);
+  font-size: 13px;
+  font-weight: 600;
 }
 
+/* Как ui-button_secondary на vino-svoe.ru. */
 .route-map__toolbar a {
   min-height: 44px;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
   gap: 7px;
-  padding: 9px 14px;
-  border: 1px solid var(--color-tour-line);
-  border-radius: var(--radius-pill);
-  color: var(--color-wine-dark);
-  background: var(--color-tour-sand);
-  font-size: 13px;
-  font-weight: 700;
-  transition: border-color 160ms ease, background 160ms ease;
+  padding: 0 14px;
+  border-radius: 12px;
+  color: var(--color-wine);
+  background: var(--color-soft-wine);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background-color 0.3s ease-in;
 }
 
 .route-map__toolbar a:hover {
-  border-color: var(--color-wine);
-  background: var(--color-soft-wine);
+  background: var(--color-soft-wine-hover);
 }
 
 .route-map__viewport {
   position: relative;
   min-height: 500px;
   overflow: hidden;
-  background: var(--color-tour-sand);
+  background: var(--color-scanner-surface);
 }
 
 .route-map__canvas,
@@ -335,7 +334,7 @@ onBeforeUnmount(() => map?.destroy())
   color: var(--color-muted);
   background:
     linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 78%) 50%, transparent 65%),
-    var(--color-tour-sand);
+    var(--color-scanner-surface);
   background-size: 220% 100%;
   animation: map-loading 1.4s ease-in-out infinite;
 }
@@ -358,7 +357,7 @@ onBeforeUnmount(() => map?.destroy())
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   padding: 12px;
-  border-top: 1px solid var(--color-tour-map-line);
+  border-top: 1px solid var(--color-line);
 }
 
 .route-map__locations button {
@@ -366,19 +365,23 @@ onBeforeUnmount(() => map?.destroy())
   min-height: 52px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 9px;
-  border: 1px solid var(--color-tour-line);
-  border-radius: var(--radius-sm);
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-chip-line);
+  border-radius: 12px;
   color: var(--color-muted);
   background: var(--color-paper);
   text-align: left;
   cursor: pointer;
+  transition: border-color 0.3s ease-in;
+}
+
+.route-map__locations button:hover {
+  border-color: var(--color-wine);
 }
 
 .route-map__locations button[aria-pressed="true"] {
   border-color: var(--color-wine);
-  color: var(--color-wine-dark);
   background: var(--color-soft-wine);
 }
 
@@ -389,13 +392,14 @@ onBeforeUnmount(() => map?.destroy())
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  color: var(--color-paper);
-  background: var(--color-green-dark);
+  color: var(--color-wine);
+  background: var(--color-soft-wine);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 button[aria-pressed="true"] .route-map__location-mark {
+  color: var(--color-paper);
   background: var(--color-wine);
 }
 
@@ -413,11 +417,12 @@ button[aria-pressed="true"] .route-map__location-mark {
 
 .route-map__locations strong {
   color: var(--color-ink);
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .route-map__locations small {
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .route-map__caption {
@@ -426,10 +431,10 @@ button[aria-pressed="true"] .route-map__location-mark {
   align-items: center;
   padding: 10px 20px;
   margin: 0;
-  border-top: 1px solid var(--color-tour-map-line);
+  border-top: 1px solid var(--color-line);
   color: var(--color-muted);
-  background: var(--color-tour-sand);
-  font-size: 12px;
+  background: var(--color-paper);
+  font-size: 13px;
 }
 
 @keyframes map-loading {

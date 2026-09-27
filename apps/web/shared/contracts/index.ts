@@ -174,12 +174,23 @@ export interface ScanDebug {
   ranking: ScanDebugRanking
 }
 
+export const pairingTastes = [
+  'Сухое', 'Полусладкое', 'Сладкое', 'Игристое', 'Лёгкое', 'Насыщенное',
+  'Свежее', 'Фруктовое', 'Минеральное', 'Пряное', 'Бархатистое',
+] as const
+
+export type PairingTaste = (typeof pairingTastes)[number]
+
+/** Catalog fields kept with a pairing so the saved list shows the wine without the catalog. */
+export type PairingWine = Pick<WineCard, 'slug' | 'name' | 'producer' | 'year' | 'color' | 'region' | 'imagePreviewUrl'>
+
+/** A wine from the catalog the user saved together with what it goes with. */
 export interface SavedPairing {
   id: string
-  wine: Pick<WineCard, 'slug' | 'name' | 'producer'>
-  dish: string
-  preference: 'softer' | 'richer'
-  verdict: string
+  wine: PairingWine
+  /** «к запечённой рыбе», «для аперитива»; empty when the user saved only the wine and its tastes. */
+  pairing: string
+  tastes: readonly PairingTaste[]
   savedAt: string
 }
 

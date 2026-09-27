@@ -1,26 +1,7 @@
 import type { SavedPairing } from '#shared/contracts'
+import { restorePairing } from '~/utils/pairings'
 
 const storageKey = 'vinolog:saved-pairings:v1'
-
-function isSavedPairing(value: unknown): value is SavedPairing {
-  if (!value || typeof value !== 'object') {
-    return false
-  }
-
-  const item = value as Record<string, unknown>
-  const wine = item.wine
-
-  return typeof item.id === 'string'
-    && typeof item.dish === 'string'
-    && (item.preference === 'softer' || item.preference === 'richer')
-    && typeof item.verdict === 'string'
-    && typeof item.savedAt === 'string'
-    && typeof wine === 'object'
-    && wine !== null
-    && typeof (wine as Record<string, unknown>).slug === 'string'
-    && typeof (wine as Record<string, unknown>).name === 'string'
-    && typeof (wine as Record<string, unknown>).producer === 'string'
-}
 
 export function useSavedPairings() {
   const pairings = useState<SavedPairing[]>('saved-pairings', () => [])
@@ -33,7 +14,9 @@ export function useSavedPairings() {
 
     try {
       const value: unknown = JSON.parse(localStorage.getItem(storageKey) || '[]')
-      pairings.value = Array.isArray(value) ? value.filter(isSavedPairing) : []
+      pairings.value = Array.isArray(value)
+        ? value.map(restorePairing).filter((pairing): pairing is SavedPairing => pairing !== null)
+        : []
     }
     catch {
       pairings.value = []
@@ -42,12 +25,20 @@ export function useSavedPairings() {
     isLoaded.value = true
   }
 
-  function save(pairing: SavedPairing) {
-    pairings.value = [pairing, ...pairings.value.filter(item => item.id !== pairing.id)]
+  function persist(next: SavedPairing[]) {
+    pairings.value = next
 
     if (import.meta.client) {
-      localStorage.setItem(storageKey, JSON.stringify(pairings.value))
+      localStorage.setItem(storageKey, JSON.stringify(next))
     }
+  }
+
+  function save(pairing: SavedPairing) {
+    persist([pairing, ...pairings.value.filter(item => item.id !== pairing.id)])
+  }
+
+  function remove(id: string) {
+    persist(pairings.value.filter(item => item.id !== id))
   }
 
   onMounted(load)
@@ -55,6 +46,7 @@ export function useSavedPairings() {
   return {
     pairings: readonly(pairings),
     isLoaded: readonly(isLoaded),
+    remove,
     save,
   }
 }
