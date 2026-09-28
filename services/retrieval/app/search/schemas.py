@@ -62,7 +62,9 @@ class ScanRecommendation(BaseModel):
 
 
 class ScanResponse(BaseModel):
-    status: Literal["matched", "uncertain", "not_found"]
+    status: Literal["matched", "uncertain", "not_found"] = Field(
+        description="The ranking service answers `matched` or `not_found`; `uncertain` belongs to the "
+                    "shared web contract and is not returned here.")
     wine: WineCard | None = Field(description="The matched wine; null unless status is `matched`.")
     candidates: list[ScanCandidate] = Field(description="Top-5 by score; rejected wines go last.")
     confidence: ScanConfidence
@@ -87,6 +89,12 @@ class ErrorResponse(BaseModel):
     detail: str
 
 
+class ValidationErrorResponse(BaseModel):
+    detail: str | list[dict[str, Any]] = Field(
+        description="A message when the file is not an image; FastAPI's list of field errors "
+                    "when the `image` field is missing.")
+
+
 class HealthResponse(BaseModel):
     status: Literal["ok", "loading"]
 
@@ -95,7 +103,7 @@ UPLOAD_ERRORS: dict[int | str, dict[str, Any]] = {
     400: {"model": ErrorResponse, "description": "Пустое поле `image`."},
     413: {"model": ErrorResponse, "description": "Файл больше MAX_UPLOAD_BYTES (10 МБ по умолчанию)."},
     415: {"model": ErrorResponse, "description": "Тип файла не JPEG, PNG, WebP или application/octet-stream."},
-    422: {"model": ErrorResponse, "description": "Файл не декодируется как изображение или нет поля `image`."},
+    422: {"model": ValidationErrorResponse, "description": "Файл не декодируется как изображение или нет поля `image`."},
     503: {"model": ErrorResponse, "description": "Индекс ещё загружается или недоступны и OCR, и визуальный "
                                                  "ретривер. Это не «вино не найдено»."},
 }

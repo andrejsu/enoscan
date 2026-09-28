@@ -88,6 +88,13 @@ def test_openapi_documents_the_upload_field_and_both_scan_responses():
     assert "recommendations" in spec["components"]["schemas"]["ScanResponse"]["properties"]
 
 
+def test_openapi_explains_how_to_run_the_organizer_script():
+    description = api.app.openapi()["info"]["description"]
+    assert "participant_test.sh" in description
+    assert "http://127.0.0.1:8080/v1/eval/predict" in description
+    assert f"сейчас\n  `{api.settings.eval_policy}`" in description
+
+
 def test_top1_policy_answers_only_a_wine_the_label_does_not_contradict():
     checked = (LabelCheck("rebus", (), "sweetness", "на этикетке брют, в каталоге сухое"),)
     result = RankingResult("not_found", None, 0.3, 0.0, {"rebus": 0.3, "kokur": 0.1}, {"rebus": "…"}, checked)

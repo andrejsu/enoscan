@@ -36,19 +36,59 @@ async def lifespan(_: FastAPI):
         service = None
 
 
-API_DESCRIPTION = """
+EVAL_POLICY_ANSWERS = {
+    "matched": "пустой `slug` (скрипт запишет `null`), когда совпадение не подтверждено",
+    "top1": "лучшее вино всегда, даже когда совпадение не подтверждено",
+}
+
+API_DESCRIPTION = f"""
 Сканер винных этикеток: по фотографии находит карточку вина в каталоге.
+
+## Проверка скриптом кейсодержателя
+
+Скрипт `participant_test.sh` (лежит в `data/eval/`, там же `README.md`)
+отправляет фото по одному на `POST /v1/eval/predict` и записывает ответы
+в `predictions.jsonl`, который передаётся организатору.
+
+| Где запущен сканер | `--endpoint` |
+|---|---|
+| локально, `docker compose up` | `http://127.0.0.1:8080/v1/eval/predict` (адрес по умолчанию в скрипте) |
+| на сайте | `https://<домен сайта>/v1/eval/predict` |
+
+```bash
+cd data/eval
+./participant_test.sh \\
+  --images-dir ./queries \\
+  --manifest ./queries.tsv \\
+  --endpoint 'http://127.0.0.1:8080/v1/eval/predict' \\
+  --output ./predictions.jsonl
+```
+
+Одно фото вручную — то же, что делает скрипт:
+
+```bash
+curl -F 'image=@queries/019c68d0.jpg' http://127.0.0.1:8080/v1/eval/predict
+# {{"slug":"<slug вина из каталога>"}}
+```
+
+Что скрипт ждёт и что отдаёт сервис:
+
+- запрос — `multipart/form-data`, фото в поле `image` (JPEG, PNG или WebP, до 10 МБ);
+- ответ — HTTP 200 и плоский JSON `{{"slug": "..."}}` со slug вина из каталога;
+- при любом другом коде, пустом `slug` или ответе дольше 10 секунд скрипт
+  записывает `predicted_slug: null`;
+- неуверенный ответ зависит от `RANKING_EVAL_POLICY`, сейчас
+  `{settings.eval_policy}`: {EVAL_POLICY_ANSWERS[settings.eval_policy]}.
+
+## Маршруты
 
 Оба маршрута делают один и тот же проход — OCR и визуальный ретривер
 параллельно, затем ранжирование с проверкой по этикетке, — поэтому top-1
 у них всегда совпадает.
 
-- `POST /v1/eval/predict` — для скрипта оценки организатора
-  (`data/eval/participant_test.sh`): плоский `{"slug": "..."}`.
+- `POST /v1/eval/predict` — для скрипта кейсодержателя: плоский `{{"slug": "..."}}`.
 - `POST /v1/search` — для продуктового сканера: статус, карточка, top-5,
   отрыв top-1 от top-2, рекомендации, когда вино не найдено.
-
-Фото передаётся в multipart-поле `image`.
 """
 
 app = FastAPI(title="Vinolog ranking", version="0.3.0", lifespan=lifespan, description=API_DESCRIPTION,
@@ -120,9 +160,10 @@ async def search(image: UploadFile = IMAGE_FIELD) -> dict[str, object]:
 
 
 @app.post("/v1/eval/predict", tags=["scan"], response_model=EvaluationPrediction, responses=UPLOAD_ERRORS,
-          summary="Top-1 slug для скрипта оценки")
+          summary="Top-1 slug для скрипта кейсодержателя (participant_test.sh)")
 async def evaluation_predict(image: UploadFile = IMAGE_FIELD) -> dict[str, str]:
-    """Плоский `{"slug": "..."}` для `participant_test.sh` организатора.
+    """Маршрут для `participant_test.sh` кейсодержателя: плоский `{"slug": "..."}`
+    с top-1 вином каталога. Как запустить скрипт — в описании API вверху страницы.
 
     При `RANKING_EVAL_POLICY=matched` (по умолчанию) неуверенный ответ — пустая
     строка, скрипт записывает её как `null`; при `top1` всегда отдаётся лучшее

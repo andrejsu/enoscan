@@ -4,7 +4,7 @@
 
 OCR (RapidOCR) и объединение его результата с визуальным поиском больше не часть этого сервиса — они вынесены в отдельные сервисы: `ocr-retriever` (`app/ocr/api.py`) отдаёт per-поле кандидатов, `ranking` (`app/search/api.py`) комбинирует их с визуальными кандидатами `retriever` и резолвит slug. `ranking` — тот сервис, что реально стоит за продуктовым сканером (`apps/web`'s `/api/scans`, через `NUXT_RANKING_BASE_URL`); он же отдаёт оценочный `/v1/eval/predict` на порту 8080, чтобы top-1 оценки и сканера совпадал. `retrieval` (этот сервис, порт 8084) остаётся визуальным baseline для `scripts/eval_search.py`. См. `app/evidence.py` и `app/search/ranking.py`.
 
-Swagger `ranking` — `http://127.0.0.1:8080/docs` (OpenAPI JSON — `/openapi.json`): оба маршрута, поле `image`, схемы ответов и ошибок. Схемы — `app/search/schemas.py`, они повторяют `ScanResponse` из `apps/web/shared/contracts`.
+Swagger `ranking` — `http://127.0.0.1:8080/docs` (OpenAPI JSON — `/openapi.json`): как запустить `data/eval/participant_test.sh` кейсодержателя, оба маршрута, поле `image`, схемы ответов и ошибок. Сайт (`apps/web/server/routes`) проксирует `/docs`, `/openapi.json`, `/health`, `/v1/search` и `/v1/eval/predict` на `ranking`, поэтому на проде Swagger и скрипт работают по адресу сайта: `https://<домен>/docs`, `https://<домен>/v1/eval/predict`. Схемы — `app/search/schemas.py`, они повторяют `ScanResponse` из `apps/web/shared/contracts`.
 
 Когда `ranking` не подтверждает совпадение, ответ `/v1/search` содержит `recommendations` — вина каталога той же винодельни, линейки (редкое слово названия на этикетке) или сорта вместе с ещё одним параметром, с причиной и расхождением с этикеткой (`app/search/recommendations.py`). На решение и score ранжирования они не влияют.
 
