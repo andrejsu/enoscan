@@ -117,6 +117,20 @@ services:
     logging: *logging
     restart: unless-stopped
 
+  ocr-retriever:
+    image: *retriever-image
+    command: ["uvicorn", "app.ocr.api:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      importer:
+        condition: service_completed_successfully
+      db:
+        condition: service_healthy
+    environment:
+      <<: *db-environment
+    healthcheck: *python-healthcheck
+    logging: *logging
+    restart: unless-stopped
+
   ranking:
     image: *retriever-image
     command: ["uvicorn", "app.search.api:app", "--host", "0.0.0.0", "--port", "8000"]
@@ -125,12 +139,12 @@ services:
         condition: service_healthy
       retriever:
         condition: service_healthy
+      ocr-retriever:
+        condition: service_healthy
     environment:
       <<: *db-environment
-      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-2}
-      OCR_PSM: ${OCR_PSM:-6}
-      OCR_PREPROCESS: ${OCR_PREPROCESS:-true}
-      OCR_RETRY: ${OCR_RETRY:-false}
+      OCR_BASE_URL: http://ocr-retriever:8000
+      OCR_TIMEOUT_SECONDS: ${OCR_TIMEOUT_SECONDS:-8}
       RETRIEVER_BASE_URL: http://retriever:8000
       RANKING_MIN_MARGIN: ${RANKING_MIN_MARGIN:-0.03}
       RANKING_EVAL_POLICY: ${RANKING_EVAL_POLICY:-matched}
