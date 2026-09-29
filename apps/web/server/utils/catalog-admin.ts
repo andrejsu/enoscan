@@ -13,7 +13,7 @@ import { wineImageUrls } from './wine-images'
 
 export const ADMIN_PAGE_SIZE = 24
 export const ADMIN_QUERY_MAX_LENGTH = 120
-export const SEARCH_INDEX_KIND = 'sift-v3'
+export const SEARCH_INDEX_KIND = 'retriever-v2'
 
 export interface AdminQuery {
   q: string

@@ -8,7 +8,7 @@
 
 Ручной запуск: Actions → deploy → Run workflow.
 
-Прод-стек: `db`, `minio`, `retriever`, `ranking`, `web`, `caddy` плюс однократные `importer`, `retriever-model`, `retriever-index`. Наружу открыт только Caddy (80/443). Сервисы `retrieval`, `retrieval-index` и `ocr-retriever` из dev-compose в прод не входят.
+Прод-стек: `db`, `minio`, `retriever`, `ocr-retriever`, `ranking`, `web`, `caddy` плюс однократные `importer`, `retriever-model`, `retriever-index`. Наружу открыт только Caddy (80/443). Визуальный baseline `retrieval` и `retrieval-index` из dev-compose в прод не входят.
 
 MinIO собирается из исходников (`deploy/minio.Dockerfile`): официальные образы на quay.io и Docker Hub больше не отдаются анонимно. Веса моделей (DINOv2 с huggingface.co, SAM с GitHub) скачиваются в CI и упаковываются в образ `models` (`deploy/models.Dockerfile`): VPS не обязан иметь доступ к Hugging Face.
 
