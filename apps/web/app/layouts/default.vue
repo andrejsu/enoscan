@@ -8,7 +8,7 @@
     <footer class="site-footer">
       <div class="page-container site-footer__inner">
         <p>Продуктовый прототип для кейса РСХБ Цифра</p>
-        <p>Сделано командой Винолог</p>
+        <p>Сделано командой Винозавры</p>
       </div>
     </footer>
   </div>
